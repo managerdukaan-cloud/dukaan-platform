@@ -887,7 +887,17 @@ async function handleSignup(event) {
             utrValidation.className = 'validation-message validation-success';
             return true;
         }
-
+        // ORDER STATUS HELPER FUNCTION
+function getOrderStatusText(status) {
+    const statusMap = {
+        'confirmed': 'Order Confirmed',
+        'preparing': 'Preparing Order', 
+        'dispatched': 'Dispatched',
+        'delivered': 'Delivered',
+        'cancelled': 'Cancelled'
+    };
+    return statusMap[status] || status;
+}
         // Order History
         function renderOrders() {
             ordersList.innerHTML = '';
