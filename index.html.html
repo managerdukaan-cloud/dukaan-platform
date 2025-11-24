@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dukaan - Online Shopping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --primary: #0F2C59; --primary-dark: #0A1F3D; --secondary: #FFFFFF; --accent: #3A8EF6; 
+            --accent-hover: #2D7AE6; --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --neutral: #F8FAFC; --text-dark: #1E293B; --text-light: #64748B; --border: #E2E8F0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08); --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--neutral); color: var(--text-dark); line-height: 1.6; padding-bottom: 80px; }
+        .app-header { background: var(--primary); color: white; padding: 12px 0; position: sticky; top: 0; z-index: 1000; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.4rem; text-decoration: none; color: white; }
+        .brand-logo { width: 40px; height: 40px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+        .search-container { flex: 1; position: relative; margin: 0 20px; max-width: 600px; }
+        .search-bar { width: 100%; padding: 12px 45px 12px 16px; border-radius: 10px; border: none; font-size: 15px; background: white; box-shadow: var(--shadow); transition: all 0.3s ease; }
+        .search-bar:focus { outline: none; box-shadow: 0 4px 20px rgba(58, 142, 246, 0.25); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-light); }
+        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: white; border-radius: 0 0 10px 10px; box-shadow: var(--shadow-lg); max-height: 300px; overflow-y: auto; z-index: 1001; display: none; }
+        .search-result-item { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 12px; }
+        .search-result-item:hover { background: var(--neutral); }
+        .search-result-image { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+        .search-result-info { flex: 1; }
+        .search-result-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+        .search-result-category { font-size: 12px; color: var(--text-light); }
+        .search-result-price { font-weight: 700; color: var(--accent); font-size: 14px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: var(--text-light); transition: all 0.2s; flex: 1; position: relative; }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 20px; }
+        .nav-label { font-size: 12px; font-weight: 500; }
+        .nav-badge { position: absolute; top: -5px; right: 20px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; min-width: 18px; text-align: center; }
+        .container-main { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+        .hero-banner { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 40px 20px; border-radius: 20px; margin-bottom: 30px; position: relative; overflow: hidden; }
+        .hero-content { position: relative; z-index: 2; max-width: 600px; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 20px; }
+        .hero-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; line-height: 1.2; }
+        .hero-subtitle { font-size: 1.1rem; margin-bottom: 25px; opacity: 0.9; }
+        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-outline:hover { background: var(--accent); color: white; }
+        .hero-pattern { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="rgba(255,255,255,0.05)"><circle cx="20" cy="20" r="5"/><circle cx="50" cy="50" r="8"/><circle cx="80" cy="80" r="5"/></svg>'); }
+        .orders-page { display: none; }
+        .order-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .order-id { font-weight: 700; color: var(--text-dark); }
+        .order-status { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-delivered { background: var(--success); color: white; }
+        .status-pending { background: var(--warning); color: white; }
+        .status-cancelled { background: var(--danger); color: white; }
+        .order-items { margin-bottom: 12px; }
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .order-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
+        .order-total { font-weight: 700; font-size: 16px; color: var(--text-dark); }
+        .btn-reorder { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--shadow); transition: all 0.3s ease; border: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .product-badge { position: absolute; top: 12px; left: 12px; background: var(--success); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .product-image { height: 160px; border-radius: 12px; object-fit: cover; width: 100%; background: var(--neutral); margin-bottom: 12px; }
+        .product-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; color: var(--text-dark); }
+        .product-category { font-size: 13px; color: var(--text-light); margin-bottom: 10px; }
+        .product-price { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+        .current-price { font-weight: 800; font-size: 18px; color: var(--accent); }
+        .original-price { color: var(--text-light); text-decoration: line-through; font-size: 14px; }
+        .discount { color: var(--success); font-size: 13px; font-weight: 600; }
+        .card-actions { display: flex; justify-content: center; margin-top: 15px; }
+        .btn-add-cart { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 600; width: 100%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; font-size: 14px; }
+        .btn-add-cart:hover { background: var(--accent-hover); transform: scale(1.02); }
+        .shop-badge { position: absolute; top: 12px; right: 12px; background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+        .bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); z-index: 1001; max-height: 85vh; overflow: auto; }
+        .bottom-sheet.open { transform: translateY(0); }
+        .sheet-handle { width: 60px; height: 5px; background: #E2E8F0; border-radius: 99px; margin: 12px auto; display: block; }
+        .sheet-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .sheet-title { font-weight: 700; font-size: 1.3rem; color: var(--text-dark); }
+        .sheet-close { background: none; border: none; font-size: 24px; color: var(--text-light); cursor: pointer; }
+        .sheet-body { padding: 20px; }
+        .coupon-section { margin: 20px 0; padding: 15px; background: var(--neutral); border-radius: 12px; border: 1px solid var(--border); }
+        .coupon-input-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .coupon-input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+        .btn-apply-coupon { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-apply-coupon:disabled { background: var(--text-light); cursor: not-allowed; }
+        .coupon-login-required { color: var(--warning); font-size: 14px; margin-top: 8px; text-align: center; }
+        .coupon-success { color: var(--success); font-size: 14px; font-weight: 600; margin-top: 8px; }
+        .coupon-error { color: var(--danger); font-size: 14px; margin-top: 8px; }
+        .phone-valid { border-color: var(--success) !important; }
+        .phone-invalid { border-color: var(--danger) !important; }
+        .validation-message { font-size: 12px; margin-top: 4px; }
+        .validation-success { color: var(--success); }
+        .validation-error { color: var(--danger); }
+        .order-item-summary { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .discount-row { display: flex; justify-content: space-between; padding: 8px 0; color: var(--success); font-weight: 600; }
+        .order-total-summary { display: flex; justify-content: space-between; padding: 15px 0; margin-top: 10px; border-top: 2px solid var(--border); font-weight: 800; font-size: 18px; }
+        .payment-methods { margin: 20px 0; }
+        .payment-option { display: flex; align-items: center; gap: 12px; padding: 15px; border: 2px solid var(--border); border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease; }
+        .payment-option.selected { border-color: var(--accent); background: rgba(58, 142, 246, 0.05); }
+        .payment-icon { width: 40px; height: 40px; background: var(--neutral); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .payment-info { flex: 1; }
+        .payment-title { font-weight: 600; margin-bottom: 4px; }
+        .payment-desc { font-size: 12px; color: var(--text-light); }
+        .qr-modal { text-align: center; padding: 20px; }
+        .qr-code { width: 200px; height: 200px; background: var(--neutral); border-radius: 12px; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-light); border: 2px dashed var(--border); }
+        .qr-code img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
+        .utr-input { margin: 15px 0; }
+        .utr-input .form-control { margin-top: 8px; }
+        .empty-state { text-align: center; padding: 40px 20px; }
+        .empty-icon { font-size: 60px; color: var(--border); margin-bottom: 15px; }
+        .empty-text { color: var(--text-light); font-size: 16px; }
+        .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 20px; }
+        .auth-card { background: white; border-radius: 20px; padding: 40px; box-shadow: var(--shadow-lg); width: 100%; max-width: 450px; }
+        .auth-header { text-align: center; margin-bottom: 30px; }
+        .auth-logo { width: 60px; height: 60px; background: var(--accent); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; color: white; margin: 0 auto 15px; }
+        .auth-title { font-size: 1.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+        .auth-subtitle { color: var(--text-light); font-size: 1rem; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { font-weight: 600; margin-bottom: 8px; color: var(--text-dark); display: block; }
+        .form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; transition: all 0.2s; }
+        .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(58, 142, 246, 0.1); }
+        .auth-footer { text-align: center; margin-top: 25px; color: var(--text-light); }
+        .auth-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+        .auth-link:hover { text-decoration: underline; }
+        .address-grid { display: grid; gap: 12px; margin-bottom: 15px; }
+        .address-card { padding: 15px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
+        .address-card.selected { border-color: var(--accent); background: rgba(58, 142, 246, 0.05); }
+        .address-title { font-weight: 600; margin-bottom: 5px; }
+        .address-details { color: var(--text-light); font-size: 14px; margin-bottom: 5px; }
+        .address-phone { font-size: 12px; color: var(--text-light); }
+        .address-form { background: var(--neutral); padding: 20px; border-radius: 12px; margin-top: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; gap: 12px; }
+            .search-container { margin: 0; width: 100%; }
+            .hero-content { max-width: 100%; }
+            .hero-title { font-size: 1.8rem; }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+            .product-image { height: 120px; }
+            .auth-card { padding: 30px 25px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .container-main { padding: 0 12px; }
+            .hero-banner { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="authScreen">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">D</div>
+                    <h1 class="auth-title">Welcome to Dukaan</h1>
+                    <p class="auth-subtitle">Sign in to your account</p>
+                </div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn-primary w-100" style="padding: 12px;">Sign In</button>
+                </form>
+                <form id="signupForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="signupName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="signupPassword" placeholder="Create a password" required>
+                    </div>
+                    <button type="submit" class="btn-primary w-100" style="padding: 12px;">Create Account</button>
+                </form>
+                <div class="auth-footer">
+                    <p id="loginFooter">Don't have an account? <a href="#" class="auth-link" id="showSignup">Sign up</a></p>
+                    <p id="signupFooter" style="display: none;">Already have an account? <a href="#" class="auth-link" id="showLogin">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="appScreen" style="display: none;">
+        <header class="app-header">
+            <div class="header-container">
+                <a href="#" class="brand">
+                    <div class="brand-logo">D</div>
+                    <span>Dukaan</span>
+                </a>
+                <div class="search-container">
+                    <input type="text" id="search" class="search-bar" placeholder="Search for products, categories...">
+                    <div class="search-icon"><i class="fas fa-search"></i></div>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container-main">
+            <div id="homePage">
+                <div class="hero-banner">
+                    <div class="hero-content">
+                        <div class="hero-badge">
+                            <i class="fas fa-bolt"></i>
+                            <span>Fast Delivery • Best Prices</span>
+                        </div>
+                        <h1 class="hero-title">Groceries Delivered to Your Doorstep</h1>
+                        <p class="hero-subtitle">Fresh products, competitive prices, and quick delivery</p>
+                        <button class="btn-primary">Shop Now</button>
+                    </div>
+                    <div class="hero-pattern"></div>
+                </div>
+
+                <div class="filter-section mb-4">
+                    <h2 class="section-title">Popular Products</h2>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <select id="shopFilter" class="category-filter">
+                            <option value="">All Shops</option>
+                            <option value="freshmart">FreshMart</option>
+                            <option value="cosmeticstore">CosmeticStore</option>
+                            <option value="fashionhub">FashionHub</option>
+                            <option value="veggieking">VeggieKing</option>
+                            <option value="gadgetzone">GadgetZone</option>
+                        </select>
+                        <select id="categoryFilter" class="category-filter">
+                            <option value="">All Categories</option>
+                            <option value="groceries">Groceries</option>
+                            <option value="cosmetics">Cosmetics</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="vegetables">Vegetables</option>
+                            <option value="electronics">Electronics</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="grid" class="product-grid"></div>
+                
+                <div id="empty" class="empty-state" style="display:none">
+                    <div class="empty-icon"><i class="fas fa-search"></i></div>
+                    <h3 class="empty-text">No products found</h3>
+                    <p class="text-muted">Try changing your search or filter</p>
+                </div>
+            </div>
+
+            <div id="ordersPage" class="orders-page">
+                <h2 class="section-title">Your Orders</h2>
+                <div id="ordersList"></div>
+                <div id="noOrders" class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <h3 class="empty-text">No orders yet</h3>
+                    <p class="text-muted">Start shopping to see your orders here</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-page="home">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="#" class="nav-item" data-page="categories">
+                <i class="fas fa-th-large nav-icon"></i>
+                <span class="nav-label">Categories</span>
+            </a>
+            <a href="#" class="nav-item" data-page="orders">
+                <i class="fas fa-shopping-bag nav-icon"></i>
+                <span class="nav-label">Orders</span>
+            </a>
+            <a href="#" class="nav-item" data-page="account">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-label">Account</span>
+            </a>
+            <a href="#" class="nav-item" data-page="cart" id="bottomNavCart">
+                <i class="fas fa-shopping-cart nav-icon"></i>
+                <span class="nav-label">Cart</span>
+                <span class="nav-badge" id="bottomCartCount">0</span>
+            </a>
+        </nav>
+
+        <div id="bsheet" class="bottom-sheet" aria-hidden="true">
+            <span class="sheet-handle"></span>
+            <div class="sheet-header">
+                <strong class="sheet-title">Checkout</strong>
+                <button id="closeB" class="sheet-close">&times;</button>
+            </div>
+            <div class="sheet-body">
+                <div class="mb-4">
+                    <label class="section-label">Delivery Address</label>
+                    <div id="addresses" class="address-grid"></div>
+                    
+                    <div class="address-form">
+                        <h6>Add New Address</h6>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="addrFullName" placeholder="Enter full name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="addrPhone" placeholder="10-digit mobile number" maxlength="10">
+                                <div id="addrPhoneValidation" class="validation-message"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address Type</label>
+                            <select class="form-control" id="addrType">
+                                <option value="home">Home</option>
+                                <option value="work">Work</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Complete Address</label>
+                            <textarea class="form-control" id="addrDetails" placeholder="House no, Building, Street, Area" rows="3"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control" id="addrCity" placeholder="City">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Pincode</label>
+                                <input type="text" class="form-control" id="addrPincode" placeholder="Pincode" maxlength="6">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Landmark (Optional)</label>
+                            <input type="text" class="form-control" id="addrLandmark" placeholder="Nearby landmark">
+                        </div>
+                        <button id="saveAddr" class="btn-primary w-100">Save Address</button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="section-label">Contact Information</label>
+                    <input id="checkoutName" class="form-control mb-3" placeholder="Full name">
+                    <input id="checkoutPhone" class="form-control" placeholder="Phone number" maxlength="10">
+                    <div id="phoneValidation" class="validation-message"></div>
+                </div>
+
+                <div class="payment-methods">
+                    <label class="section-label">Payment Method</label>
+                    <div class="payment-option" data-method="cod">
+                        <div class="payment-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="payment-info">
+                            <div class="payment-title">Cash on Delivery</div>
+                            <div class="payment-desc">Pay when you receive your order</div>
+                        </div>
+                    </div>
+                    <div class="payment-option" data-method="qr">
+                        <div class="payment-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <div class="payment-info">
+                            <div class="payment-title">QR Code Payment</div>
+                            <div class="payment-desc">Scan & pay using UPI</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="qrCodeSection" style="display: none;" class="qr-modal">
+                    <h5>Scan QR Code to Pay</h5>
+                    <div class="qr-code">
+                        <img src="https://via.placeholder.com/200x200/3A8EF6/FFFFFF?text=Google+Pay+QR" alt="QR Code">
+                    </div>
+                    <p class="text-muted">UPI ID: damazingdeals-1@okaxis</p>
+                    <p class="text-muted">Amount: <span id="qrAmount">₹0</span></p>
+                    
+                    <div class="utr-input">
+                        <label class="form-label">Enter UTR Number</label>
+                        <input type="text" class="form-control" id="utrNumber" placeholder="Enter 12-digit UTR number" maxlength="12">
+                        <div id="utrValidation" class="validation-message"></div>
+                    </div>
+                    
+                    <button id="confirmQrPayment" class="btn-primary w-100 mt-3">
+                        <i class="fas fa-check"></i> Confirm Payment
+                    </button>
+                </div>
+
+                <div class="coupon-section">
+                    <label class="section-label">Apply Coupon</label>
+                    <div class="coupon-input-group">
+                        <input type="text" id="couponCode" class="coupon-input" placeholder="Enter coupon code" disabled>
+                        <button type="button" id="applyCouponBtn" class="btn-apply-coupon" disabled>Apply</button>
+                    </div>
+                    <div id="couponLoginRequired" class="coupon-login-required" style="display: block;">
+                        <i class="fas fa-info-circle"></i> Please login to apply coupons
+                    </div>
+                    <div id="couponMessage"></div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="section-label">Order Summary</label>
+                    <div id="orderList"></div>
+                    
+                    <div id="discountSection" style="display: none;">
+                        <div class="discount-row">
+                            <span>Discount Applied:</span>
+                            <span id="discountAmount">-₹0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-total-summary">
+                        <span>Total Amount</span>
+                        <span id="orderTotal">₹0</span>
+                    </div>
+                </div>
+                
+                <button id="placeOrderBtn" class="btn-primary w-100 py-3">
+                    <i class="fas fa-lock"></i> Place Order Securely
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2-yz4xwYD5S_oXs6ryhNP8XIC94jzda4",
+            authDomain: "dukaan-platform.firebaseapp.com",
+            projectId: "dukaan-platform", 
+            storageBucket: "dukaan-platform.firebasestorage.app",
+            messagingSenderId: "75765851780",
+            appId: "1:75765851780:web:dd9567db1d39c3b09c84d1"
+        };
+
+        // Cloudinary Configuration
+        const cloudinaryConfig = {
+            cloudName: "db1rbtgpe",
+            uploadPreset: "dukaan-platform", 
+            apiKey: "156538295145313"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Sample Data with Cloudinary Images
+        const SHOPS = {
+            freshmart: { id: 'freshmart', name: 'FreshMart', category: 'groceries', rating: 4.5 },
+            cosmeticstore: { id: 'cosmeticstore', name: 'CosmeticStore', category: 'cosmetics', rating: 4.3 },
+            fashionhub: { id: 'fashionhub', name: 'FashionHub', category: 'clothing', rating: 4.7 },
+            veggieking: { id: 'veggieking', name: 'VeggieKing', category: 'vegetables', rating: 4.4 },
+            gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6 }
+        };
+
+        const PRODUCTS = [
+            { id: 'p1', name: 'Fresh Milk 1L', price: 60, mrp: 70, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk`, badge: 'Popular' },
+            { id: 'p2', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bread`, badge: 'Fresh' },
+            { id: 'p3', name: 'Basmati Rice 1kg', price: 120, mrp: 150, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/rice`, badge: 'Premium' },
+            { id: 'p4', name: 'Sugar 1kg', price: 45, mrp: 50, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sugar`, badge: 'Essential' },
+            { id: 'p5', name: 'Toor Dal 500g', price: 80, mrp: 90, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/dal`, badge: 'Healthy' },
+            { id: 'p6', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facecream`, badge: 'New' },
+            { id: 'p7', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lipstick`, badge: 'Bestseller' },
+            { id: 'p8', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facewash`, badge: 'Popular' },
+            { id: 'p9', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tshirt`, badge: 'Trending' },
+            { id: 'p10', name: 'Jeans', price: 899, mrp: 1199, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jeans`, badge: 'Fashion' },
+            { id: 'p11', name: 'Winter Jacket', price: 1299, mrp: 1599, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jacket`, badge: 'Winter' },
+            { id: 'p12', name: 'Fresh Tomatoes 1kg', price: 40, mrp: 50, category: 'vegetables', shop: 'veggieking', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tomatoes`, badge: 'Fresh' },
+            { id: 'p13', name: 'Potatoes 1kg', price: 30, mrp: 35, category: 'vegetables', shop: 'veggieking', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/potatoes`, badge: 'Local' },
+            { id: 'p14', name: 'Onions 1kg', price: 35, mrp: 45, category: 'vegetables', shop: 'veggieking', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/onions`, badge: 'Fresh' },
+            { id: 'p15', name: 'USB Cable', price: 199, mrp: 299, category: 'electronics', shop: 'gadgetzone', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/usbcable`, badge: 'Essential' },
+            { id: 'p16', name: 'Phone Charger', price: 299, mrp: 399, category: 'electronics', shop: 'gadgetzone', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/charger`, badge: 'Fast' },
+            { id: 'p17', name: 'Earphones', price: 499, mrp: 699, category: 'electronics', shop: 'gadgetzone', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/earphones`, badge: 'Quality' }
+        ];
+
+        const AVAILABLE_COUPONS = [
+            { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
+            { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" },
+            { code: "FREESHIP", type: "shipping", value: 40, minOrder: 499, description: "Free shipping on orders above ₹499" }
+        ];
+
+        // App State
+        let currentUser = null;
+        let cart = JSON.parse(localStorage.getItem('dukaan_cart')) || [];
+        let addresses = JSON.parse(localStorage.getItem('dukaan_addresses')) || [];
+        let appliedCoupon = null;
+        let orders = JSON.parse(localStorage.getItem('dukaan_orders')) || [];
+        let selectedPaymentMethod = null;
+        let selectedAddress = null;
+
+        // DOM Elements
+        const authScreen = document.getElementById('authScreen');
+        const appScreen = document.getElementById('appScreen');
+        const homePage = document.getElementById('homePage');
+        const ordersPage = document.getElementById('ordersPage');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const searchInput = document.getElementById('search');
+        const searchResults = document.getElementById('searchResults');
+        const shopFilter = document.getElementById('shopFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const productGrid = document.getElementById('grid');
+        const emptyState = document.getElementById('empty');
+        const bottomSheet = document.getElementById('bsheet');
+        const closeSheetBtn = document.getElementById('closeB');
+        const orderList = document.getElementById('orderList');
+        const orderTotal = document.getElementById('orderTotal');
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        const addressesContainer = document.getElementById('addresses');
+        const bottomNavCart = document.getElementById('bottomNavCart');
+        const bottomCartCount = document.getElementById('bottomCartCount');
+        const navItems = document.querySelectorAll('.nav-item');
+        const ordersList = document.getElementById('ordersList');
+        const noOrders = document.getElementById('noOrders');
+        const couponCodeInput = document.getElementById('couponCode');
+        const applyCouponBtn = document.getElementById('applyCouponBtn');
+        const couponMessage = document.getElementById('couponMessage');
+        const couponLoginRequired = document.getElementById('couponLoginRequired');
+        const checkoutPhone = document.getElementById('checkoutPhone');
+        const phoneValidation = document.getElementById('phoneValidation');
+        const addrPhone = document.getElementById('addrPhone');
+        const addrPhoneValidation = document.getElementById('addrPhoneValidation');
+        const paymentOptions = document.querySelectorAll('.payment-option');
+        const qrCodeSection = document.getElementById('qrCodeSection');
+        const qrAmount = document.getElementById('qrAmount');
+        const confirmQrPayment = document.getElementById('confirmQrPayment');
+        const utrNumber = document.getElementById('utrNumber');
+        const utrValidation = document.getElementById('utrValidation');
+        const saveAddr = document.getElementById('saveAddr');
+
+        // Initialize App
+        function initApp() {
+            setupEventListeners();
+            setupFirebaseAuth();
+            setupDemoLogin();
+            renderProducts(PRODUCTS);
+            updateCartUI();
+            renderOrders();
+            renderAddresses();
+        }
+
+        // Firebase Authentication
+        function setupFirebaseAuth() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = {
+                        uid: user.uid,
+                        email: user.email,
+                        name: user.displayName || user.email.split('@')[0]
+                    };
+                    showAppScreen();
+                    loadUserData();
+                    updateCouponAuth();
+                    showToast('Welcome back to Dukaan!');
+                } else {
+                    currentUser = null;
+                    showAuthScreen();
+                }
+            });
+        }
+
+        function setupDemoLogin() {
+            document.getElementById('loginEmail').value = 'demo@dukaan.com';
+            document.getElementById('loginPassword').value = 'demo123';
+            
+            const demoBtn = document.createElement('button');
+            demoBtn.type = 'button';
+            demoBtn.className = 'btn-outline w-100 mt-3';
+            demoBtn.innerHTML = '<i class="fas fa-rocket"></i> Try Demo Account';
+            demoBtn.onclick = async () => {
+                try {
+                    await auth.signInWithEmailAndPassword('demo@dukaan.com', 'demo123');
+                } catch (error) {
+                    if (error.code === 'auth/invalid-login-credentials') {
+                        try {
+                            await auth.createUserWithEmailAndPassword('demo@dukaan.com', 'demo123');
+                            showToast('Demo account created! Welcome to Dukaan!');
+                        } catch (signupError) {
+                            showToast('Please use Sign Up to create your account');
+                        }
+                    } else {
+                        showToast('Login error: ' + error.message);
+                    }
+                }
+            };
+            
+            document.getElementById('loginForm').appendChild(demoBtn);
+        }
+
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            try {
+                const addressesSnapshot = await db.collection('users').doc(currentUser.uid).collection('addresses').get();
+                addresses = [];
+                addressesSnapshot.forEach(doc => {
+                    addresses.push({ id: doc.id, ...doc.data() });
+                });
+                localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
+                renderAddresses();
+
+                const ordersSnapshot = await db.collection('users').doc(currentUser.uid).collection('orders').get();
+                orders = [];
+                ordersSnapshot.forEach(doc => {
+                    orders.push({ id: doc.id, ...doc.data() });
+                });
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                renderOrders();
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Auth Functions
+        function showAuthScreen() {
+            authScreen.style.display = 'block';
+            appScreen.style.display = 'none';
+        }
+
+        function showAppScreen() {
+            authScreen.style.display = 'none';
+            appScreen.style.display = 'block';
+            updateCouponAuth();
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showToast('Welcome back to Dukaan!');
+            } catch (error) {
+                console.error('Login error:', error);
+                if (error.code === 'auth/invalid-login-credentials') {
+                    showToast('Account not found. Please sign up first.');
+                } else {
+                    showToast('Login failed: ' + error.message);
+                }
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await userCredential.user.updateProfile({
+                    displayName: name
+                });
+                showToast('Account created successfully! Welcome to Dukaan!');
+            } catch (error) {
+                console.error('Signup error:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showToast('Email already registered. Please sign in.');
+                    showLoginForm();
+                } else {
+                    showToast('Signup failed: ' + error.message);
+                }
+            }
+        }
+
+        function showSignupForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('loginFooter').style.display = 'none';
+            document.getElementById('signupFooter').style.display = 'block';
+            document.querySelector('.auth-title').textContent = 'Create Account';
+            document.querySelector('.auth-subtitle').textContent = 'Join Dukaan today';
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginFooter').style.display = 'block';
+            document.getElementById('signupFooter').style.display = 'none';
+            document.querySelector('.auth-title').textContent = 'Welcome to Dukaan';
+            document.querySelector('.auth-subtitle').textContent = 'Sign in to your account';
+        }
+
+        function updateCouponAuth() {
+            if (currentUser) {
+                couponCodeInput.disabled = false;
+                applyCouponBtn.disabled = false;
+                couponLoginRequired.style.display = 'none';
+            } else {
+                couponCodeInput.disabled = true;
+                applyCouponBtn.disabled = true;
+                couponLoginRequired.style.display = 'block';
+            }
+        }
+
+        // Search Functionality
+        function performSearch(query) {
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            const filtered = PRODUCTS.filter(product => 
+                product.name.toLowerCase().includes(query.toLowerCase()) ||
+                product.category.toLowerCase().includes(query.toLowerCase()) ||
+                SHOPS[product.shop].name.toLowerCase().includes(query.toLowerCase())
+            );
+
+            displaySearchResults(filtered);
+        }
+
+        function displaySearchResults(products) {
+            searchResults.innerHTML = '';
+            
+            if (products.length === 0) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            products.forEach(product => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                resultItem.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="search-result-image">
+                    <div class="search-result-info">
+                        <div class="search-result-name">${product.name}</div>
+                        <div class="search-result-category">${SHOPS[product.shop].name} • ${product.category}</div>
+                    </div>
+                    <div class="search-result-price">₹${product.price}</div>
+                `;
+                resultItem.addEventListener('click', () => {
+                    addToCart(product.id);
+                    searchResults.style.display = 'none';
+                    searchInput.value = '';
+                    showToast(`${product.name} added to cart!`);
+                });
+                searchResults.appendChild(resultItem);
+            });
+
+            searchResults.style.display = 'block';
+        }
+
+        // Phone Validation
+        function validatePhoneNumber(phone, validationElement) {
+            const phoneRegex = /^[6-9]\d{9}$/;
+            
+            if (phone.length === 0) {
+                validationElement.textContent = '';
+                return false;
+            }
+
+            if (!/^\d+$/.test(phone)) {
+                validationElement.textContent = 'Only numbers are allowed';
+                validationElement.className = 'validation-message validation-error';
+                return false;
+            }
+
+            if (phone.length !== 10) {
+                validationElement.textContent = 'Phone number must be 10 digits';
+                validationElement.className = 'validation-message validation-error';
+                return false;
+            }
+
+            if (!phoneRegex.test(phone)) {
+                validationElement.textContent = 'Enter a valid mobile number';
+                validationElement.className = 'validation-message validation-error';
+                return false;
+            }
+
+            validationElement.textContent = 'Valid phone number';
+            validationElement.className = 'validation-message validation-success';
+            return true;
+        }
+
+        // UTR Validation
+        function validateUTR(utr) {
+            if (utr.length === 0) {
+                utrValidation.textContent = '';
+                return false;
+            }
+
+            if (!/^\d+$/.test(utr)) {
+                utrValidation.textContent = 'Only numbers are allowed';
+                utrValidation.className = 'validation-message validation-error';
+                return false;
+            }
+
+            if (utr.length !== 12) {
+                utrValidation.textContent = 'UTR number must be 12 digits';
+                utrValidation.className = 'validation-message validation-error';
+                return false;
+            }
+
+            utrValidation.textContent = 'Valid UTR number';
+            utrValidation.className = 'validation-message validation-success';
+            return true;
+        }
+
+        // Order History
+        function renderOrders() {
+            ordersList.innerHTML = '';
+            
+            if (orders.length === 0) {
+                noOrders.style.display = 'block';
+                return;
+            }
+
+            noOrders.style.display = 'none';
+
+            orders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+                orderCard.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-id">Order #${order.id}</div>
+                        <div class="order-status status-${order.status}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</div>
+                    </div>
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name} x${item.quantity}</span>
+                                <span>₹${item.price * item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">₹${order.total}</div>
+                        <button class="btn-reorder" data-order="${order.id}">Reorder</button>
+                    </div>
+                `;
+                ordersList.appendChild(orderCard);
+            });
+
+            document.querySelectorAll('.btn-reorder').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const orderId = e.target.getAttribute('data-order');
+                    reorderItems(orderId);
+                });
+            });
+        }
+
+        function reorderItems(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.items.forEach(item => {
+                    const product = PRODUCTS.find(p => p.name === item.name);
+                    if (product) {
+                        for (let i = 0; i < item.quantity; i++) {
+                            addToCart(product.id);
+                        }
+                    }
+                });
+                showToast('Items added to cart from order!');
+                openCart();
+            }
+        }
+
+        // Page Navigation
+        function showPage(page) {
+            homePage.style.display = 'none';
+            ordersPage.style.display = 'none';
+
+            switch(page) {
+                case 'home':
+                    homePage.style.display = 'block';
+                    break;
+                case 'orders':
+                    ordersPage.style.display = 'block';
+                    renderOrders();
+                    break;
+                case 'categories':
+                    showToast('Categories page coming soon!');
+                    homePage.style.display = 'block';
+                    break;
+                case 'account':
+                    showToast('Account page coming soon!');
+                    homePage.style.display = 'block';
+                    break;
+                case 'cart':
+                    openCart();
+                    homePage.style.display = 'block';
+                    break;
+            }
+        }
+
+        // Product Functions
+        function renderProducts(products) {
+            productGrid.innerHTML = '';
+            
+            if (products.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            products.forEach(product => {
+                const shop = SHOPS[product.shop];
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+                    <div class="shop-badge">${shop.name}</div>
+                    <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300/3A8EF6/FFFFFF?text=${encodeURIComponent(product.name)}'">
+                    <div class="product-title">${product.name}</div>
+                    <div class="product-category">${product.category}</div>
+                    <div class="product-price">
+                        <span class="current-price">₹${product.price}</span>
+                        ${product.mrp > product.price ? `
+                            <span class="original-price">₹${product.mrp}</span>
+                            <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
+                        ` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-add-cart" data-id="${product.id}">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
+
+            document.querySelectorAll('.btn-add-cart').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
+                    addToCart(productId);
+                });
+            });
+        }
+
+        // Cart Functions
+        function addToCart(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (product) {
+                const existingItem = cart.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                        shop: product.shop,
+                        quantity: 1
+                    });
+                }
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
+                showToast(`${product.name} added to cart!`);
+            }
+        }
+
+        function updateCartUI() {
+            bottomCartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+        }
+
+        function openCart() {
+            renderOrderSummary();
+            renderAddresses();
+            bottomSheet.classList.add('open');
+        }
+
+        function renderOrderSummary() {
+            orderList.innerHTML = '';
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item-summary';
+                orderItem.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong>
+                        <div>₹${item.price} x ${item.quantity}</div>
+                    </div>
+                    <div>₹${itemTotal}</div>
+                `;
+                orderList.appendChild(orderItem);
+            });
+
+            let discount = 0;
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percentage') {
+                    discount = (subtotal * appliedCoupon.value) / 100;
+                } else if (appliedCoupon.type === 'fixed') {
+                    discount = appliedCoupon.value;
+                }
+                discount = Math.min(discount, subtotal);
+            }
+
+            const total = subtotal - discount;
+
+            orderTotal.textContent = `₹${total}`;
+            qrAmount.textContent = `₹${total}`;
+            
+            const discountSection = document.getElementById('discountSection');
+            const discountAmount = document.getElementById('discountAmount');
+            
+            if (discount > 0) {
+                discountSection.style.display = 'block';
+                discountAmount.textContent = `-₹${discount}`;
+            } else {
+                discountSection.style.display = 'none';
+            }
+        }
+
+        // Address Management
+        function renderAddresses() {
+            addressesContainer.innerHTML = '';
+            
+            if (addresses.length === 0) {
+                addressesContainer.innerHTML = '<div class="text-muted">No addresses saved. Add your first address below.</div>';
+                return;
+            }
+
+            addresses.forEach(address => {
+                const addressCard = document.createElement('div');
+                addressCard.className = `address-card ${selectedAddress === address.id ? 'selected' : ''}`;
+                addressCard.innerHTML = `
+                    <div class="address-title">${address.title} • ${address.fullName}</div>
+                    <div class="address-details">${address.details}, ${address.city} - ${address.pincode}</div>
+                    <div class="address-phone">${address.phone} ${address.landmark ? '• Landmark: ' + address.landmark : ''}</div>
+                `;
+                addressCard.addEventListener('click', () => {
+                    selectedAddress = address.id;
+                    renderAddresses();
+                });
+                addressesContainer.appendChild(addressCard);
+            });
+        }
+
+        function saveNewAddress() {
+            const fullName = document.getElementById('addrFullName').value;
+            const phone = document.getElementById('addrPhone').value;
+            const addrType = document.getElementById('addrType').value;
+            const details = document.getElementById('addrDetails').value;
+            const city = document.getElementById('addrCity').value;
+            const pincode = document.getElementById('addrPincode').value;
+            const landmark = document.getElementById('addrLandmark').value;
+
+            if (!fullName || !phone || !details || !city || !pincode) {
+                showToast('Please fill all required fields');
+                return;
+            }
+
+            const phoneValid = validatePhoneNumber(phone, addrPhoneValidation);
+            if (!phoneValid) {
+                showToast('Please enter a valid phone number');
+                return;
+            }
+
+            const newAddress = {
+                id: 'addr' + Date.now(),
+                title: addrType.charAt(0).toUpperCase() + addrType.slice(1),
+                fullName,
+                phone,
+                type: addrType,
+                details,
+                city,
+                pincode,
+                landmark,
+                createdAt: new Date().toISOString()
+            };
+
+            addresses.push(newAddress);
+            localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
+            
+            // Clear form
+            document.getElementById('addrFullName').value = '';
+            document.getElementById('addrPhone').value = '';
+            document.getElementById('addrDetails').value = '';
+            document.getElementById('addrCity').value = '';
+            document.getElementById('addrPincode').value = '';
+            document.getElementById('addrLandmark').value = '';
+            addrPhoneValidation.textContent = '';
+
+            renderAddresses();
+            showToast('Address saved successfully!');
+        }
+
+        // Payment Methods
+        function setupPaymentMethods() {
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedPaymentMethod = option.getAttribute('data-method');
+                    
+                    if (selectedPaymentMethod === 'qr') {
+                        qrCodeSection.style.display = 'block';
+                    } else {
+                        qrCodeSection.style.display = 'none';
+                    }
+                });
+            });
+
+            confirmQrPayment.addEventListener('click', () => {
+                const utr = utrNumber.value.trim();
+                if (!validateUTR(utr)) {
+                    showToast('Please enter a valid 12-digit UTR number');
+                    return;
+                }
+                placeOrder(utr);
+            });
+        }
+
+        // Place Order Functionality - FIXED
+        async function placeOrder(utr = null) {
+            if (!selectedAddress) {
+                showToast('Please select a delivery address');
+                return;
+            }
+
+            if (!selectedPaymentMethod) {
+                showToast('Please select a payment method');
+                return;
+            }
+
+            if (cart.length === 0) {
+                showToast('Your cart is empty');
+                return;
+            }
+
+            const phoneValid = validatePhoneNumber(checkoutPhone.value, phoneValidation);
+            if (!phoneValid && !checkoutPhone.value) {
+                showToast('Please enter a valid phone number');
+                return;
+            }
+
+            try {
+                const selectedAddr = addresses.find(addr => addr.id === selectedAddress);
+                const orderData = {
+                    items: cart,
+                    total: calculateOrderTotal(),
+                    address: selectedAddr,
+                    paymentMethod: selectedPaymentMethod,
+                    status: selectedPaymentMethod === 'cod' ? 'confirmed' : 'pending',
+                    contactPhone: checkoutPhone.value || selectedAddr.phone,
+                    contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
+                    utrNumber: utr,
+                    createdAt: new Date().toISOString(),
+                    userId: currentUser?.uid || 'guest'
+                };
+
+                if (currentUser) {
+                    const orderRef = await db.collection('users').doc(currentUser.uid).collection('orders').add(orderData);
+                    orderData.id = orderRef.id;
+                    
+                    // Also save to local storage for immediate access
+                    orders.push(orderData);
+                    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                } else {
+                    orderData.id = 'ORD' + Date.now();
+                    orders.push(orderData);
+                    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                }
+
+                // Clear cart and reset
+                cart = [];
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
+                appliedCoupon = null;
+                selectedPaymentMethod = null;
+                selectedAddress = null;
+
+                // Close bottom sheet
+                bottomSheet.classList.remove('open');
+
+                showToast('Order placed successfully!');
+                renderOrders();
+
+            } catch (error) {
+                console.error('Error placing order:', error);
+                showToast('Failed to place order: ' + error.message);
+            }
+        }
+
+        function calculateOrderTotal() {
+            let subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            let discount = 0;
+            
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percentage') {
+                    discount = (subtotal * appliedCoupon.value) / 100;
+                } else if (appliedCoupon.type === 'fixed') {
+                    discount = appliedCoupon.value;
+                }
+            }
+            
+            return subtotal - discount;
+        }
+
+        // Coupon Functions
+        function applyCoupon() {
+            const couponCode = couponCodeInput.value.trim().toUpperCase();
+            
+            if (!currentUser) {
+                couponMessage.textContent = 'Please login to apply coupons';
+                couponMessage.className = 'coupon-error';
+                return;
+            }
+
+            const coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
+            if (!coupon) {
+                couponMessage.textContent = 'Invalid coupon code';
+                couponMessage.className = 'coupon-error';
+                return;
+            }
+
+            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            
+            if (subtotal < coupon.minOrder) {
+                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
+                couponMessage.className = 'coupon-error';
+                return;
+            }
+
+            appliedCoupon = coupon;
+            couponMessage.textContent = `Coupon applied: ${coupon.description}`;
+            couponMessage.className = 'coupon-success';
+            couponCodeInput.disabled = true;
+            applyCouponBtn.disabled = true;
+
+            renderOrderSummary();
+        }
+
+        // Toast Function
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-body d-flex justify-content-between align-items-center">
+                        <span>${message}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Auth
+            loginForm.addEventListener('submit', handleLogin);
+            signupForm.addEventListener('submit', handleSignup);
+
+            document.getElementById('showSignup').addEventListener('click', (e) => {
+                e.preventDefault();
+                showSignupForm();
+            });
+
+            document.getElementById('showLogin').addEventListener('click', (e) => {
+                e.preventDefault();
+                showLoginForm();
+            });
+
+            // Search
+            searchInput.addEventListener('input', (e) => {
+                performSearch(e.target.value);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // Validation
+            checkoutPhone.addEventListener('input', (e) => {
+                validatePhoneNumber(e.target.value, phoneValidation);
+            });
+
+            addrPhone.addEventListener('input', (e) => {
+                validatePhoneNumber(e.target.value, addrPhoneValidation);
+            });
+
+            utrNumber.addEventListener('input', (e) => {
+                validateUTR(e.target.value);
+            });
+
+            // Coupon
+            applyCouponBtn.addEventListener('click', applyCoupon);
+
+            // Payment
+            setupPaymentMethods();
+
+            // Place Order
+            placeOrderBtn.addEventListener('click', () => {
+                if (selectedPaymentMethod === 'qr') {
+                    showToast('Please complete QR payment first');
+                } else {
+                    placeOrder();
+                }
+            });
+
+            // Address
+            saveAddr.addEventListener('click', saveNewAddress);
+
+            // Navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = item.getAttribute('data-page');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    showPage(page);
+                });
+            });
+
+            // Close bottom sheet
+            closeSheetBtn.addEventListener('click', () => {
+                bottomSheet.classList.remove('open');
+            });
+
+            // Filters
+            categoryFilter.addEventListener('change', filterProducts);
+            shopFilter.addEventListener('change', filterProducts);
+        }
+
+        // Filter Products
+        function filterProducts() {
+            const shop = shopFilter.value;
+            const category = categoryFilter.value;
+
+            let filtered = PRODUCTS;
+
+            if (shop) {
+                filtered = filtered.filter(product => product.shop === shop);
+            }
+
+            if (category) {
+                filtered = filtered.filter(product => product.category === category);
+            }
+
+            renderProducts(filtered);
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
