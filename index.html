@@ -1144,76 +1144,77 @@ async function handleSignup(event) {
         }
 
         // Place Order Functionality - FIXED
-        async function placeOrder(utr = null) {
-            if (!selectedAddress) {
-                showToast('Please select a delivery address');
-                return;
-            }
+        // Place Order Functionality - FIXED
+async function placeOrder(utr = null) {
+    if (!selectedAddress && addresses.length > 0) {
+        showToast('Please select a delivery address');
+        return;
+    }
 
-            if (!selectedPaymentMethod) {
-                showToast('Please select a payment method');
-                return;
-            }
+    if (!selectedPaymentMethod) {
+        showToast('Please select a payment method');
+        return;
+    }
 
-            if (cart.length === 0) {
-                showToast('Your cart is empty');
-                return;
-            }
+    if (cart.length === 0) {
+        showToast('Your cart is empty');
+        return;
+    }
 
-            const phoneValid = validatePhoneNumber(checkoutPhone.value, phoneValidation);
-            if (!phoneValid && !checkoutPhone.value) {
-                showToast('Please enter a valid phone number');
-                return;
-            }
+    // If no address selected, use the first one or show message
+    const selectedAddr = selectedAddress ? 
+        addresses.find(addr => addr.id === selectedAddress) : 
+        (addresses.length > 0 ? addresses[0] : null);
 
-            try {
-                const selectedAddr = addresses.find(addr => addr.id === selectedAddress);
-                const orderData = {
-                    items: cart,
-                    total: calculateOrderTotal(),
-                    address: selectedAddr,
-                    paymentMethod: selectedPaymentMethod,
-                    status: selectedPaymentMethod === 'cod' ? 'confirmed' : 'pending',
-                    contactPhone: checkoutPhone.value || selectedAddr.phone,
-                    contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
-                    utrNumber: utr,
-                    createdAt: new Date().toISOString(),
-                    userId: currentUser?.uid || 'guest'
-                };
+    if (!selectedAddr) {
+        showToast('Please add a delivery address first');
+        return;
+    }
 
-                if (currentUser) {
-                    const orderRef = await db.collection('users').doc(currentUser.uid).collection('orders').add(orderData);
-                    orderData.id = orderRef.id;
-                    
-                    // Also save to local storage for immediate access
-                    orders.push(orderData);
-                    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                } else {
-                    orderData.id = 'ORD' + Date.now();
-                    orders.push(orderData);
-                    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                }
+    try {
+        const orderData = {
+            items: cart,
+            total: calculateOrderTotal(),
+            address: selectedAddr,
+            paymentMethod: selectedPaymentMethod,
+            status: selectedPaymentMethod === 'cod' ? 'confirmed' : 'pending',
+            contactPhone: checkoutPhone.value || selectedAddr.phone,
+            contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
+            utrNumber: utr,
+            createdAt: new Date().toISOString(),
+            userId: currentUser?.uid || 'guest'
+        };
 
-                // Clear cart and reset
-                cart = [];
-                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-                updateCartUI();
-                appliedCoupon = null;
-                selectedPaymentMethod = null;
-                selectedAddress = null;
-
-                // Close bottom sheet
-                bottomSheet.classList.remove('open');
-
-                showToast('Order placed successfully!');
-                renderOrders();
-
-            } catch (error) {
-                console.error('Error placing order:', error);
-                showToast('Failed to place order: ' + error.message);
-            }
+        if (currentUser) {
+            const orderRef = await db.collection('users').doc(currentUser.uid).collection('orders').add(orderData);
+            orderData.id = orderRef.id;
+        } else {
+            orderData.id = 'ORD' + Date.now();
         }
 
+        // Save to local storage
+        orders.push(orderData);
+        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+
+        // Clear cart and reset
+        cart = [];
+        localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+        updateCartUI();
+        appliedCoupon = null;
+        selectedPaymentMethod = null;
+        selectedAddress = null;
+
+        // Close bottom sheet
+        bottomSheet.classList.remove('open');
+
+        showToast('Order placed successfully!');
+        renderOrders();
+
+    } catch (error) {
+        console.error('Error placing order:', error);
+        showToast('Failed to place order: ' + error.message);
+    }
+}
         function calculateOrderTotal() {
             let subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
             let discount = 0;
