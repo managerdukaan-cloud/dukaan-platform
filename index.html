@@ -53,6 +53,7 @@
         .hero-pattern { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="rgba(255,255,255,0.05)"><circle cx="20" cy="20" r="5"/><circle cx="50" cy="50" r="8"/><circle cx="80" cy="80" r="5"/></svg>'); }
         .orders-page { display: none; }
         .wishlist-page { display: none; }
+        .product-detail-page { display: none; }
         .order-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .wishlist-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; gap: 15px; align-items: center; }
         .wishlist-image { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; }
@@ -76,8 +77,8 @@
         .wishlist-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; color: var(--text-light); }
         .wishlist-btn:hover { background: white; transform: scale(1.1); }
         .wishlist-btn.active { background: var(--danger); color: white; }
-        .product-image { height: 160px; border-radius: 12px; object-fit: cover; width: 100%; background: var(--neutral); margin-bottom: 12px; }
-        .product-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; color: var(--text-dark); }
+        .product-image { height: 160px; border-radius: 12px; object-fit: cover; width: 100%; background: var(--neutral); margin-bottom: 12px; cursor: pointer; }
+        .product-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; color: var(--text-dark); cursor: pointer; }
         .product-category { font-size: 13px; color: var(--text-light); margin-bottom: 10px; }
         .product-price { display: flex; align-items: center; gap: 8px; margin-top: auto; }
         .current-price { font-weight: 800; font-size: 18px; color: var(--accent); }
@@ -212,6 +213,229 @@
             color: var(--text-light);
             margin-top: 2px;
         }
+        /* Reviews Section Styles */
+        .reviews-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+        .rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--border);
+        }
+        .average-rating {
+            text-align: center;
+        }
+        .rating-stars {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+        .rating-star {
+            color: #ddd;
+            font-size: 24px;
+        }
+        .rating-star.filled {
+            color: #FFB800;
+        }
+        .rating-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1;
+        }
+        .rating-count {
+            color: var(--text-light);
+            font-size: 16px;
+        }
+        .rating-distribution {
+            flex: 1;
+        }
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+        .bar-label {
+            width: 80px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        .bar-container {
+            flex: 1;
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: #FFB800;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+        .bar-count {
+            width: 40px;
+            text-align: right;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        .reviews-list {
+            margin-bottom: 30px;
+        }
+        .review-card {
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: var(--neutral);
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .user-info h5 {
+            margin: 0;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .verified-badge {
+            background: var(--success);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .review-rating {
+            display: flex;
+            gap: 2px;
+        }
+        .review-star {
+            color: #FFB800;
+            font-size: 16px;
+        }
+        .review-date {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        .review-content {
+            color: var(--text-dark);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .review-form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid var(--border);
+        }
+        .review-form-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+        .star-rating-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .star-input {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px;
+        }
+        .star-input:hover,
+        .star-input.active {
+            color: #FFB800;
+            transform: scale(1.1);
+        }
+        .review-textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        .review-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(58, 142, 246, 0.1);
+        }
+        .review-requirements {
+            background: var(--neutral);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .requirements-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+        .requirements-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .requirements-list li {
+            padding: 5px 0;
+            color: var(--text-light);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .requirements-list li i {
+            color: var(--success);
+            font-size: 12px;
+        }
+        .no-reviews {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        .no-reviews-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            color: var(--border);
+        }
         @media (max-width: 768px) {
             .header-container { flex-direction: column; gap: 12px; }
             .search-container { margin: 0; width: 100%; }
@@ -223,6 +447,7 @@
             .form-row { grid-template-columns: 1fr; }
             .wishlist-card { flex-direction: column; text-align: center; }
             .wishlist-actions { justify-content: center; }
+            .rating-summary { flex-direction: column; gap: 20px; text-align: center; }
         }
         @media (max-width: 480px) {
             .container-main { padding: 0 12px; }
@@ -355,8 +580,94 @@
                     <p class="text-muted">Start adding products you love</p>
                 </div>
             </div>
+
+            <!-- Product Detail Page -->
+            <div id="productDetailPage" class="product-detail-page">
+                <div class="product-detail-container">
+                    <img id="productDetailImage" src="" alt="" class="product-detail-image">
+                    <div class="product-detail-content">
+                        <div class="product-detail-header">
+                            <h1 id="productDetailTitle" class="product-detail-title"></h1>
+                            <p id="productDetailCategory" class="product-detail-category"></p>
+                            <div class="product-detail-price">
+                                <span id="productDetailCurrent" class="product-detail-current"></span>
+                                <span id="productDetailOriginal" class="product-detail-original"></span>
+                                <span id="productDetailDiscount" class="product-detail-discount"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="product-detail-actions">
+                            <div class="btn-quantity">
+                                <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                                <span id="quantityValue" class="quantity-value">1</span>
+                                <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                            </div>
+                            <button class="btn-primary" onclick="addToCartFromDetail()">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <!-- Reviews Section -->
+                        <div class="reviews-section">
+                            <h3 class="section-title">Customer Reviews</h3>
+                            
+                            <div class="rating-summary">
+                                <div class="average-rating">
+                                    <div class="rating-stars" id="averageRatingStars"></div>
+                                    <div id="averageRatingValue" class="rating-value">0.0</div>
+                                    <div id="totalReviewsCount" class="rating-count">0 reviews</div>
+                                </div>
+                                <div class="rating-distribution">
+                                    <!-- Rating bars will be populated by JavaScript -->
+                                </div>
+                            </div>
+
+                            <div class="reviews-list" id="reviewsList">
+                                <!-- Reviews will be populated by JavaScript -->
+                            </div>
+
+                            <!-- Review Form -->
+                            <div class="review-form-section" id="reviewFormSection" style="display: none;">
+                                <h4 class="review-form-title">Write a Review</h4>
+                                <div class="review-requirements">
+                                    <div class="requirements-title">Review Requirements:</div>
+                                    <ul class="requirements-list">
+                                        <li><i class="fas fa-check"></i> Must be a registered user</li>
+                                        <li><i class="fas fa-check"></i> Must have purchased this product</li>
+                                        <li><i class="fas fa-check"></i> Order must be delivered</li>
+                                        <li><i class="fas fa-check"></i> One review per product</li>
+                                    </ul>
+                                </div>
+                                <div class="star-rating-input">
+                                    <button class="star-input" data-rating="1">★</button>
+                                    <button class="star-input" data-rating="2">★</button>
+                                    <button class="star-input" data-rating="3">★</button>
+                                    <button class="star-input" data-rating="4">★</button>
+                                    <button class="star-input" data-rating="5">★</button>
+                                </div>
+                                <textarea id="reviewText" class="review-textarea" placeholder="Share your experience with this product... (Minimum 10 characters)" minlength="10" maxlength="500"></textarea>
+                                <button id="submitReviewBtn" class="btn-primary w-100" onclick="submitReview()">
+                                    <i class="fas fa-paper-plane"></i> Submit Review
+                                </button>
+                            </div>
+
+                            <div id="noReviews" class="no-reviews">
+                                <div class="no-reviews-icon">
+                                    <i class="fas fa-comment-dots"></i>
+                                </div>
+                                <h4>No Reviews Yet</h4>
+                                <p>Be the first to review this product!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-                <nav class="bottom-nav">
+
+        <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="home">
                 <i class="fas fa-home nav-icon"></i>
                 <span class="nav-label">Home</span>
@@ -385,6 +696,7 @@
             </a>
         </nav>
 
+        <!-- Bottom Sheet for Checkout -->
         <div id="bsheet" class="bottom-sheet" aria-hidden="true">
             <span class="sheet-handle"></span>
             <div class="sheet-header">
@@ -615,7 +927,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Firebase Configuration
+        // Firebase Configuration - FIXED VERSION
         const firebaseConfig = {
             apiKey: "AIzaSyD2-yz4xwYD5S_oXs6ryhNP8XIC94jzda4",
             authDomain: "dukaan-platform.firebaseapp.com",
@@ -632,15 +944,16 @@
             apiKey: "156538295145313"
         };
 
-        // Initialize Firebase
+        // Initialize Firebase - FIXED VERSION
+        let auth, db;
         try {
             firebase.initializeApp(firebaseConfig);
             console.log('Firebase initialized successfully');
+            auth = firebase.auth();
+            db = firebase.firestore();
         } catch (error) {
-            console.log('Firebase already initialized');
+            console.log('Firebase initialization error:', error);
         }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
 
         // Sample Data with Cloudinary Images
         const SHOPS = {
@@ -648,92 +961,41 @@
             cosmeticstore: { id: 'cosmeticstore', name: 'CosmeticStore', category: 'cosmetics', rating: 4.3, deliveryTime: '45 min' },
             fashionhub: { id: 'fashionhub', name: 'FashionHub', category: 'clothing', rating: 4.7, deliveryTime: '2 days' },
             veggieking: { id: 'veggieking', name: 'VeggieKing', category: 'vegetables', rating: 4.4, deliveryTime: '40 min' },
-            gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6, deliveryTime: '1 day' },
-            bakerycorner: { id: 'bakerycorner', name: 'Bakery Corner', category: 'bakery', rating: 4.8, deliveryTime: '25 min' }
+            gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6, deliveryTime: '1 day' }
         };
 
         const PRODUCTS = [
-            // FreshMart - Groceries (25 products)
             { id: 'fm1', name: 'Fresh Cow Milk 1L', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk`, badge: 'Fresh' },
             { id: 'fm2', name: 'Buffalo Milk 1L', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk_buffalo`, badge: 'Premium' },
-            { id: 'fm3', name: 'Curd 500g', price: 50, mrp: 60, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/curd`, badge: 'Homemade' },
-            { id: 'fm4', name: 'Panner 250g', price: 90, mrp: 110, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/paneer`, badge: 'Fresh' },
-            { id: 'fm5', name: 'Butter 100g', price: 55, mrp: 65, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/butter`, badge: 'Amul' },
-            
-            { id: 'fm6', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bread`, badge: 'Fresh' },
-            { id: 'fm7', name: 'Brown Bread', price: 45, mrp: 50, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/brown_bread`, badge: 'Healthy' },
-            { id: 'fm8', name: 'Bun 6pcs', price: 25, mrp: 30, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bun`, badge: 'Fresh' },
-            { id: 'fm9', name: 'Croissant 4pcs', price: 120, mrp: 150, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/croissant`, badge: 'Premium' },
-            
-            { id: 'fm10', name: 'Basmati Rice 1kg', price: 120, mrp: 150, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/rice`, badge: 'Premium' },
-            { id: 'fm11', name: 'Wheat Flour 1kg', price: 45, mrp: 55, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/wheat_flour`, badge: 'Local' },
-            { id: 'fm12', name: 'Toor Dal 500g', price: 80, mrp: 90, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/dal`, badge: 'Healthy' },
-            { id: 'fm13', name: 'Chana Dal 500g', price: 70, mrp: 80, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/chana_dal`, badge: 'Protein' },
-            
-            { id: 'fm14', name: 'Sugar 1kg', price: 45, mrp: 50, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sugar`, badge: 'Essential' },
-            { id: 'fm15', name: 'Salt 1kg', price: 20, mrp: 25, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/salt`, badge: 'Basic' },
-            { id: 'fm16', name: 'Tea Powder 500g', price: 150, mrp: 180, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tea`, badge: 'Beverage' },
-            { id: 'fm17', name: 'Refined Oil 1L', price: 180, mrp: 200, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/oil`, badge: 'Cooking' },
-            
-            { id: 'fm18', name: 'Apple 1kg', price: 120, mrp: 150, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/apple`, badge: 'Fresh' },
-            { id: 'fm19', name: 'Banana 1dozen', price: 40, mrp: 50, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/banana`, badge: 'Local' },
-            { id: 'fm20', name: 'Orange 1kg', price: 80, mrp: 100, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/orange`, badge: 'Vitamin C' },
-            
-            { id: 'fm21', name: 'Tomatoes 1kg', price: 40, mrp: 50, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tomatoes`, badge: 'Fresh' },
-            { id: 'fm22', name: 'Potatoes 1kg', price: 30, mrp: 35, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/potatoes`, badge: 'Local' },
-            { id: 'fm23', name: 'Onions 1kg', price: 35, mrp: 45, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/onions`, badge: 'Fresh' },
-            { id: 'fm24', name: 'Carrot 1kg', price: 50, mrp: 60, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/carrot`, badge: 'Healthy' },
-            { id: 'fm25', name: 'Capsicum 1kg', price: 60, mrp: 80, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/capsicum`, badge: 'Fresh' },
-
-            // CosmeticStore - Beauty (25 products)
             { id: 'cs1', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facecream`, badge: 'New' },
-            { id: 'cs2', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lipstick`, badge: 'Bestseller' },
-            { id: 'cs3', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facewash`, badge: 'Popular' },
-            { id: 'cs4', name: 'Shampoo 400ml', price: 180, mrp: 220, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shampoo`, badge: 'Hair Care' },
-            { id: 'cs5', name: 'Conditioner 400ml', price: 200, mrp: 250, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/conditioner`, badge: 'Hair Care' },
-            { id: 'cs6', name: 'Body Lotion', price: 250, mrp: 300, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lotion`, badge: 'Skincare' },
-            { id: 'cs7', name: 'Perfume 100ml', price: 450, mrp: 550, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/perfume`, badge: 'Fragrance' },
-            { id: 'cs8', name: 'Makeup Kit', price: 899, mrp: 1099, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/makeup`, badge: 'Premium' },
-            { id: 'cs9', name: 'Nail Polish Set', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/nailpolish`, badge: 'Beauty' },
-            { id: 'cs10', name: 'Sunscreen Lotion', price: 299, mrp: 349, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sunscreen`, badge: 'Protection' },
-
-            // FashionHub - Clothing (25 products)
-            { id: 'fh1', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tshirt`, badge: 'Trending' },
-            { id: 'fh2', name: 'Jeans', price: 899, mrp: 1199, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jeans`, badge: 'Fashion' },
-            { id: 'fh3', name: 'Winter Jacket', price: 1299, mrp: 1599, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jacket`, badge: 'Winter' },
-            { id: 'fh4', name: 'Formal Shirt', price: 599, mrp: 799, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shirt`, badge: 'Office' },
-            { id: 'fh5', name: 'Sports Shoes', price: 1499, mrp: 1999, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shoes`, badge: 'Sports' },
-
-            // Add more products for other shops...
+            { id: 'fh1', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tshirt`, badge: 'Trending' }
         ];
 
         const AVAILABLE_COUPONS = [
             { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
-            { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" },
-            { code: "FREESHIP", type: "shipping", value: 40, minOrder: 499, description: "Free shipping on orders above ₹499" }
+            { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" }
         ];
 
-        // ORDER STATUS HELPER FUNCTION
-        function getOrderStatusText(status) {
-            const statusMap = {
-                'confirmed': 'Order Confirmed',
-                'preparing': 'Preparing Order', 
-                'dispatched': 'Dispatched',
-                'delivered': 'Delivered',
-                'cancelled': 'Cancelled'
-            };
-            return statusMap[status] || status;
-        }
+        // REVIEWS SYSTEM
+        const REVIEW_RULES = {
+            minRating: 1,
+            maxRating: 5,
+            minReviewLength: 10,
+            maxReviewLength: 500
+        };
 
         // App State
         let currentUser = null;
         let cart = JSON.parse(localStorage.getItem('dukaan_cart')) || [];
         let wishlist = JSON.parse(localStorage.getItem('dukaan_wishlist')) || [];
         let addresses = JSON.parse(localStorage.getItem('dukaan_addresses')) || [];
+        let productReviews = JSON.parse(localStorage.getItem('dukaan_product_reviews')) || [];
         let appliedCoupon = null;
         let orders = JSON.parse(localStorage.getItem('dukaan_orders')) || [];
         let selectedPaymentMethod = null;
         let selectedAddress = null;
+        let currentProductDetail = null;
+        let selectedRating = 0;
 
         // DOM Elements
         const authScreen = document.getElementById('authScreen');
@@ -741,95 +1003,78 @@
         const homePage = document.getElementById('homePage');
         const ordersPage = document.getElementById('ordersPage');
         const wishlistPage = document.getElementById('wishlistPage');
+        const productDetailPage = document.getElementById('productDetailPage');
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
         const searchInput = document.getElementById('search');
         const searchResults = document.getElementById('searchResults');
-        const shopFilter = document.getElementById('shopFilter');
-        const categoryFilter = document.getElementById('categoryFilter');
         const productGrid = document.getElementById('grid');
-        const emptyState = document.getElementById('empty');
-        const bottomSheet = document.getElementById('bsheet');
-        const closeSheetBtn = document.getElementById('closeB');
-        const orderList = document.getElementById('orderList');
-        const orderTotal = document.getElementById('orderTotal');
-        const placeOrderBtn = document.getElementById('placeOrderBtn');
-        const addressesContainer = document.getElementById('addresses');
-        const bottomNavCart = document.getElementById('bottomNavCart');
         const bottomCartCount = document.getElementById('bottomCartCount');
-        const wishlistNav = document.getElementById('wishlistNav');
         const wishlistCount = document.getElementById('wishlistCount');
-        const wishlistItems = document.getElementById('wishlistItems');
-        const noWishlist = document.getElementById('noWishlist');
         const navItems = document.querySelectorAll('.nav-item');
-        const ordersList = document.getElementById('ordersList');
-        const noOrders = document.getElementById('noOrders');
-        const couponCodeInput = document.getElementById('couponCode');
-        const applyCouponBtn = document.getElementById('applyCouponBtn');
-        const couponMessage = document.getElementById('couponMessage');
-        const couponLoginRequired = document.getElementById('couponLoginRequired');
-        const checkoutPhone = document.getElementById('checkoutPhone');
-        const phoneValidation = document.getElementById('phoneValidation');
-        const addrPhone = document.getElementById('addrPhone');
-        const addrPhoneValidation = document.getElementById('addrPhoneValidation');
-        const paymentOptions = document.querySelectorAll('.payment-option');
-        const qrCodeSection = document.getElementById('qrCodeSection');
-        const qrAmount = document.getElementById('qrAmount');
-        const confirmQrPayment = document.getElementById('confirmQrPayment');
-        const utrNumber = document.getElementById('utrNumber');
-        const utrValidation = document.getElementById('utrValidation');
-        const saveAddr = document.getElementById('saveAddr');
-        const orderTracking = document.getElementById('orderTracking');
 
-        // Initialize App
+        // Initialize App - FIXED VERSION
         function initApp() {
+            console.log('Initializing app...');
             setupEventListeners();
             setupFirebaseAuth();
             setupDemoLogin();
             renderProducts(PRODUCTS);
             updateCartUI();
             updateWishlistUI();
-            renderOrders();
-            renderAddresses();
         }
 
-        // Firebase Authentication
+        // Firebase Authentication - FIXED VERSION
         function setupFirebaseAuth() {
+            if (!auth) {
+                console.error('Firebase auth not available');
+                return;
+            }
+
             auth.onAuthStateChanged((user) => {
+                console.log('Auth state changed:', user);
                 if (user) {
                     currentUser = {
                         uid: user.uid,
                         email: user.email,
                         name: user.displayName || user.email.split('@')[0]
                     };
+                    console.log('User logged in:', currentUser);
                     showAppScreen();
                     loadUserData();
                     updateCouponAuth();
                     showToast('Welcome back to Dukaan!');
                 } else {
                     currentUser = null;
+                    console.log('No user logged in');
                     showAuthScreen();
                 }
             });
         }
 
         function setupDemoLogin() {
+            // Pre-fill demo credentials
             document.getElementById('loginEmail').value = 'demo@dukaan.com';
             document.getElementById('loginPassword').value = 'demo123';
             
+            // Add demo button to login form
             const demoBtn = document.createElement('button');
             demoBtn.type = 'button';
             demoBtn.className = 'btn-outline w-100 mt-3';
             demoBtn.innerHTML = '<i class="fas fa-rocket"></i> Try Demo Account';
             demoBtn.onclick = async () => {
                 try {
+                    console.log('Trying demo login...');
                     await auth.signInWithEmailAndPassword('demo@dukaan.com', 'demo123');
                 } catch (error) {
+                    console.error('Demo login error:', error);
                     if (error.code === 'auth/invalid-login-credentials') {
                         try {
+                            console.log('Creating demo account...');
                             await auth.createUserWithEmailAndPassword('demo@dukaan.com', 'demo123');
                             showToast('Demo account created! Welcome to Dukaan!');
                         } catch (signupError) {
+                            console.error('Demo signup error:', signupError);
                             showToast('Please use Sign Up to create your account');
                         }
                     } else {
@@ -845,14 +1090,17 @@
             if (!currentUser) return;
             
             try {
-                const addressesSnapshot = await db.collection('users').doc(currentUser.uid).collection('addresses').get();
-                addresses = [];
-                addressesSnapshot.forEach(doc => {
-                    addresses.push({ id: doc.id, ...doc.data() });
-                });
-                localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
-                renderAddresses();
+                // Load addresses from Firebase
+                if (db) {
+                    const addressesSnapshot = await db.collection('users').doc(currentUser.uid).collection('addresses').get();
+                    addresses = [];
+                    addressesSnapshot.forEach(doc => {
+                        addresses.push({ id: doc.id, ...doc.data() });
+                    });
+                    localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
+                }
 
+                // Load orders
                 const ordersSnapshot = await db.collection('users').doc(currentUser.uid).collection('orders').get();
                 orders = [];
                 ordersSnapshot.forEach(doc => {
@@ -861,7 +1109,7 @@
                 localStorage.setItem('dukaan_orders', JSON.stringify(orders));
                 renderOrders();
 
-                // Load wishlist from Firebase
+                // Load wishlist
                 const wishlistSnapshot = await db.collection('users').doc(currentUser.uid).collection('wishlist').get();
                 wishlist = [];
                 wishlistSnapshot.forEach(doc => {
@@ -875,16 +1123,19 @@
             }
         }
 
-        // Auth Functions
+        // Auth Functions - FIXED VERSION
         function showAuthScreen() {
+            console.log('Showing auth screen');
             authScreen.style.display = 'block';
             appScreen.style.display = 'none';
         }
 
         function showAppScreen() {
+            console.log('Showing app screen');
             authScreen.style.display = 'none';
             appScreen.style.display = 'block';
             updateCouponAuth();
+            renderProducts(PRODUCTS);
         }
 
         async function handleLogin(event) {
@@ -949,6 +1200,10 @@
         }
 
         function updateCouponAuth() {
+            const couponCodeInput = document.getElementById('couponCode');
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            const couponLoginRequired = document.getElementById('couponLoginRequired');
+            
             if (currentUser) {
                 couponCodeInput.disabled = false;
                 applyCouponBtn.disabled = false;
@@ -960,223 +1215,16 @@
             }
         }
 
-        // Search Functionality
-        function performSearch(query) {
-            if (query.length < 2) {
-                searchResults.style.display = 'none';
-                return;
-            }
-
-            const filtered = PRODUCTS.filter(product => 
-                product.name.toLowerCase().includes(query.toLowerCase()) ||
-                product.category.toLowerCase().includes(query.toLowerCase()) ||
-                SHOPS[product.shop].name.toLowerCase().includes(query.toLowerCase())
-            );
-
-            displaySearchResults(filtered);
-        }
-
-        function displaySearchResults(products) {
-            searchResults.innerHTML = '';
-            
-            if (products.length === 0) {
-                searchResults.style.display = 'none';
-                return;
-            }
-
-            products.forEach(product => {
-                const resultItem = document.createElement('div');
-                resultItem.className = 'search-result-item';
-                resultItem.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}" class="search-result-image">
-                    <div class="search-result-info">
-                        <div class="search-result-name">${product.name}</div>
-                        <div class="search-result-category">${SHOPS[product.shop].name} • ${product.category}</div>
-                    </div>
-                    <div class="search-result-price">₹${product.price}</div>
-                `;
-                resultItem.addEventListener('click', () => {
-                    addToCart(product.id);
-                    searchResults.style.display = 'none';
-                    searchInput.value = '';
-                    showToast(`${product.name} added to cart!`);
-                });
-                searchResults.appendChild(resultItem);
-            });
-
-            searchResults.style.display = 'block';
-        }
-
-        // Phone Validation
-        function validatePhoneNumber(phone, validationElement) {
-            const phoneRegex = /^[6-9]\d{9}$/;
-            
-            if (phone.length === 0) {
-                validationElement.textContent = '';
-                return false;
-            }
-
-            if (!/^\d+$/.test(phone)) {
-                validationElement.textContent = 'Only numbers are allowed';
-                validationElement.className = 'validation-message validation-error';
-                return false;
-            }
-
-            if (phone.length !== 10) {
-                validationElement.textContent = 'Phone number must be 10 digits';
-                validationElement.className = 'validation-message validation-error';
-                return false;
-            }
-
-            if (!phoneRegex.test(phone)) {
-                validationElement.textContent = 'Enter a valid mobile number';
-                validationElement.className = 'validation-message validation-error';
-                return false;
-            }
-
-            validationElement.textContent = 'Valid phone number';
-            validationElement.className = 'validation-message validation-success';
-            return true;
-        }
-
-        // UTR Validation
-        function validateUTR(utr) {
-            if (utr.length === 0) {
-                utrValidation.textContent = '';
-                return false;
-            }
-
-            if (!/^\d+$/.test(utr)) {
-                utrValidation.textContent = 'Only numbers are allowed';
-                utrValidation.className = 'validation-message validation-error';
-                return false;
-            }
-
-            if (utr.length !== 12) {
-                utrValidation.textContent = 'UTR number must be 12 digits';
-                utrValidation.className = 'validation-message validation-error';
-                return false;
-            }
-
-            utrValidation.textContent = 'Valid UTR number';
-            utrValidation.className = 'validation-message validation-success';
-            return true;
-        }
-
-        // Order History
-        function renderOrders() {
-            ordersList.innerHTML = '';
-            
-            if (orders.length === 0) {
-                noOrders.style.display = 'block';
-                return;
-            }
-
-            noOrders.style.display = 'none';
-
-            orders.forEach(order => {
-                const orderCard = document.createElement('div');
-                orderCard.className = 'order-card';
-                orderCard.innerHTML = `
-                    <div class="order-header">
-                        <div class="order-id">Order #${order.id}</div>
-                        <div class="order-status status-${order.status}">${getOrderStatusText(order.status)}</div>
-                    </div>
-                    <div class="order-items">
-                        ${order.items.map(item => `
-                            <div class="order-item">
-                                <span>${item.name} x${item.quantity}</span>
-                                <span>₹${item.price * item.quantity}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="order-footer">
-                        <div class="order-total">₹${order.total}</div>
-                        <button class="btn-reorder" data-order="${order.id}">Reorder</button>
-                    </div>
-                `;
-                ordersList.appendChild(orderCard);
-            });
-
-            document.querySelectorAll('.btn-reorder').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const orderId = e.target.getAttribute('data-order');
-                    reorderItems(orderId);
-                });
-            });
-        }
-
-        function reorderItems(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (order) {
-                // Clear previous UTR number
-                if (window.tempUtr) {
-                    delete window.tempUtr;
-                }
-                if (utrNumber) {
-                    utrNumber.value = '';
-                    utrNumber.disabled = false;
-                }
-                if (confirmQrPayment) {
-                    confirmQrPayment.disabled = false;
-                }
-                
-                order.items.forEach(item => {
-                    const product = PRODUCTS.find(p => p.name === item.name);
-                    if (product) {
-                        for (let i = 0; i < item.quantity; i++) {
-                            addToCart(product.id);
-                        }
-                    }
-                });
-                showToast('Items added to cart from order! UTR cleared.');
-                openCart();
-            }
-        }
-
-        // Page Navigation
-        function showPage(page) {
-            homePage.style.display = 'none';
-            ordersPage.style.display = 'none';
-            wishlistPage.style.display = 'none';
-
-            switch(page) {
-                case 'home':
-                    homePage.style.display = 'block';
-                    break;
-                case 'orders':
-                    ordersPage.style.display = 'block';
-                    renderOrders();
-                    break;
-                case 'wishlist':
-                    wishlistPage.style.display = 'block';
-                    renderWishlist();
-                    break;
-                case 'categories':
-                    showToast('Categories page coming soon!');
-                    homePage.style.display = 'block';
-                    break;
-                case 'account':
-                    showToast('Account page coming soon!');
-                    homePage.style.display = 'block';
-                    break;
-                case 'cart':
-                    openCart();
-                    homePage.style.display = 'block';
-                    break;
-            }
-        }
-
         // Product Functions
         function renderProducts(products) {
             productGrid.innerHTML = '';
             
             if (products.length === 0) {
-                emptyState.style.display = 'block';
+                document.getElementById('empty').style.display = 'block';
                 return;
             }
 
-            emptyState.style.display = 'none';
+            document.getElementById('empty').style.display = 'none';
 
             products.forEach(product => {
                 const shop = SHOPS[product.shop];
@@ -1208,6 +1256,7 @@
                 productGrid.appendChild(productCard);
             });
 
+            // Add event listeners
             document.querySelectorAll('.btn-add-cart').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
@@ -1219,6 +1268,15 @@
                 btn.addEventListener('click', (e) => {
                     const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
                     toggleWishlist(productId);
+                });
+            });
+
+            // Add click event for product image and title
+            document.querySelectorAll('.product-image, .product-title').forEach(element => {
+                element.addEventListener('click', (e) => {
+                    const productCard = e.target.closest('.product-card');
+                    const productId = productCard.querySelector('.btn-add-cart').getAttribute('data-id');
+                    showProductDetail(productId);
                 });
             });
         }
@@ -1250,70 +1308,6 @@
             bottomCartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
         }
 
-        function openCart() {
-            // Clear UTR when opening cart
-            if (window.tempUtr) {
-                delete window.tempUtr;
-            }
-            if (utrNumber) {
-                utrNumber.value = '';
-                utrNumber.disabled = false;
-            }
-            if (confirmQrPayment) {
-                confirmQrPayment.disabled = false;
-            }
-            
-            renderOrderSummary();
-            renderAddresses();
-            bottomSheet.classList.add('open');
-        }
-
-        function renderOrderSummary() {
-            orderList.innerHTML = '';
-            let subtotal = 0;
-
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
-
-                const orderItem = document.createElement('div');
-                orderItem.className = 'order-item-summary';
-                orderItem.innerHTML = `
-                    <div>
-                        <strong>${item.name}</strong>
-                        <div>₹${item.price} x ${item.quantity}</div>
-                    </div>
-                    <div>₹${itemTotal}</div>
-                `;
-                orderList.appendChild(orderItem);
-            });
-
-            let discount = 0;
-            if (appliedCoupon) {
-                if (appliedCoupon.type === 'percentage') {
-                    discount = (subtotal * appliedCoupon.value) / 100;
-                } else if (appliedCoupon.type === 'fixed') {
-                    discount = appliedCoupon.value;
-                }
-                discount = Math.min(discount, subtotal);
-            }
-
-            const total = subtotal - discount;
-
-            orderTotal.textContent = `₹${total}`;
-            qrAmount.textContent = `₹${total}`;
-            
-            const discountSection = document.getElementById('discountSection');
-            const discountAmount = document.getElementById('discountAmount');
-            
-            if (discount > 0) {
-                discountSection.style.display = 'block';
-                discountAmount.textContent = `-₹${discount}`;
-            } else {
-                discountSection.style.display = 'none';
-            }
-        }
-
         // Wishlist Functions
         function toggleWishlist(productId) {
             const product = PRODUCTS.find(p => p.id === productId);
@@ -1321,577 +1315,37 @@
 
             const index = wishlist.indexOf(productId);
             if (index > -1) {
-                // Remove from wishlist
                 wishlist.splice(index, 1);
                 showToast(`${product.name} removed from wishlist`);
             } else {
-                // Add to wishlist
                 wishlist.push(productId);
                 showToast(`${product.name} added to wishlist ❤️`);
             }
 
             localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
-            
-            // Save to Firebase if user is logged in
-            if (currentUser) {
-                if (index > -1) {
-                    db.collection('users').doc(currentUser.uid).collection('wishlist').doc(productId).delete();
-                } else {
-                    db.collection('users').doc(currentUser.uid).collection('wishlist').doc(productId).set({
-                        productId: productId,
-                        addedAt: new Date().toISOString()
-                    });
-                }
-            }
-
             updateWishlistUI();
-            renderProducts(PRODUCTS); // Refresh products to update heart icons
+            renderProducts(PRODUCTS);
         }
 
         function updateWishlistUI() {
             wishlistCount.textContent = wishlist.length;
         }
 
-        function renderWishlist() {
-            wishlistItems.innerHTML = '';
-            
-            if (wishlist.length === 0) {
-                noWishlist.style.display = 'block';
-                return;
-            }
+        // Page Navigation
+        function showPage(page) {
+            homePage.style.display = 'none';
+            ordersPage.style.display = 'none';
+            wishlistPage.style.display = 'none';
+            productDetailPage.style.display = 'none';
 
-            noWishlist.style.display = 'none';
-
-            wishlist.forEach(productId => {
-                const product = PRODUCTS.find(p => p.id === productId);
-                if (product) {
-                    const wishlistCard = document.createElement('div');
-                    wishlistCard.className = 'wishlist-card';
-                    wishlistCard.innerHTML = `
-                        <img src="${product.image}" alt="${product.name}" class="wishlist-image">
-                        <div class="wishlist-info">
-                            <h5>${product.name}</h5>
-                            <p class="text-muted">${product.category}</p>
-                            <div class="product-price">
-                                <span class="current-price">₹${product.price}</span>
-                                ${product.mrp > product.price ? `
-                                    <span class="original-price">₹${product.mrp}</span>
-                                    <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
-                                ` : ''}
-                            </div>
-                        </div>
-                        <div class="wishlist-actions">
-                            <button class="btn-add-cart" data-id="${product.id}">
-                                <i class="fas fa-shopping-cart"></i> Add to Cart
-                            </button>
-                            <button class="wishlist-btn active" data-id="${product.id}">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                    `;
-                    wishlistItems.appendChild(wishlistCard);
-                }
-            });
-
-            // Add event listeners
-            document.querySelectorAll('.wishlist-card .btn-add-cart').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
-                    addToCart(productId);
-                    showToast('Product added to cart from wishlist!');
-                });
-            });
-
-            document.querySelectorAll('.wishlist-card .wishlist-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
-                    toggleWishlist(productId);
-                    renderWishlist(); // Refresh wishlist
-                });
-            });
-        }
-
-        // Address Management
-        function renderAddresses() {
-            addressesContainer.innerHTML = '';
-            
-            if (addresses.length === 0) {
-                addressesContainer.innerHTML = '<div class="text-muted">No addresses saved. Add your first address below.</div>';
-                return;
-            }
-
-            addresses.forEach(address => {
-                const addressCard = document.createElement('div');
-                addressCard.className = `address-card ${selectedAddress === address.id ? 'selected' : ''}`;
-                addressCard.innerHTML = `
-                    <div class="address-title">${address.title} • ${address.fullName}</div>
-                    <div class="address-details">${address.details}, ${address.city} - ${address.pincode}</div>
-                    <div class="address-phone">${address.phone} ${address.landmark ? '• Landmark: ' + address.landmark : ''}</div>
-                `;
-                addressCard.addEventListener('click', () => {
-                    selectedAddress = address.id;
-                    renderAddresses();
-                });
-                addressesContainer.appendChild(addressCard);
-            });
-        }
-
-        function saveNewAddress() {
-            const fullName = document.getElementById('addrFullName').value;
-            const phone = document.getElementById('addrPhone').value;
-            const addrType = document.getElementById('addrType').value;
-            const details = document.getElementById('addrDetails').value;
-            const city = document.getElementById('addrCity').value;
-            const pincode = document.getElementById('addrPincode').value;
-            const landmark = document.getElementById('addrLandmark').value;
-
-            if (!fullName || !phone || !details || !city || !pincode) {
-                showToast('Please fill all required fields');
-                return;
-            }
-
-            const phoneValid = validatePhoneNumber(phone, addrPhoneValidation);
-            if (!phoneValid) {
-                showToast('Please enter a valid phone number');
-                return;
-            }
-
-            const newAddress = {
-                id: 'addr' + Date.now(),
-                title: addrType.charAt(0).toUpperCase() + addrType.slice(1),
-                fullName,
-                phone,
-                type: addrType,
-                details,
-                city,
-                pincode,
-                landmark,
-                createdAt: new Date().toISOString()
-            };
-
-            addresses.push(newAddress);
-            localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
-            
-            // Clear form
-            document.getElementById('addrFullName').value = '';
-            document.getElementById('addrPhone').value = '';
-            document.getElementById('addrDetails').value = '';
-            document.getElementById('addrCity').value = '';
-            document.getElementById('addrPincode').value = '';
-            document.getElementById('addrLandmark').value = '';
-            addrPhoneValidation.textContent = '';
-
-            renderAddresses();
-            showToast('Address saved successfully!');
-        }
-
-        // Payment Methods
-        function setupPaymentMethods() {
-            paymentOptions.forEach(option => {
-                option.addEventListener('click', async () => {
-                    if (option.getAttribute('data-method') === 'qr') {
-                        const confirmed = await showConfirmation(
-                            'QR Payment',
-                            'You are about to proceed with QR code payment. Make sure you have your UPI app ready. Continue?'
-                        );
-                        
-                        if (!confirmed) return;
-                    }
-                    
-                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
-                    option.classList.add('selected');
-                    selectedPaymentMethod = option.getAttribute('data-method');
-                    
-                    if (selectedPaymentMethod === 'qr') {
-                        qrCodeSection.style.display = 'block';
-                        // Reset UTR field
-                        utrNumber.value = '';
-                        utrNumber.disabled = false;
-                        confirmQrPayment.disabled = false;
-                        window.tempUtr = null;
-                    } else {
-                        qrCodeSection.style.display = 'none';
-                    }
-                });
-            });
-
-            confirmQrPayment.addEventListener('click', () => {
-                const utr = utrNumber.value.trim();
-                if (!validateUTR(utr)) {
-                    showToast('Please enter a valid 12-digit UTR number');
-                    return;
-                }
-                
-                // Store UTR temporarily and show success message
-                window.tempUtr = utr;
-                showToast('✅ Payment details saved! Click "Place Order Securely" to confirm order.');
-                utrNumber.disabled = true;
-                confirmQrPayment.disabled = true;
-            });
-        }
-
-        // Place Order Functionality - FIXED
-        async function placeOrder(utr = null) {
-            if (cart.length === 0) {
-                showToast('Your cart is empty!');
-                return;
-            }
-
-            if (!selectedPaymentMethod) {
-                showToast('Please select a payment method');
-                return;
-            }
-
-            // Auto-select first address if none selected
-            if (!selectedAddress && addresses.length > 0) {
-                selectedAddress = addresses[0].id;
-            }
-
-            if (!selectedAddress) {
-                showToast('Please add a delivery address first');
-                return;
-            }
-
-            // UTR validation for QR payments
-            if (selectedPaymentMethod === 'qr' && !utr) {
-                showToast('Please enter UTR number after payment');
-                return;
-            }
-
-            try {
-                const selectedAddr = addresses.find(addr => addr.id === selectedAddress);
-                const orderData = {
-                    id: 'ORD' + Date.now(),
-                    items: [...cart],
-                    total: calculateOrderTotal(),
-                    address: selectedAddr,
-                    paymentMethod: selectedPaymentMethod,
-                    status: 'confirmed',
-                    contactPhone: checkoutPhone.value || selectedAddr.phone,
-                    contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
-                    utrNumber: utr,
-                    createdAt: new Date().toISOString(),
-                    userId: currentUser?.uid || 'guest'
-                };
-
-                // Save order
-                orders.push(orderData);
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-
-                // Clear cart
-                cart = [];
-                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-                updateCartUI();
-
-                // Reset checkout
-                appliedCoupon = null;
-                selectedPaymentMethod = null;
-                selectedAddress = null;
-                
-                // Close bottom sheet
-                bottomSheet.classList.remove('open');
-
-                showToast('🎉 Order placed successfully!');
-                renderOrders();
-
-            } catch (error) {
-                console.error('Order error:', error);
-                showToast('Order failed: ' + error.message);
-            }
-        }
-
-        function calculateOrderTotal() {
-            let subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-            let discount = 0;
-            
-            if (appliedCoupon) {
-                if (appliedCoupon.type === 'percentage') {
-                    discount = (subtotal * appliedCoupon.value) / 100;
-                } else if (appliedCoupon.type === 'fixed') {
-                    discount = appliedCoupon.value;
-                }
-            }
-            
-            return subtotal - discount;
-        }
-
-        // Coupon Functions
-        function applyCoupon() {
-            const couponCode = couponCodeInput.value.trim().toUpperCase();
-            
-            if (!currentUser) {
-                couponMessage.textContent = 'Please login to apply coupons';
-                couponMessage.className = 'coupon-error';
-                return;
-            }
-
-            const coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
-            if (!coupon) {
-                couponMessage.textContent = 'Invalid coupon code';
-                couponMessage.className = 'coupon-error';
-                return;
-            }
-
-            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-            
-            if (subtotal < coupon.minOrder) {
-                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
-                couponMessage.className = 'coupon-error';
-                return;
-            }
-
-            appliedCoupon = coupon;
-            couponMessage.textContent = `Coupon applied: ${coupon.description}`;
-            couponMessage.className = 'coupon-success';
-            couponCodeInput.disabled = true;
-            applyCouponBtn.disabled = true;
-
-            renderOrderSummary();
-        }
-
-        // Order Tracking Functions
-        function openOrderTracking(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-
-            // Update timeline based on order status
-            updateOrderTimeline(order);
-            
-            // Show order details
-            document.getElementById('trackingOrderDetails').innerHTML = `
-                <div class="order-item-summary">
-                    <div><strong>Order ID:</strong></div>
-                    <div>${order.id}</div>
-                </div>
-                ${order.items.map(item => `
-                    <div class="order-item-summary">
-                        <div>${item.name} x${item.quantity}</div>
-                        <div>₹${item.price * item.quantity}</div>
-                    </div>
-                `).join('')}
-                <div class="order-total-summary">
-                    <span>Total Amount</span>
-                    <span>₹${order.total}</span>
-                </div>
-            `;
-
-            // Show/hide cancel button based on status
-            const cancelBtn = document.getElementById('cancelOrderBtn');
-            if (order.status === 'confirmed' || order.status === 'preparing') {
-                cancelBtn.style.display = 'block';
-                cancelBtn.setAttribute('data-order', orderId);
-            } else {
-                cancelBtn.style.display = 'none';
-            }
-
-            orderTracking.classList.add('open');
-        }
-
-        function closeOrderTracking() {
-            orderTracking.classList.remove('open');
-        }
-
-        function updateOrderTimeline(order) {
-            const statusOrder = ['confirmed', 'preparing', 'dispatched', 'delivered'];
-            const currentStatusIndex = statusOrder.indexOf(order.status);
-            
-            statusOrder.forEach((status, index) => {
-                const stepIcon = document.getElementById(`step${status.charAt(0).toUpperCase() + status.slice(1)}`);
-                const stepLabel = stepIcon.nextElementSibling;
-                const stepTime = stepLabel.nextElementSibling;
-                
-                if (index < currentStatusIndex) {
-                    stepIcon.className = 'step-icon completed';
-                    stepLabel.className = 'step-label completed';
-                } else if (index === currentStatusIndex) {
-                    stepIcon.className = 'step-icon active';
-                    stepLabel.className = 'step-label active';
-                } else {
-                    stepIcon.className = 'step-icon';
-                    stepLabel.className = 'step-label';
-                }
-                
-                // Set timestamps
-                if (order.timestamps && order.timestamps[status]) {
-                    stepTime.textContent = new Date(order.timestamps[status]).toLocaleString();
-                }
-            });
-        }
-
-        function cancelOrder() {
-            const orderId = document.getElementById('cancelOrderBtn').getAttribute('data-order');
-            const order = orders.find(o => o.id === orderId);
-            
-            if (order && (order.status === 'confirmed' || order.status === 'preparing')) {
-                order.status = 'cancelled';
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                renderOrders();
-                closeOrderTracking();
-                showToast('Order cancelled successfully');
-            }
-        }
-
-        // Toast Function
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class="toast show" role="alert">
-                    <div class="toast-body d-flex justify-content-between align-items-center">
-                        <span>${message}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
-
-        // ADD this universal confirmation function
-        function showConfirmation(title, message) {
-            return new Promise((resolve) => {
-                document.getElementById('confirmationTitle').textContent = title;
-                document.getElementById('confirmationMessage').textContent = message;
-                
-                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-                modal.show();
-                
-                // Handle confirm button
-                document.getElementById('confirmAction').onclick = () => {
-                    modal.hide();
-                    resolve(true);
-                };
-                
-                // Handle cancel/close
-                const handleCancel = () => {
-                    modal.hide();
-                    resolve(false);
-                };
-                
-                document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', handleCancel, { once: true });
-            });
-        }
-
-        // Setup Event Listeners
-        function setupEventListeners() {
-            // Auth - FIXED EVENT LISTENERS
-            loginForm.addEventListener('submit', handleLogin);
-            signupForm.addEventListener('submit', handleSignup);
-
-            // Form toggles - ADDED EVENT LISTENERS
-            document.getElementById('showSignup').addEventListener('click', function(e) {
-                e.preventDefault();
-                showSignupForm();
-            });
-
-            document.getElementById('showLogin').addEventListener('click', function(e) {
-                e.preventDefault();
-                showLoginForm();
-            });
-
-            // Search
-            searchInput.addEventListener('input', (e) => {
-                performSearch(e.target.value);
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-container')) {
-                    searchResults.style.display = 'none';
-                }
-            });
-
-            // Validation
-            checkoutPhone.addEventListener('input', (e) => {
-                validatePhoneNumber(e.target.value, phoneValidation);
-            });
-
-            addrPhone.addEventListener('input', (e) => {
-                validatePhoneNumber(e.target.value, addrPhoneValidation);
-            });
-
-            utrNumber.addEventListener('input', (e) => {
-                validateUTR(e.target.value);
-            });
-
-            // Coupon
-            applyCouponBtn.addEventListener('click', applyCoupon);
-
-            // Payment
-            setupPaymentMethods();
-
-            // UPDATE placeOrderBtn event listener:
-            placeOrderBtn.addEventListener('click', async () => {
-                if (selectedPaymentMethod === 'qr' && !window.tempUtr) {
-                    showToast('Please complete QR payment verification first');
-                    return;
-                }
-                
-                // Show confirmation dialog
-                const confirmed = await showConfirmation(
-                    'Confirm Order',
-                    `Are you sure you want to place this order for ₹${calculateOrderTotal()}?`
-                );
-                
-                if (confirmed) {
-                    if (selectedPaymentMethod === 'qr') {
-                        placeOrder(window.tempUtr);
-                        delete window.tempUtr; // Clear temp UTR
-                    } else {
-                        placeOrder();
-                    }
-                }
-            });
-
-            // Address
-            saveAddr.addEventListener('click', saveNewAddress);
-
-            // Navigation
-            navItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const page = item.getAttribute('data-page');
-                    
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    item.classList.add('active');
-                    
-                    showPage(page);
-                });
-            });
-
-            // Close bottom sheet
-            closeSheetBtn.addEventListener('click', () => {
-                bottomSheet.classList.remove('open');
-            });
-
-            // Filters
-            categoryFilter.addEventListener('change', filterProducts);
-            shopFilter.addEventListener('change', filterProducts);
-        }
-
-        // Filter Products
-        function filterProducts() {
-            const shop = shopFilter.value;
-            const category = categoryFilter.value;
-
-            let filtered = PRODUCTS;
-
-            if (shop) {
-                filtered = filtered.filter(product => product.shop === shop);
-            }
-
-            if (category) {
-                filtered = filtered.filter(product => product.category === category);
-            }
-
-            renderProducts(filtered);
-        }
-
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
-</body>
-</html>
+            switch(page) {
+                case 'home':
+                    homePage.style.display = 'block';
+                    break;
+                case 'orders':
+                    ordersPage.style.display = 'block';
+                    renderOrders();
+                    break;
+                case 'wishlist':
+                    wishlistPage.style.display = 'block';
+                    renderWish
