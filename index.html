@@ -155,6 +155,7 @@
     </style>
 </head>
 <body>
+    <!-- Login/Signup Screen -->
     <div id="authScreen">
         <div class="auth-container">
             <div class="auth-card">
@@ -197,6 +198,7 @@
         </div>
     </div>
 
+    <!-- Main App Screen -->
     <div id="appScreen" style="display: none;">
         <header class="app-header">
             <div class="header-container">
@@ -268,8 +270,7 @@
                 </div>
             </div>
         </div>
-
-        <nav class="bottom-nav">
+                <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="home">
                 <i class="fas fa-home nav-icon"></i>
                 <span class="nav-label">Home</span>
@@ -450,6 +451,25 @@
                 <button id="placeOrderBtn" class="btn-primary w-100 py-3">
                     <i class="fas fa-lock"></i> Place Order Securely
                 </button>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div class="modal fade" id="confirmationModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: var(--primary); color: white;">
+                        <h5 class="modal-title" id="confirmationTitle">Confirm Action</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="confirmationMessage">
+                        <!-- Message will be inserted here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn-primary" id="confirmAction">Confirm</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -993,7 +1013,7 @@
                     ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
                     <div class="shop-badge">${shop.name}</div>
                     <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300/3A8EF6/FFFFFF?text=${encodeURIComponent(product.name)}'">
-                    <div class="product-title">${product.name}</div>
+                                        <div class="product-title">${product.name}</div>
                     <div class="product-category">${product.category}</div>
                     <div class="product-price">
                         <span class="current-price">₹${product.price}</span>
@@ -1175,13 +1195,27 @@
         // Payment Methods
         function setupPaymentMethods() {
             paymentOptions.forEach(option => {
-                option.addEventListener('click', () => {
+                option.addEventListener('click', async () => {
+                    if (option.getAttribute('data-method') === 'qr') {
+                        const confirmed = await showConfirmation(
+                            'QR Payment',
+                            'You are about to proceed with QR code payment. Make sure you have your UPI app ready. Continue?'
+                        );
+                        
+                        if (!confirmed) return;
+                    }
+                    
                     paymentOptions.forEach(opt => opt.classList.remove('selected'));
                     option.classList.add('selected');
                     selectedPaymentMethod = option.getAttribute('data-method');
                     
                     if (selectedPaymentMethod === 'qr') {
                         qrCodeSection.style.display = 'block';
+                        // Reset UTR field
+                        utrNumber.value = '';
+                        utrNumber.disabled = false;
+                        confirmQrPayment.disabled = false;
+                        window.tempUtr = null;
                     } else {
                         qrCodeSection.style.display = 'none';
                     }
@@ -1194,7 +1228,12 @@
                     showToast('Please enter a valid 12-digit UTR number');
                     return;
                 }
-                placeOrder(utr);
+                
+                // Store UTR temporarily and show success message
+                window.tempUtr = utr;
+                showToast('✅ Payment details saved! Click "Place Order Securely" to confirm order.');
+                utrNumber.disabled = true;
+                confirmQrPayment.disabled = true;
             });
         }
 
@@ -1337,6 +1376,31 @@
             }, 3000);
         }
 
+        // ADD this universal confirmation function
+        function showConfirmation(title, message) {
+            return new Promise((resolve) => {
+                document.getElementById('confirmationTitle').textContent = title;
+                document.getElementById('confirmationMessage').textContent = message;
+                
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                modal.show();
+                
+                // Handle confirm button
+                document.getElementById('confirmAction').onclick = () => {
+                    modal.hide();
+                    resolve(true);
+                };
+                
+                // Handle cancel/close
+                const handleCancel = () => {
+                    modal.hide();
+                    resolve(false);
+                };
+                
+                document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', handleCancel, { once: true });
+            });
+        }
+
         // Setup Event Listeners
         function setupEventListeners() {
             // Auth - FIXED EVENT LISTENERS
@@ -1384,12 +1448,26 @@
             // Payment
             setupPaymentMethods();
 
-            // Place Order
-            placeOrderBtn.addEventListener('click', () => {
-                if (selectedPaymentMethod === 'qr') {
-                    showToast('Please complete QR payment first');
-                } else {
-                    placeOrder();
+            // UPDATE placeOrderBtn event listener:
+            placeOrderBtn.addEventListener('click', async () => {
+                if (selectedPaymentMethod === 'qr' && !window.tempUtr) {
+                    showToast('Please complete QR payment verification first');
+                    return;
+                }
+                
+                // Show confirmation dialog
+                const confirmed = await showConfirmation(
+                    'Confirm Order',
+                    `Are you sure you want to place this order for ₹${calculateOrderTotal()}?`
+                );
+                
+                if (confirmed) {
+                    if (selectedPaymentMethod === 'qr') {
+                        placeOrder(window.tempUtr);
+                        delete window.tempUtr; // Clear temp UTR
+                    } else {
+                        placeOrder();
+                    }
                 }
             });
 
@@ -1440,23 +1518,25 @@
         // Initialize the app
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
-    <!-- Confirmation Modal -->
-<div class="modal fade" id="confirmationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmationTitle">Confirm Action</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="confirmationMessage">
-                <!-- Message will be inserted here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmAction">Confirm</button>
+
+    <!-- Confirmation Modal - ADD THIS BEFORE CLOSING BODY TAG -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--primary); color: white;">
+                    <h5 class="modal-title" id="confirmationTitle">Confirm Action</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="confirmationMessage">
+                    <!-- Message will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-primary" id="confirmAction">Confirm</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
 </body>
 </html>
