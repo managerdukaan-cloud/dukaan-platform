@@ -1253,24 +1253,16 @@
         }
 
         async function handleLogin(event) {
-            event.preventDefault();
-            console.log('Login function called');
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+    event.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
 
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                console.log('Login successful:', userCredential.user);
-                showToast('Welcome back to Dukaan!');
-            } catch (error) {
-                console.error('Login error:', error);
-                if (error.code === 'auth/invalid-login-credentials') {
-                    showToast('Account not found. Please sign up first.');
-                } else {
-                    showToast('Login failed: ' + error.message);
-                }
-            }
-        }
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+        showToast('Login failed: ' + error.message);
+    }
+}
 
         async function handleSignup(event) {
     event.preventDefault();
