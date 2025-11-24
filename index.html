@@ -377,46 +377,46 @@
                 </div>
 
                 <div id="qrCodeSection" style="display: none;" class="qr-modal">
-    <h5>Scan QR Code to Pay</h5>
-    <div class="qr-code">
-    <div style="background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #f1f3f4;">
-        <div style="color: #5F6368; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
-            Google Pay
-        </div>
-        
-        <div style="background: #000; color: white; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; margin-bottom: 20px; display: inline-block;">
-            Scan to Pay
-        </div>
-        
-        <!-- ACTUAL QR CODE IMAGE FROM CLOUDINARY -->
-        <div style="height: 200px; width: 200px; margin: 0 auto 15px; border-radius: 12px; overflow: hidden; border: 2px solid #34A853;">
-            <img src="https://res.cloudinary.com/db1rbtgpe/image/upload/v1763973608/GooglePay_QR_qvu0wv.png" 
-                 alt="Google Pay QR Code" 
-                 style="width: 100%; height: 100%; object-fit: contain;">
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 12px; border-radius: 10px;">
-            <div style="font-size: 13px; color: #5F6368; margin-bottom: 5px;">
-                <strong>UPI ID:</strong>
-            </div>
-            <div style="font-size: 14px; color: #000; font-weight: 600; font-family: monospace;">
-                damazingdeals-1@okaxis
-            </div>
-        </div>
-    </div>
-</div>
-    <p class="text-muted">Amount: <span id="qrAmount">₹0</span></p>
-    
-    <div class="utr-input">
-        <label class="form-label">Enter UTR Number</label>
-        <input type="text" class="form-control" id="utrNumber" placeholder="Enter 12-digit UTR number" maxlength="12">
-        <div id="utrValidation" class="validation-message"></div>
-    </div>
-    
-    <button id="confirmQrPayment" class="btn-primary w-100 mt-3">
-        <i class="fas fa-check"></i> Confirm Payment
-    </button>
-</div>
+                    <h5>Scan QR Code to Pay</h5>
+                    <div class="qr-code">
+                        <div style="background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #f1f3f4;">
+                            <div style="color: #5F6368; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                                Google Pay
+                            </div>
+                            
+                            <div style="background: #000; color: white; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; margin-bottom: 20px; display: inline-block;">
+                                Scan to Pay
+                            </div>
+                            
+                            <!-- ACTUAL QR CODE IMAGE FROM CLOUDINARY -->
+                            <div style="height: 200px; width: 200px; margin: 0 auto 15px; border-radius: 12px; overflow: hidden; border: 2px solid #34A853;">
+                                <img src="https://res.cloudinary.com/db1rbtgpe/image/upload/v1763973608/GooglePay_QR_qvu0wv.png" 
+                                     alt="Google Pay QR Code" 
+                                     style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
+                            
+                            <div style="background: #f8f9fa; padding: 12px; border-radius: 10px;">
+                                <div style="font-size: 13px; color: #5F6368; margin-bottom: 5px;">
+                                    <strong>UPI ID:</strong>
+                                </div>
+                                <div style="font-size: 14px; color: #000; font-weight: 600; font-family: monospace;">
+                                    damazingdeals-1@okaxis
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted">Amount: <span id="qrAmount">₹0</span></p>
+                    
+                    <div class="utr-input">
+                        <label class="form-label">Enter UTR Number</label>
+                        <input type="text" class="form-control" id="utrNumber" placeholder="Enter 12-digit UTR number" maxlength="12">
+                        <div id="utrValidation" class="validation-message"></div>
+                    </div>
+                    
+                    <button id="confirmQrPayment" class="btn-primary w-100 mt-3">
+                        <i class="fas fa-check"></i> Confirm Payment
+                    </button>
+                </div>
 
                 <div class="coupon-section">
                     <label class="section-label">Apply Coupon</label>
@@ -474,77 +474,97 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.log('Firebase already initialized');
+        }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
         // Sample Data with Cloudinary Images
         const SHOPS = {
-            freshmart: { id: 'freshmart', name: 'FreshMart', category: 'groceries', rating: 4.5 },
-            cosmeticstore: { id: 'cosmeticstore', name: 'CosmeticStore', category: 'cosmetics', rating: 4.3 },
-            fashionhub: { id: 'fashionhub', name: 'FashionHub', category: 'clothing', rating: 4.7 },
-            veggieking: { id: 'veggieking', name: 'VeggieKing', category: 'vegetables', rating: 4.4 },
-            gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6 }
+            freshmart: { id: 'freshmart', name: 'FreshMart', category: 'groceries', rating: 4.5, deliveryTime: '30 min' },
+            cosmeticstore: { id: 'cosmeticstore', name: 'CosmeticStore', category: 'cosmetics', rating: 4.3, deliveryTime: '45 min' },
+            fashionhub: { id: 'fashionhub', name: 'FashionHub', category: 'clothing', rating: 4.7, deliveryTime: '2 days' },
+            veggieking: { id: 'veggieking', name: 'VeggieKing', category: 'vegetables', rating: 4.4, deliveryTime: '40 min' },
+            gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6, deliveryTime: '1 day' },
+            bakerycorner: { id: 'bakerycorner', name: 'Bakery Corner', category: 'bakery', rating: 4.8, deliveryTime: '25 min' }
         };
 
         const PRODUCTS = [
-    // FreshMart - Groceries (25 products)
-    { id: 'fm1', name: 'Fresh Cow Milk 1L', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk`, badge: 'Fresh' },
-    { id: 'fm2', name: 'Buffalo Milk 1L', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk_buffalo`, badge: 'Premium' },
-    { id: 'fm3', name: 'Curd 500g', price: 50, mrp: 60, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/curd`, badge: 'Homemade' },
-    { id: 'fm4', name: 'Panner 250g', price: 90, mrp: 110, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/paneer`, badge: 'Fresh' },
-    { id: 'fm5', name: 'Butter 100g', price: 55, mrp: 65, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/butter`, badge: 'Amul' },
-    
-    { id: 'fm6', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bread`, badge: 'Fresh' },
-    { id: 'fm7', name: 'Brown Bread', price: 45, mrp: 50, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/brown_bread`, badge: 'Healthy' },
-    { id: 'fm8', name: 'Bun 6pcs', price: 25, mrp: 30, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bun`, badge: 'Fresh' },
-    { id: 'fm9', name: 'Croissant 4pcs', price: 120, mrp: 150, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/croissant`, badge: 'Premium' },
-    
-    { id: 'fm10', name: 'Basmati Rice 1kg', price: 120, mrp: 150, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/rice`, badge: 'Premium' },
-    { id: 'fm11', name: 'Wheat Flour 1kg', price: 45, mrp: 55, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/wheat_flour`, badge: 'Local' },
-    { id: 'fm12', name: 'Toor Dal 500g', price: 80, mrp: 90, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/dal`, badge: 'Healthy' },
-    { id: 'fm13', name: 'Chana Dal 500g', price: 70, mrp: 80, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/chana_dal`, badge: 'Protein' },
-    
-    { id: 'fm14', name: 'Sugar 1kg', price: 45, mrp: 50, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sugar`, badge: 'Essential' },
-    { id: 'fm15', name: 'Salt 1kg', price: 20, mrp: 25, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/salt`, badge: 'Basic' },
-    { id: 'fm16', name: 'Tea Powder 500g', price: 150, mrp: 180, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tea`, badge: 'Beverage' },
-    { id: 'fm17', name: 'Refined Oil 1L', price: 180, mrp: 200, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/oil`, badge: 'Cooking' },
-    
-    { id: 'fm18', name: 'Apple 1kg', price: 120, mrp: 150, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/apple`, badge: 'Fresh' },
-    { id: 'fm19', name: 'Banana 1dozen', price: 40, mrp: 50, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/banana`, badge: 'Local' },
-    { id: 'fm20', name: 'Orange 1kg', price: 80, mrp: 100, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/orange`, badge: 'Vitamin C' },
-    
-    { id: 'fm21', name: 'Tomatoes 1kg', price: 40, mrp: 50, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tomatoes`, badge: 'Fresh' },
-    { id: 'fm22', name: 'Potatoes 1kg', price: 30, mrp: 35, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/potatoes`, badge: 'Local' },
-    { id: 'fm23', name: 'Onions 1kg', price: 35, mrp: 45, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/onions`, badge: 'Fresh' },
-    { id: 'fm24', name: 'Carrot 1kg', price: 50, mrp: 60, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/carrot`, badge: 'Healthy' },
-    { id: 'fm25', name: 'Capsicum 1kg', price: 60, mrp: 80, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/capsicum`, badge: 'Fresh' },
+            // FreshMart - Groceries (25 products)
+            { id: 'fm1', name: 'Fresh Cow Milk 1L', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk`, badge: 'Fresh' },
+            { id: 'fm2', name: 'Buffalo Milk 1L', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk_buffalo`, badge: 'Premium' },
+            { id: 'fm3', name: 'Curd 500g', price: 50, mrp: 60, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/curd`, badge: 'Homemade' },
+            { id: 'fm4', name: 'Panner 250g', price: 90, mrp: 110, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/paneer`, badge: 'Fresh' },
+            { id: 'fm5', name: 'Butter 100g', price: 55, mrp: 65, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/butter`, badge: 'Amul' },
+            
+            { id: 'fm6', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bread`, badge: 'Fresh' },
+            { id: 'fm7', name: 'Brown Bread', price: 45, mrp: 50, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/brown_bread`, badge: 'Healthy' },
+            { id: 'fm8', name: 'Bun 6pcs', price: 25, mrp: 30, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bun`, badge: 'Fresh' },
+            { id: 'fm9', name: 'Croissant 4pcs', price: 120, mrp: 150, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/croissant`, badge: 'Premium' },
+            
+            { id: 'fm10', name: 'Basmati Rice 1kg', price: 120, mrp: 150, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/rice`, badge: 'Premium' },
+            { id: 'fm11', name: 'Wheat Flour 1kg', price: 45, mrp: 55, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/wheat_flour`, badge: 'Local' },
+            { id: 'fm12', name: 'Toor Dal 500g', price: 80, mrp: 90, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/dal`, badge: 'Healthy' },
+            { id: 'fm13', name: 'Chana Dal 500g', price: 70, mrp: 80, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/chana_dal`, badge: 'Protein' },
+            
+            { id: 'fm14', name: 'Sugar 1kg', price: 45, mrp: 50, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sugar`, badge: 'Essential' },
+            { id: 'fm15', name: 'Salt 1kg', price: 20, mrp: 25, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/salt`, badge: 'Basic' },
+            { id: 'fm16', name: 'Tea Powder 500g', price: 150, mrp: 180, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tea`, badge: 'Beverage' },
+            { id: 'fm17', name: 'Refined Oil 1L', price: 180, mrp: 200, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/oil`, badge: 'Cooking' },
+            
+            { id: 'fm18', name: 'Apple 1kg', price: 120, mrp: 150, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/apple`, badge: 'Fresh' },
+            { id: 'fm19', name: 'Banana 1dozen', price: 40, mrp: 50, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/banana`, badge: 'Local' },
+            { id: 'fm20', name: 'Orange 1kg', price: 80, mrp: 100, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/orange`, badge: 'Vitamin C' },
+            
+            { id: 'fm21', name: 'Tomatoes 1kg', price: 40, mrp: 50, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tomatoes`, badge: 'Fresh' },
+            { id: 'fm22', name: 'Potatoes 1kg', price: 30, mrp: 35, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/potatoes`, badge: 'Local' },
+            { id: 'fm23', name: 'Onions 1kg', price: 35, mrp: 45, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/onions`, badge: 'Fresh' },
+            { id: 'fm24', name: 'Carrot 1kg', price: 50, mrp: 60, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/carrot`, badge: 'Healthy' },
+            { id: 'fm25', name: 'Capsicum 1kg', price: 60, mrp: 80, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/capsicum`, badge: 'Fresh' },
 
-    // CosmeticStore - Beauty (25 products)
-    { id: 'cs1', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facecream`, badge: 'New' },
-    { id: 'cs2', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lipstick`, badge: 'Bestseller' },
-    { id: 'cs3', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facewash`, badge: 'Popular' },
-    { id: 'cs4', name: 'Shampoo 400ml', price: 180, mrp: 220, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shampoo`, badge: 'Hair Care' },
-    { id: 'cs5', name: 'Conditioner 400ml', price: 200, mrp: 250, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/conditioner`, badge: 'Hair Care' },
-    
-    // Continue adding more products for other shops...
-];
+            // CosmeticStore - Beauty (25 products)
+            { id: 'cs1', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facecream`, badge: 'New' },
+            { id: 'cs2', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lipstick`, badge: 'Bestseller' },
+            { id: 'cs3', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facewash`, badge: 'Popular' },
+            { id: 'cs4', name: 'Shampoo 400ml', price: 180, mrp: 220, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shampoo`, badge: 'Hair Care' },
+            { id: 'cs5', name: 'Conditioner 400ml', price: 200, mrp: 250, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/conditioner`, badge: 'Hair Care' },
+            { id: 'cs6', name: 'Body Lotion', price: 250, mrp: 300, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lotion`, badge: 'Skincare' },
+            { id: 'cs7', name: 'Perfume 100ml', price: 450, mrp: 550, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/perfume`, badge: 'Fragrance' },
+            { id: 'cs8', name: 'Makeup Kit', price: 899, mrp: 1099, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/makeup`, badge: 'Premium' },
+            { id: 'cs9', name: 'Nail Polish Set', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/nailpolish`, badge: 'Beauty' },
+            { id: 'cs10', name: 'Sunscreen Lotion', price: 299, mrp: 349, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sunscreen`, badge: 'Protection' },
 
-// Update SHOPS with more categories
-const SHOPS = {
-    freshmart: { id: 'freshmart', name: 'FreshMart', category: 'groceries', rating: 4.5, deliveryTime: '30 min' },
-    cosmeticstore: { id: 'cosmeticstore', name: 'CosmeticStore', category: 'cosmetics', rating: 4.3, deliveryTime: '45 min' },
-    fashionhub: { id: 'fashionhub', name: 'FashionHub', category: 'clothing', rating: 4.7, deliveryTime: '2 days' },
-    veggieking: { id: 'veggieking', name: 'VeggieKing', category: 'vegetables', rating: 4.4, deliveryTime: '40 min' },
-    gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6, deliveryTime: '1 day' },
-    bakerycorner: { id: 'bakerycorner', name: 'Bakery Corner', category: 'bakery', rating: 4.8, deliveryTime: '25 min' }
-};
+            // FashionHub - Clothing (25 products)
+            { id: 'fh1', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tshirt`, badge: 'Trending' },
+            { id: 'fh2', name: 'Jeans', price: 899, mrp: 1199, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jeans`, badge: 'Fashion' },
+            { id: 'fh3', name: 'Winter Jacket', price: 1299, mrp: 1599, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jacket`, badge: 'Winter' },
+            { id: 'fh4', name: 'Formal Shirt', price: 599, mrp: 799, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shirt`, badge: 'Office' },
+            { id: 'fh5', name: 'Sports Shoes', price: 1499, mrp: 1999, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shoes`, badge: 'Sports' },
+
+            // Add more products for other shops...
+        ];
 
         const AVAILABLE_COUPONS = [
             { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
             { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" },
             { code: "FREESHIP", type: "shipping", value: 40, minOrder: 499, description: "Free shipping on orders above ₹499" }
         ];
+
+        // ORDER STATUS HELPER FUNCTION
+        function getOrderStatusText(status) {
+            const statusMap = {
+                'confirmed': 'Order Confirmed',
+                'preparing': 'Preparing Order', 
+                'dispatched': 'Dispatched',
+                'delivered': 'Delivered',
+                'cancelled': 'Cancelled'
+            };
+            return statusMap[status] || status;
+        }
 
         // App State
         let currentUser = null;
@@ -692,48 +712,27 @@ const SHOPS = {
         }
 
         async function handleLogin(event) {
-    event.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+            event.preventDefault();
+            console.log('Login function called');
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
 
-    try {
-        await auth.signInWithEmailAndPassword(email, password);
-        showToast('Welcome back to Dukaan!');
-    } catch (error) {
-        console.error('Login error:', error);
-        if (error.code === 'auth/invalid-login-credentials') {
-            showToast('Account not found. Please sign up first.');
-        } else {
-            showToast('Login failed: ' + error.message);
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showToast('Welcome back to Dukaan!');
+            } catch (error) {
+                console.error('Login error:', error);
+                if (error.code === 'auth/invalid-login-credentials') {
+                    showToast('Account not found. Please sign up first.');
+                } else {
+                    showToast('Login failed: ' + error.message);
+                }
+            }
         }
-    }
-}
 
-async function handleSignup(event) {
-    event.preventDefault();
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-
-    try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        // Update user profile
-        await userCredential.user.updateProfile({
-            displayName: name
-        });
-        showToast('Account created successfully! Welcome to Dukaan!');
-    } catch (error) {
-        console.error('Signup error:', error);
-        if (error.code === 'auth/email-already-in-use') {
-            showToast('Email already registered. Please sign in.');
-            showLoginForm();
-        } else {
-            showToast('Signup failed: ' + error.message);
-        }
-    }
-}
         async function handleSignup(event) {
             event.preventDefault();
+            console.log('Signup function called');
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
@@ -887,17 +886,7 @@ async function handleSignup(event) {
             utrValidation.className = 'validation-message validation-success';
             return true;
         }
-        // ORDER STATUS HELPER FUNCTION
-function getOrderStatusText(status) {
-    const statusMap = {
-        'confirmed': 'Order Confirmed',
-        'preparing': 'Preparing Order', 
-        'dispatched': 'Dispatched',
-        'delivered': 'Delivered',
-        'cancelled': 'Cancelled'
-    };
-    return statusMap[status] || status;
-}
+
         // Order History
         function renderOrders() {
             ordersList.innerHTML = '';
@@ -1210,78 +1199,75 @@ function getOrderStatusText(status) {
         }
 
         // Place Order Functionality - FIXED
-        // Place Order Functionality - FIXED
-// REPLACE the existing placeOrder function with this:
+        async function placeOrder(utr = null) {
+            if (cart.length === 0) {
+                showToast('Your cart is empty!');
+                return;
+            }
 
-async function placeOrder(utr = null) {
-    // Validation checks
-    if (cart.length === 0) {
-        showToast('Your cart is empty!');
-        return;
-    }
+            if (!selectedPaymentMethod) {
+                showToast('Please select a payment method');
+                return;
+            }
 
-    if (!selectedPaymentMethod) {
-        showToast('Please select a payment method');
-        return;
-    }
+            // Auto-select first address if none selected
+            if (!selectedAddress && addresses.length > 0) {
+                selectedAddress = addresses[0].id;
+            }
 
-    // Auto-select first address if none selected
-    if (!selectedAddress && addresses.length > 0) {
-        selectedAddress = addresses[0].id;
-    }
+            if (!selectedAddress) {
+                showToast('Please add a delivery address first');
+                return;
+            }
 
-    if (!selectedAddress) {
-        showToast('Please add a delivery address first');
-        return;
-    }
+            // UTR validation for QR payments
+            if (selectedPaymentMethod === 'qr' && !utr) {
+                showToast('Please enter UTR number after payment');
+                return;
+            }
 
-    // UTR validation for QR payments
-    if (selectedPaymentMethod === 'qr' && !utr) {
-        showToast('Please enter UTR number after payment');
-        return;
-    }
+            try {
+                const selectedAddr = addresses.find(addr => addr.id === selectedAddress);
+                const orderData = {
+                    id: 'ORD' + Date.now(),
+                    items: [...cart],
+                    total: calculateOrderTotal(),
+                    address: selectedAddr,
+                    paymentMethod: selectedPaymentMethod,
+                    status: 'confirmed',
+                    contactPhone: checkoutPhone.value || selectedAddr.phone,
+                    contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
+                    utrNumber: utr,
+                    createdAt: new Date().toISOString(),
+                    userId: currentUser?.uid || 'guest'
+                };
 
-    try {
-        const selectedAddr = addresses.find(addr => addr.id === selectedAddress);
-        const orderData = {
-            id: 'ORD' + Date.now(),
-            items: [...cart],
-            total: calculateOrderTotal(),
-            address: selectedAddr,
-            paymentMethod: selectedPaymentMethod,
-            status: 'confirmed',
-            contactPhone: checkoutPhone.value || selectedAddr.phone,
-            contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
-            utrNumber: utr,
-            createdAt: new Date().toISOString(),
-            userId: currentUser?.uid || 'guest'
-        };
+                // Save order
+                orders.push(orderData);
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
 
-        // Save order
-        orders.push(orderData);
-        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                // Clear cart
+                cart = [];
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
 
-        // Clear cart
-        cart = [];
-        localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-        updateCartUI();
+                // Reset checkout
+                appliedCoupon = null;
+                selectedPaymentMethod = null;
+                selectedAddress = null;
+                
+                // Close bottom sheet
+                bottomSheet.classList.remove('open');
 
-        // Reset checkout
-        appliedCoupon = null;
-        selectedPaymentMethod = null;
-        selectedAddress = null;
-        
-        // Close bottom sheet
-        bottomSheet.classList.remove('open');
+                showToast('🎉 Order placed successfully!');
+                renderOrders();
 
-        showToast('🎉 Order placed successfully!');
-        renderOrders();
+            } catch (error) {
+                console.error('Order error:', error);
+                showToast('Order failed: ' + error.message);
+            }
+        }
 
-    } catch (error) {
-        console.error('Order error:', error);
-        showToast('Order failed: ' + error.message);
-    }
-}
         function calculateOrderTotal() {
             let subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
             let discount = 0;
@@ -1353,16 +1339,17 @@ async function placeOrder(utr = null) {
 
         // Setup Event Listeners
         function setupEventListeners() {
-            // Auth
+            // Auth - FIXED EVENT LISTENERS
             loginForm.addEventListener('submit', handleLogin);
             signupForm.addEventListener('submit', handleSignup);
 
-            document.getElementById('showSignup').addEventListener('click', (e) => {
+            // Form toggles - ADDED EVENT LISTENERS
+            document.getElementById('showSignup').addEventListener('click', function(e) {
                 e.preventDefault();
                 showSignupForm();
             });
 
-            document.getElementById('showLogin').addEventListener('click', (e) => {
+            document.getElementById('showLogin').addEventListener('click', function(e) {
                 e.preventDefault();
                 showLoginForm();
             });
