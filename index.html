@@ -1295,4 +1295,986 @@
                     showToast('Signup failed: ' + error.message);
                 }
             }
-       
+            function showSignupForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('loginFooter').style.display = 'none';
+            document.getElementById('signupFooter').style.display = 'block';
+            document.querySelector('.auth-title').textContent = 'Create Account';
+            document.querySelector('.auth-subtitle').textContent = 'Join Dukaan today';
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginFooter').style.display = 'block';
+            document.getElementById('signupFooter').style.display = 'none';
+            document.querySelector('.auth-title').textContent = 'Welcome to Dukaan';
+            document.querySelector('.auth-subtitle').textContent = 'Sign in to your account';
+        }
+
+        function updateCouponAuth() {
+            if (currentUser) {
+                couponCodeInput.disabled = false;
+                applyCouponBtn.disabled = false;
+                couponLoginRequired.style.display = 'none';
+            } else {
+                couponCodeInput.disabled = true;
+                applyCouponBtn.disabled = true;
+                couponLoginRequired.style.display = 'block';
+            }
+        }
+
+        // Search Functionality
+        function performSearch(query) {
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            const filtered = PRODUCTS.filter(product => 
+                product.name.toLowerCase().includes(query.toLowerCase()) ||
+                product.category.toLowerCase().includes(query.toLowerCase()) ||
+                SHOPS[product.shop].name.toLowerCase().includes(query.toLowerCase())
+            );
+
+            displaySearchResults(filtered);
+        }
+
+        function displaySearchResults(products) {
+            searchResults.innerHTML = '';
+            
+            if (products.length === 0) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            products.forEach(product => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                resultItem.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="search-result-image">
+                    <div class="search-result-info">
+                        <div class="search-result-name">${product.name}</div>
+                        <div class="search-result-category">${SHOPS[product.shop].name} • ${product.category}</div>
+                    </div>
+                    <div class="search-result-price">₹${product.price}</div>
+                `;
+                resultItem.addEventListener('click', () => {
+                    addToCart(product.id);
+                    searchResults.style.display = 'none';
+                    searchInput.value = '';
+                    showToast(`${product.name} added to cart!`);
+                });
+                searchResults.appendChild(resultItem);
+            });
+
+            searchResults.style.display = 'block';
+        }
+
+        // Phone Validation
+        function validatePhoneNumber(phone, validationElement) {
+            const phoneRegex = /^[6-9]\d{9}$/;
+            
+            if (phone.length === 0) {
+                validationElement.textContent = '';
+                return false;
+            }
+
+            if (!/^\d+$/.test(phone)) {
+                validationElement.textContent = 'Only numbers are allowed';
+                validationElement.className = 'validation-message validation-error';
+                return false;
+            }
+
+            if (phone.length !== 10) {
+                validationElement.textContent = 'Phone number must be 10 digits';
+                validationElement.className = 'validation-message validation-error';
+                return false;
+            }
+
+            if (!phoneRegex.test(phone)) {
+                validationElement.textContent = 'Enter a valid mobile number';
+                validationElement.className = 'validation-message validation-error';
+                return false;
+            }
+
+            validationElement.textContent = 'Valid phone number';
+            validationElement.className = 'validation-message validation-success';
+            return true;
+        }
+
+        // UTR Validation
+        function validateUTR(utr) {
+            if (utr.length === 0) {
+                utrValidation.textContent = '';
+                return false;
+            }
+
+            if (!/^\d+$/.test(utr)) {
+                utrValidation.textContent = 'Only numbers are allowed';
+                utrValidation.className = 'validation-message validation-error';
+                return false;
+            }
+
+            if (utr.length !== 12) {
+                utrValidation.textContent = 'UTR number must be 12 digits';
+                utrValidation.className = 'validation-message validation-error';
+                return false;
+            }
+
+            utrValidation.textContent = 'Valid UTR number';
+            utrValidation.className = 'validation-message validation-success';
+            return true;
+        }
+
+        // Order History
+        function renderOrders() {
+            ordersList.innerHTML = '';
+            
+            if (orders.length === 0) {
+                noOrders.style.display = 'block';
+                return;
+            }
+
+            noOrders.style.display = 'none';
+
+            orders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+                orderCard.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-id">Order #${order.id}</div>
+                        <div class="order-status status-${order.status}">${getOrderStatusText(order.status)}</div>
+                    </div>
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name} x${item.quantity}</span>
+                                <span>₹${item.price * item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">₹${order.total}</div>
+                        <button class="btn-reorder" data-order="${order.id}">Reorder</button>
+                    </div>
+                `;
+                ordersList.appendChild(orderCard);
+            });
+
+            document.querySelectorAll('.btn-reorder').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const orderId = e.target.getAttribute('data-order');
+                    reorderItems(orderId);
+                });
+            });
+        }
+
+        function reorderItems(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                // Clear previous UTR number
+                if (window.tempUtr) {
+                    delete window.tempUtr;
+                }
+                if (utrNumber) {
+                    utrNumber.value = '';
+                    utrNumber.disabled = false;
+                }
+                if (confirmQrPayment) {
+                    confirmQrPayment.disabled = false;
+                }
+                
+                order.items.forEach(item => {
+                    const product = PRODUCTS.find(p => p.name === item.name);
+                    if (product) {
+                        for (let i = 0; i < item.quantity; i++) {
+                            addToCart(product.id);
+                        }
+                    }
+                });
+                showToast('Items added to cart from order! UTR cleared.');
+                openCart();
+            }
+        }
+
+        // Page Navigation - FIXED VERSION
+        function showPage(page) {
+            homePage.style.display = 'none';
+            ordersPage.style.display = 'none';
+            wishlistPage.style.display = 'none';
+            productDetailPage.style.display = 'none';
+
+            switch(page) {
+                case 'home':
+                    homePage.style.display = 'block';
+                    break;
+                case 'orders':
+                    ordersPage.style.display = 'block';
+                    renderOrders();
+                    break;
+                case 'wishlist':
+                    wishlistPage.style.display = 'block';
+                    renderWishlist();
+                    break;
+                case 'productDetail':
+                    productDetailPage.style.display = 'block';
+                    break;
+                case 'categories':
+                    showToast('Categories page coming soon!');
+                    homePage.style.display = 'block';
+                    break;
+                case 'account':
+                    showToast('Account page coming soon!');
+                    homePage.style.display = 'block';
+                    break;
+                case 'cart':
+                    openCart();
+                    homePage.style.display = 'block';
+                    break;
+            }
+        }
+
+        // Product Functions
+        function renderProducts(products) {
+            productGrid.innerHTML = '';
+            
+            if (products.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            products.forEach(product => {
+                const shop = SHOPS[product.shop];
+                const isInWishlist = wishlist.includes(product.id);
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" data-id="${product.id}">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="shop-badge">${shop.name}</div>
+                    <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300/3A8EF6/FFFFFF?text=${encodeURIComponent(product.name)}'">
+                    <div class="product-title">${product.name}</div>
+                    <div class="product-category">${product.category}</div>
+                    <div class="product-price">
+                        <span class="current-price">₹${product.price}</span>
+                        ${product.mrp > product.price ? `
+                            <span class="original-price">₹${product.mrp}</span>
+                            <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
+                        ` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-add-cart" data-id="${product.id}">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
+
+            // Add event listeners for product detail
+            document.querySelectorAll('.product-image, .product-title').forEach(element => {
+                element.addEventListener('click', (e) => {
+                    const productCard = e.target.closest('.product-card');
+                    const productId = productCard.querySelector('.btn-add-cart').getAttribute('data-id');
+                    showProductDetail(productId);
+                });
+            });
+
+            document.querySelectorAll('.btn-add-cart').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
+                    addToCart(productId);
+                });
+            });
+
+            document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
+                    toggleWishlist(productId);
+                });
+            });
+        }
+
+        // Cart Functions
+        function addToCart(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (product) {
+                const existingItem = cart.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                        shop: product.shop,
+                        quantity: 1
+                    });
+                }
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
+                showToast(`${product.name} added to cart!`);
+            }
+        }
+
+        function updateCartUI() {
+            bottomCartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+        }
+
+        function openCart() {
+            // Clear UTR when opening cart
+            if (window.tempUtr) {
+                delete window.tempUtr;
+            }
+            if (utrNumber) {
+                utrNumber.value = '';
+                utrNumber.disabled = false;
+            }
+            if (confirmQrPayment) {
+                confirmQrPayment.disabled = false;
+            }
+            
+            renderOrderSummary();
+            renderAddresses();
+            bottomSheet.classList.add('open');
+        }
+
+        function renderOrderSummary() {
+            orderList.innerHTML = '';
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item-summary';
+                orderItem.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong>
+                        <div>₹${item.price} x ${item.quantity}</div>
+                    </div>
+                    <div>₹${itemTotal}</div>
+                `;
+                orderList.appendChild(orderItem);
+            });
+
+            let discount = 0;
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percentage') {
+                    discount = (subtotal * appliedCoupon.value) / 100;
+                } else if (appliedCoupon.type === 'fixed') {
+                    discount = appliedCoupon.value;
+                }
+                discount = Math.min(discount, subtotal);
+            }
+
+            const total = subtotal - discount;
+
+            orderTotal.textContent = `₹${total}`;
+            qrAmount.textContent = `₹${total}`;
+            
+            const discountSection = document.getElementById('discountSection');
+            const discountAmount = document.getElementById('discountAmount');
+            
+            if (discount > 0) {
+                discountSection.style.display = 'block';
+                discountAmount.textContent = `-₹${discount}`;
+            } else {
+                discountSection.style.display = 'none';
+            }
+        }
+
+        // Wishlist Functions
+        function toggleWishlist(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const index = wishlist.indexOf(productId);
+            if (index > -1) {
+                // Remove from wishlist
+                wishlist.splice(index, 1);
+                showToast(`${product.name} removed from wishlist`);
+            } else {
+                // Add to wishlist
+                wishlist.push(productId);
+                showToast(`${product.name} added to wishlist ❤️`);
+            }
+
+            localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
+            
+            // Save to Firebase if user is logged in
+            if (currentUser) {
+                if (index > -1) {
+                    db.collection('users').doc(currentUser.uid).collection('wishlist').doc(productId).delete();
+                } else {
+                    db.collection('users').doc(currentUser.uid).collection('wishlist').doc(productId).set({
+                        productId: productId,
+                        addedAt: new Date().toISOString()
+                    });
+                }
+            }
+
+            updateWishlistUI();
+            renderProducts(PRODUCTS); // Refresh products to update heart icons
+        }
+
+        function updateWishlistUI() {
+            wishlistCount.textContent = wishlist.length;
+        }
+
+        function renderWishlist() {
+            wishlistItems.innerHTML = '';
+            
+            if (wishlist.length === 0) {
+                noWishlist.style.display = 'block';
+                return;
+            }
+
+            noWishlist.style.display = 'none';
+
+            wishlist.forEach(productId => {
+                const product = PRODUCTS.find(p => p.id === productId);
+                if (product) {
+                    const wishlistCard = document.createElement('div');
+                    wishlistCard.className = 'wishlist-card';
+                    wishlistCard.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" class="wishlist-image">
+                        <div class="wishlist-info">
+                            <h5>${product.name}</h5>
+                            <p class="text-muted">${product.category}</p>
+                            <div class="product-price">
+                                <span class="current-price">₹${product.price}</span>
+                                ${product.mrp > product.price ? `
+                                    <span class="original-price">₹${product.mrp}</span>
+                                    <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="wishlist-actions">
+                            <button class="btn-add-cart" data-id="${product.id}">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            <button class="wishlist-btn active" data-id="${product.id}">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    `;
+                    wishlistItems.appendChild(wishlistCard);
+                }
+            });
+
+            // Add event listeners
+            document.querySelectorAll('.wishlist-card .btn-add-cart').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
+                    addToCart(productId);
+                    showToast('Product added to cart from wishlist!');
+                });
+            });
+
+            document.querySelectorAll('.wishlist-card .wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
+                    toggleWishlist(productId);
+                    renderWishlist(); // Refresh wishlist
+                });
+            });
+        }
+
+        // Address Management
+        function renderAddresses() {
+            addressesContainer.innerHTML = '';
+            
+            if (addresses.length === 0) {
+                addressesContainer.innerHTML = '<div class="text-muted">No addresses saved. Add your first address below.</div>';
+                return;
+            }
+
+            addresses.forEach(address => {
+                const addressCard = document.createElement('div');
+                addressCard.className = `address-card ${selectedAddress === address.id ? 'selected' : ''}`;
+                addressCard.innerHTML = `
+                    <div class="address-title">${address.title} • ${address.fullName}</div>
+                    <div class="address-details">${address.details}, ${address.city} - ${address.pincode}</div>
+                    <div class="address-phone">${address.phone} ${address.landmark ? '• Landmark: ' + address.landmark : ''}</div>
+                `;
+                addressCard.addEventListener('click', () => {
+                    selectedAddress = address.id;
+                    renderAddresses();
+                });
+                addressesContainer.appendChild(addressCard);
+            });
+        }
+
+        function saveNewAddress() {
+            const fullName = document.getElementById('addrFullName').value;
+            const phone = document.getElementById('addrPhone').value;
+            const addrType = document.getElementById('addrType').value;
+            const details = document.getElementById('addrDetails').value;
+            const city = document.getElementById('addrCity').value;
+            const pincode = document.getElementById('addrPincode').value;
+            const landmark = document.getElementById('addrLandmark').value;
+
+            if (!fullName || !phone || !details || !city || !pincode) {
+                showToast('Please fill all required fields');
+                return;
+            }
+
+            const phoneValid = validatePhoneNumber(phone, addrPhoneValidation);
+            if (!phoneValid) {
+                showToast('Please enter a valid phone number');
+                return;
+            }
+
+            const newAddress = {
+                id: 'addr' + Date.now(),
+                title: addrType.charAt(0).toUpperCase() + addrType.slice(1),
+                fullName,
+                phone,
+                type: addrType,
+                details,
+                city,
+                pincode,
+                landmark,
+                createdAt: new Date().toISOString()
+            };
+
+            addresses.push(newAddress);
+            localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
+            
+            // Clear form
+            document.getElementById('addrFullName').value = '';
+            document.getElementById('addrPhone').value = '';
+            document.getElementById('addrDetails').value = '';
+            document.getElementById('addrCity').value = '';
+            document.getElementById('addrPincode').value = '';
+            document.getElementById('addrLandmark').value = '';
+            addrPhoneValidation.textContent = '';
+
+            renderAddresses();
+            showToast('Address saved successfully!');
+        }
+
+        // Payment Methods
+        function setupPaymentMethods() {
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', async () => {
+                    if (option.getAttribute('data-method') === 'qr') {
+                        const confirmed = await showConfirmation(
+                            'QR Payment',
+                            'You are about to proceed with QR code payment. Make sure you have your UPI app ready. Continue?'
+                        );
+                        
+                        if (!confirmed) return;
+                    }
+                    
+                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedPaymentMethod = option.getAttribute('data-method');
+                    
+                    if (selectedPaymentMethod === 'qr') {
+                        qrCodeSection.style.display = 'block';
+                        // Reset UTR field
+                        utrNumber.value = '';
+                        utrNumber.disabled = false;
+                        confirmQrPayment.disabled = false;
+                        window.tempUtr = null;
+                    } else {
+                        qrCodeSection.style.display = 'none';
+                    }
+                });
+            });
+
+            confirmQrPayment.addEventListener('click', () => {
+                const utr = utrNumber.value.trim();
+                if (!validateUTR(utr)) {
+                    showToast('Please enter a valid 12-digit UTR number');
+                    return;
+                }
+                
+                // Store UTR temporarily and show success message
+                window.tempUtr = utr;
+                showToast('✅ Payment details saved! Click "Place Order Securely" to confirm order.');
+                utrNumber.disabled = true;
+                confirmQrPayment.disabled = true;
+            });
+        }
+
+        // Place Order Functionality - FIXED
+        async function placeOrder(utr = null) {
+            if (cart.length === 0) {
+                showToast('Your cart is empty!');
+                return;
+            }
+
+            if (!selectedPaymentMethod) {
+                showToast('Please select a payment method');
+                return;
+            }
+
+            // Auto-select first address if none selected
+            if (!selectedAddress && addresses.length > 0) {
+                selectedAddress = addresses[0].id;
+            }
+
+            if (!selectedAddress) {
+                showToast('Please add a delivery address first');
+                return;
+            }
+
+            // UTR validation for QR payments
+            if (selectedPaymentMethod === 'qr' && !utr) {
+                showToast('Please enter UTR number after payment');
+                return;
+            }
+
+            try {
+                const selectedAddr = addresses.find(addr => addr.id === selectedAddress);
+                const orderData = {
+                    id: 'ORD' + Date.now(),
+                    items: [...cart],
+                    total: calculateOrderTotal(),
+                    address: selectedAddr,
+                    paymentMethod: selectedPaymentMethod,
+                    status: 'confirmed',
+                    contactPhone: checkoutPhone.value || selectedAddr.phone,
+                    contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
+                    utrNumber: utr,
+                    createdAt: new Date().toISOString(),
+                    userId: currentUser?.uid || 'guest'
+                };
+
+                // Save order
+                orders.push(orderData);
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+
+                // Clear cart
+                cart = [];
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
+
+                // Reset checkout
+                appliedCoupon = null;
+                selectedPaymentMethod = null;
+                selectedAddress = null;
+                
+                // Close bottom sheet
+                bottomSheet.classList.remove('open');
+
+                showToast('🎉 Order placed successfully!');
+                renderOrders();
+
+            } catch (error) {
+                console.error('Order error:', error);
+                showToast('Order failed: ' + error.message);
+            }
+        }
+
+        function calculateOrderTotal() {
+            let subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            let discount = 0;
+            
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percentage') {
+                    discount = (subtotal * appliedCoupon.value) / 100;
+                } else if (appliedCoupon.type === 'fixed') {
+                    discount = appliedCoupon.value;
+                }
+            }
+            
+            return subtotal - discount;
+        }
+
+        // Coupon Functions
+        function applyCoupon() {
+            const couponCode = couponCodeInput.value.trim().toUpperCase();
+            
+            if (!currentUser) {
+                couponMessage.textContent = 'Please login to apply coupons';
+                couponMessage.className = 'coupon-error';
+                return;
+            }
+
+            const coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
+            if (!coupon) {
+                couponMessage.textContent = 'Invalid coupon code';
+                couponMessage.className = 'coupon-error';
+                return;
+            }
+
+            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            
+            if (subtotal < coupon.minOrder) {
+                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
+                couponMessage.className = 'coupon-error';
+                return;
+            }
+
+            appliedCoupon = coupon;
+            couponMessage.textContent = `Coupon applied: ${coupon.description}`;
+            couponMessage.className = 'coupon-success';
+            couponCodeInput.disabled = true;
+            applyCouponBtn.disabled = true;
+
+            renderOrderSummary();
+        }
+
+        // Order Tracking Functions
+        function openOrderTracking(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // Update timeline based on order status
+            updateOrderTimeline(order);
+            
+            // Show order details
+            document.getElementById('trackingOrderDetails').innerHTML = `
+                <div class="order-item-summary">
+                    <div><strong>Order ID:</strong></div>
+                    <div>${order.id}</div>
+                </div>
+                ${order.items.map(item => `
+                    <div class="order-item-summary">
+                        <div>${item.name} x${item.quantity}</div>
+                        <div>₹${item.price * item.quantity}</div>
+                    </div>
+                `).join('')}
+                <div class="order-total-summary">
+                    <span>Total Amount</span>
+                    <span>₹${order.total}</span>
+                </div>
+            `;
+
+            // Show/hide cancel button based on status
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            if (order.status === 'confirmed' || order.status === 'preparing') {
+                cancelBtn.style.display = 'block';
+                cancelBtn.setAttribute('data-order', orderId);
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+
+            orderTracking.classList.add('open');
+        }
+
+        function closeOrderTracking() {
+            orderTracking.classList.remove('open');
+        }
+
+        function updateOrderTimeline(order) {
+            const statusOrder = ['confirmed', 'preparing', 'dispatched', 'delivered'];
+            const currentStatusIndex = statusOrder.indexOf(order.status);
+            
+            statusOrder.forEach((status, index) => {
+                const stepIcon = document.getElementById(`step${status.charAt(0).toUpperCase() + status.slice(1)}`);
+                const stepLabel = stepIcon.nextElementSibling;
+                const stepTime = stepLabel.nextElementSibling;
+                
+                if (index < currentStatusIndex) {
+                    stepIcon.className = 'step-icon completed';
+                    stepLabel.className = 'step-label completed';
+                } else if (index === currentStatusIndex) {
+                    stepIcon.className = 'step-icon active';
+                    stepLabel.className = 'step-label active';
+                } else {
+                    stepIcon.className = 'step-icon';
+                    stepLabel.className = 'step-label';
+                }
+                
+                // Set timestamps
+                if (order.timestamps && order.timestamps[status]) {
+                    stepTime.textContent = new Date(order.timestamps[status]).toLocaleString();
+                }
+            });
+        }
+
+        function cancelOrder() {
+            const orderId = document.getElementById('cancelOrderBtn').getAttribute('data-order');
+            const order = orders.find(o => o.id === orderId);
+            
+            if (order && (order.status === 'confirmed' || order.status === 'preparing')) {
+                order.status = 'cancelled';
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                renderOrders();
+                closeOrderTracking();
+                showToast('Order cancelled successfully');
+            }
+        }
+
+        // Toast Function
+        function showToast(message) {
+            // Remove existing toasts
+            document.querySelectorAll('.toast').forEach(toast => toast.remove());
+            
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-body d-flex justify-content-between align-items-center">
+                        <span>${message}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // ADD this universal confirmation function
+        function showConfirmation(title, message) {
+            return new Promise((resolve) => {
+                document.getElementById('confirmationTitle').textContent = title;
+                document.getElementById('confirmationMessage').textContent = message;
+                
+                const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                modal.show();
+                
+                // Handle confirm button
+                document.getElementById('confirmAction').onclick = () => {
+                    modal.hide();
+                    resolve(true);
+                };
+                
+                // Handle cancel/close
+                const handleCancel = () => {
+                    modal.hide();
+                    resolve(false);
+                };
+                
+                document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', handleCancel, { once: true });
+            });
+        }
+
+        // Setup Event Listeners - FIXED VERSION
+        function setupEventListeners() {
+            // Auth - FIXED EVENT LISTENERS
+            loginForm.addEventListener('submit', handleLogin);
+            signupForm.addEventListener('submit', handleSignup);
+
+            // Form toggles - ADDED EVENT LISTENERS
+            document.getElementById('showSignup').addEventListener('click', function(e) {
+                e.preventDefault();
+                showSignupForm();
+            });
+
+            document.getElementById('showLogin').addEventListener('click', function(e) {
+                e.preventDefault();
+                showLoginForm();
+            });
+
+            // Search
+            searchInput.addEventListener('input', (e) => {
+                performSearch(e.target.value);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // Validation
+            checkoutPhone.addEventListener('input', (e) => {
+                validatePhoneNumber(e.target.value, phoneValidation);
+            });
+
+            addrPhone.addEventListener('input', (e) => {
+                validatePhoneNumber(e.target.value, addrPhoneValidation);
+            });
+
+            utrNumber.addEventListener('input', (e) => {
+                validateUTR(e.target.value);
+            });
+
+            // Coupon
+            applyCouponBtn.addEventListener('click', applyCoupon);
+
+            // Payment
+            setupPaymentMethods();
+
+            // UPDATE placeOrderBtn event listener:
+            placeOrderBtn.addEventListener('click', async () => {
+                if (selectedPaymentMethod === 'qr' && !window.tempUtr) {
+                    showToast('Please complete QR payment verification first');
+                    return;
+                }
+                
+                // Show confirmation dialog
+                const confirmed = await showConfirmation(
+                    'Confirm Order',
+                    `Are you sure you want to place this order for ₹${calculateOrderTotal()}?`
+                );
+                
+                if (confirmed) {
+                    if (selectedPaymentMethod === 'qr') {
+                        placeOrder(window.tempUtr);
+                        delete window.tempUtr; // Clear temp UTR
+                    } else {
+                        placeOrder();
+                    }
+                }
+            });
+
+            // Address
+            saveAddr.addEventListener('click', saveNewAddress);
+
+            // Navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = item.getAttribute('data-page');
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    showPage(page);
+                });
+            });
+
+            // Close bottom sheet
+            closeSheetBtn.addEventListener('click', () => {
+                bottomSheet.classList.remove('open');
+            });
+
+            // Filters
+            categoryFilter.addEventListener('change', filterProducts);
+            shopFilter.addEventListener('change', filterProducts);
+        }
+
+        // Filter Products
+        function filterProducts() {
+            const shop = shopFilter.value;
+            const category = categoryFilter.value;
+
+            let filtered = PRODUCTS;
+
+            if (shop) {
+                filtered = filtered.filter(product => product.shop === shop);
+            }
+
+            if (category) {
+                filtered = filtered.filter(product => product.category === category);
+            }
+
+            renderProducts(filtered);
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
