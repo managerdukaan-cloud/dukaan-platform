@@ -52,7 +52,12 @@
         .btn-outline:hover { background: var(--accent); color: white; }
         .hero-pattern { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="rgba(255,255,255,0.05)"><circle cx="20" cy="20" r="5"/><circle cx="50" cy="50" r="8"/><circle cx="80" cy="80" r="5"/></svg>'); }
         .orders-page { display: none; }
+        .wishlist-page { display: none; }
         .order-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .wishlist-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; gap: 15px; align-items: center; }
+        .wishlist-image { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; }
+        .wishlist-info { flex: 1; }
+        .wishlist-actions { display: flex; gap: 10px; }
         .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
         .order-id { font-weight: 700; color: var(--text-dark); }
         .order-status { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
@@ -68,6 +73,9 @@
         .product-card { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--shadow); transition: all 0.3s ease; border: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; position: relative; overflow: hidden; }
         .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
         .product-badge { position: absolute; top: 12px; left: 12px; background: var(--success); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .wishlist-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; color: var(--text-light); }
+        .wishlist-btn:hover { background: white; transform: scale(1.1); }
+        .wishlist-btn.active { background: var(--danger); color: white; }
         .product-image { height: 160px; border-radius: 12px; object-fit: cover; width: 100%; background: var(--neutral); margin-bottom: 12px; }
         .product-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; color: var(--text-dark); }
         .product-category { font-size: 13px; color: var(--text-light); margin-bottom: 10px; }
@@ -78,7 +86,7 @@
         .card-actions { display: flex; justify-content: center; margin-top: 15px; }
         .btn-add-cart { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 600; width: 100%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; font-size: 14px; }
         .btn-add-cart:hover { background: var(--accent-hover); transform: scale(1.02); }
-        .shop-badge { position: absolute; top: 12px; right: 12px; background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+        .shop-badge { position: absolute; top: 12px; right: 55px; background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
         .bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); z-index: 1001; max-height: 85vh; overflow: auto; }
         .bottom-sheet.open { transform: translateY(0); }
         .sheet-handle { width: 60px; height: 5px; background: #E2E8F0; border-radius: 99px; margin: 12px auto; display: block; }
@@ -213,6 +221,8 @@
             .product-image { height: 120px; }
             .auth-card { padding: 30px 25px; }
             .form-row { grid-template-columns: 1fr; }
+            .wishlist-card { flex-direction: column; text-align: center; }
+            .wishlist-actions { justify-content: center; }
         }
         @media (max-width: 480px) {
             .container-main { padding: 0 12px; }
@@ -335,6 +345,16 @@
                     <p class="text-muted">Start shopping to see your orders here</p>
                 </div>
             </div>
+
+            <div id="wishlistPage" class="wishlist-page">
+                <h2 class="section-title">Your Wishlist</h2>
+                <div id="wishlistItems"></div>
+                <div id="noWishlist" class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-heart"></i></div>
+                    <h3 class="empty-text">Your wishlist is empty</h3>
+                    <p class="text-muted">Start adding products you love</p>
+                </div>
+            </div>
         </div>
                 <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="home">
@@ -344,6 +364,11 @@
             <a href="#" class="nav-item" data-page="categories">
                 <i class="fas fa-th-large nav-icon"></i>
                 <span class="nav-label">Categories</span>
+            </a>
+            <a href="#" class="nav-item" data-page="wishlist" id="wishlistNav">
+                <i class="fas fa-heart nav-icon"></i>
+                <span class="nav-label">Wishlist</span>
+                <span class="nav-badge" id="wishlistCount">0</span>
             </a>
             <a href="#" class="nav-item" data-page="orders">
                 <i class="fas fa-shopping-bag nav-icon"></i>
@@ -703,6 +728,7 @@
         // App State
         let currentUser = null;
         let cart = JSON.parse(localStorage.getItem('dukaan_cart')) || [];
+        let wishlist = JSON.parse(localStorage.getItem('dukaan_wishlist')) || [];
         let addresses = JSON.parse(localStorage.getItem('dukaan_addresses')) || [];
         let appliedCoupon = null;
         let orders = JSON.parse(localStorage.getItem('dukaan_orders')) || [];
@@ -714,6 +740,7 @@
         const appScreen = document.getElementById('appScreen');
         const homePage = document.getElementById('homePage');
         const ordersPage = document.getElementById('ordersPage');
+        const wishlistPage = document.getElementById('wishlistPage');
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
         const searchInput = document.getElementById('search');
@@ -730,6 +757,10 @@
         const addressesContainer = document.getElementById('addresses');
         const bottomNavCart = document.getElementById('bottomNavCart');
         const bottomCartCount = document.getElementById('bottomCartCount');
+        const wishlistNav = document.getElementById('wishlistNav');
+        const wishlistCount = document.getElementById('wishlistCount');
+        const wishlistItems = document.getElementById('wishlistItems');
+        const noWishlist = document.getElementById('noWishlist');
         const navItems = document.querySelectorAll('.nav-item');
         const ordersList = document.getElementById('ordersList');
         const noOrders = document.getElementById('noOrders');
@@ -757,6 +788,7 @@
             setupDemoLogin();
             renderProducts(PRODUCTS);
             updateCartUI();
+            updateWishlistUI();
             renderOrders();
             renderAddresses();
         }
@@ -828,6 +860,15 @@
                 });
                 localStorage.setItem('dukaan_orders', JSON.stringify(orders));
                 renderOrders();
+
+                // Load wishlist from Firebase
+                const wishlistSnapshot = await db.collection('users').doc(currentUser.uid).collection('wishlist').get();
+                wishlist = [];
+                wishlistSnapshot.forEach(doc => {
+                    wishlist.push(doc.id);
+                });
+                localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
+                updateWishlistUI();
 
             } catch (error) {
                 console.error('Error loading user data:', error);
@@ -1097,6 +1138,7 @@
         function showPage(page) {
             homePage.style.display = 'none';
             ordersPage.style.display = 'none';
+            wishlistPage.style.display = 'none';
 
             switch(page) {
                 case 'home':
@@ -1105,6 +1147,10 @@
                 case 'orders':
                     ordersPage.style.display = 'block';
                     renderOrders();
+                    break;
+                case 'wishlist':
+                    wishlistPage.style.display = 'block';
+                    renderWishlist();
                     break;
                 case 'categories':
                     showToast('Categories page coming soon!');
@@ -1134,13 +1180,17 @@
 
             products.forEach(product => {
                 const shop = SHOPS[product.shop];
+                const isInWishlist = wishlist.includes(product.id);
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
                 productCard.innerHTML = `
                     ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" data-id="${product.id}">
+                        <i class="fas fa-heart"></i>
+                    </button>
                     <div class="shop-badge">${shop.name}</div>
                     <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300/3A8EF6/FFFFFF?text=${encodeURIComponent(product.name)}'">
-                                        <div class="product-title">${product.name}</div>
+                    <div class="product-title">${product.name}</div>
                     <div class="product-category">${product.category}</div>
                     <div class="product-price">
                         <span class="current-price">₹${product.price}</span>
@@ -1162,6 +1212,13 @@
                 btn.addEventListener('click', (e) => {
                     const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
                     addToCart(productId);
+                });
+            });
+
+            document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
+                    toggleWishlist(productId);
                 });
             });
         }
@@ -1255,6 +1312,103 @@
             } else {
                 discountSection.style.display = 'none';
             }
+        }
+
+        // Wishlist Functions
+        function toggleWishlist(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+
+            const index = wishlist.indexOf(productId);
+            if (index > -1) {
+                // Remove from wishlist
+                wishlist.splice(index, 1);
+                showToast(`${product.name} removed from wishlist`);
+            } else {
+                // Add to wishlist
+                wishlist.push(productId);
+                showToast(`${product.name} added to wishlist ❤️`);
+            }
+
+            localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
+            
+            // Save to Firebase if user is logged in
+            if (currentUser) {
+                if (index > -1) {
+                    db.collection('users').doc(currentUser.uid).collection('wishlist').doc(productId).delete();
+                } else {
+                    db.collection('users').doc(currentUser.uid).collection('wishlist').doc(productId).set({
+                        productId: productId,
+                        addedAt: new Date().toISOString()
+                    });
+                }
+            }
+
+            updateWishlistUI();
+            renderProducts(PRODUCTS); // Refresh products to update heart icons
+        }
+
+        function updateWishlistUI() {
+            wishlistCount.textContent = wishlist.length;
+        }
+
+        function renderWishlist() {
+            wishlistItems.innerHTML = '';
+            
+            if (wishlist.length === 0) {
+                noWishlist.style.display = 'block';
+                return;
+            }
+
+            noWishlist.style.display = 'none';
+
+            wishlist.forEach(productId => {
+                const product = PRODUCTS.find(p => p.id === productId);
+                if (product) {
+                    const wishlistCard = document.createElement('div');
+                    wishlistCard.className = 'wishlist-card';
+                    wishlistCard.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" class="wishlist-image">
+                        <div class="wishlist-info">
+                            <h5>${product.name}</h5>
+                            <p class="text-muted">${product.category}</p>
+                            <div class="product-price">
+                                <span class="current-price">₹${product.price}</span>
+                                ${product.mrp > product.price ? `
+                                    <span class="original-price">₹${product.mrp}</span>
+                                    <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="wishlist-actions">
+                            <button class="btn-add-cart" data-id="${product.id}">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            <button class="wishlist-btn active" data-id="${product.id}">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    `;
+                    wishlistItems.appendChild(wishlistCard);
+                }
+            });
+
+            // Add event listeners
+            document.querySelectorAll('.wishlist-card .btn-add-cart').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
+                    addToCart(productId);
+                    showToast('Product added to cart from wishlist!');
+                });
+            });
+
+            document.querySelectorAll('.wishlist-card .wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
+                    toggleWishlist(productId);
+                    renderWishlist(); // Refresh wishlist
+                });
+            });
         }
 
         // Address Management
