@@ -1034,6 +1034,7 @@
         }
         const auth = firebase.auth();
         const db = firebase.firestore();
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
         // Sample Data with Cloudinary Images
         const SHOPS = {
