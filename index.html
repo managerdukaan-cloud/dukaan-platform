@@ -1186,9 +1186,12 @@ async function handleSignup(event) {
 
         // Place Order Functionality - FIXED
         // Place Order Functionality - FIXED
+// REPLACE the existing placeOrder function with this:
+
 async function placeOrder(utr = null) {
-    if (!selectedAddress && addresses.length > 0) {
-        showToast('Please select a delivery address');
+    // Validation checks
+    if (cart.length === 0) {
+        showToast('Your cart is empty!');
         return;
     }
 
@@ -1197,28 +1200,31 @@ async function placeOrder(utr = null) {
         return;
     }
 
-    if (cart.length === 0) {
-        showToast('Your cart is empty');
-        return;
+    // Auto-select first address if none selected
+    if (!selectedAddress && addresses.length > 0) {
+        selectedAddress = addresses[0].id;
     }
 
-    // If no address selected, use the first one or show message
-    const selectedAddr = selectedAddress ? 
-        addresses.find(addr => addr.id === selectedAddress) : 
-        (addresses.length > 0 ? addresses[0] : null);
-
-    if (!selectedAddr) {
+    if (!selectedAddress) {
         showToast('Please add a delivery address first');
         return;
     }
 
+    // UTR validation for QR payments
+    if (selectedPaymentMethod === 'qr' && !utr) {
+        showToast('Please enter UTR number after payment');
+        return;
+    }
+
     try {
+        const selectedAddr = addresses.find(addr => addr.id === selectedAddress);
         const orderData = {
-            items: cart,
+            id: 'ORD' + Date.now(),
+            items: [...cart],
             total: calculateOrderTotal(),
             address: selectedAddr,
             paymentMethod: selectedPaymentMethod,
-            status: selectedPaymentMethod === 'cod' ? 'confirmed' : 'pending',
+            status: 'confirmed',
             contactPhone: checkoutPhone.value || selectedAddr.phone,
             contactName: document.getElementById('checkoutName').value || selectedAddr.fullName,
             utrNumber: utr,
@@ -1226,34 +1232,29 @@ async function placeOrder(utr = null) {
             userId: currentUser?.uid || 'guest'
         };
 
-        if (currentUser) {
-            const orderRef = await db.collection('users').doc(currentUser.uid).collection('orders').add(orderData);
-            orderData.id = orderRef.id;
-        } else {
-            orderData.id = 'ORD' + Date.now();
-        }
-
-        // Save to local storage
+        // Save order
         orders.push(orderData);
         localStorage.setItem('dukaan_orders', JSON.stringify(orders));
 
-        // Clear cart and reset
+        // Clear cart
         cart = [];
         localStorage.setItem('dukaan_cart', JSON.stringify(cart));
         updateCartUI();
+
+        // Reset checkout
         appliedCoupon = null;
         selectedPaymentMethod = null;
         selectedAddress = null;
-
+        
         // Close bottom sheet
         bottomSheet.classList.remove('open');
 
-        showToast('Order placed successfully!');
+        showToast('🎉 Order placed successfully!');
         renderOrders();
 
     } catch (error) {
-        console.error('Error placing order:', error);
-        showToast('Failed to place order: ' + error.message);
+        console.error('Order error:', error);
+        showToast('Order failed: ' + error.message);
     }
 }
         function calculateOrderTotal() {
