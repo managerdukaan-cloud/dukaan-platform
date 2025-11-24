@@ -2187,27 +2187,43 @@ function getOrderStatusText(status) {
         }
 
         // Toast Function
-        function showToast(message) {
-            // Remove existing toasts
-            document.querySelectorAll('.toast').forEach(toast => toast.remove());
-            
-            const toast = document.createElement('div');
-            toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class="toast show" role="alert">
-                    <div class="toast-body d-flex justify-content-between align-items-center">
-                        <span>${message}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(toast);
+        function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `custom-toast toast-${type} show`;
+    
+    const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+    };
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.info}</div>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+        <div class="toast-progress"></div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
 
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+    return container;
+}
             }, 3000);
         }
 
