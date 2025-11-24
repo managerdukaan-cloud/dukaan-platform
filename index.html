@@ -109,9 +109,12 @@
         .payment-info { flex: 1; }
         .payment-title { font-weight: 600; margin-bottom: 4px; }
         .payment-desc { font-size: 12px; color: var(--text-light); }
-        .qr-modal { text-align: center; padding: 20px; }
-        .qr-code { width: 200px; height: 200px; background: var(--neutral); border-radius: 12px; margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-light); border: 2px dashed var(--border); }
-        .qr-code img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
+        .qr-modal { text-align: center; padding: 20px; position: relative; }
+        .qr-code { width: 100%; max-width: 280px; margin: 20px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #f1f3f4; }
+        .qr-code-content { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .qr-image-container { width: 200px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid #34A853; background: white; }
+        .qr-image-container img { width: 100%; height: 100%; object-fit: contain; }
+        .upi-details { background: #f8f9fa; padding: 12px; border-radius: 10px; width: 100%; text-align: center; }
         .utr-input { margin: 15px 0; }
         .utr-input .form-control { margin-top: 8px; }
         .empty-state { text-align: center; padding: 40px 20px; }
@@ -443,23 +446,21 @@
                 <div id="qrCodeSection" style="display: none;" class="qr-modal">
                     <h5>Scan QR Code to Pay</h5>
                     <div class="qr-code">
-                        <div style="background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #f1f3f4;">
-                            <div style="color: #5F6368; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                        <div class="qr-code-content">
+                            <div style="color: #5F6368; font-size: 18px; font-weight: 700;">
                                 Google Pay
                             </div>
                             
-                            <div style="background: #000; color: white; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; margin-bottom: 20px; display: inline-block;">
+                            <div style="background: #000; color: white; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600;">
                                 Scan to Pay
                             </div>
                             
-                            <!-- ACTUAL QR CODE IMAGE FROM CLOUDINARY -->
-                            <div style="height: 200px; width: 200px; margin: 0 auto 15px; border-radius: 12px; overflow: hidden; border: 2px solid #34A853;">
+                            <div class="qr-image-container">
                                 <img src="https://res.cloudinary.com/db1rbtgpe/image/upload/v1763973608/GooglePay_QR_qvu0wv.png" 
-                                     alt="Google Pay QR Code" 
-                                     style="width: 100%; height: 100%; object-fit: contain;">
+                                     alt="Google Pay QR Code">
                             </div>
                             
-                            <div style="background: #f8f9fa; padding: 12px; border-radius: 10px;">
+                            <div class="upi-details">
                                 <div style="font-size: 13px; color: #5F6368; margin-bottom: 5px;">
                                     <strong>UPI ID:</strong>
                                 </div>
@@ -1067,6 +1068,18 @@
         function reorderItems(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (order) {
+                // Clear previous UTR number
+                if (window.tempUtr) {
+                    delete window.tempUtr;
+                }
+                if (utrNumber) {
+                    utrNumber.value = '';
+                    utrNumber.disabled = false;
+                }
+                if (confirmQrPayment) {
+                    confirmQrPayment.disabled = false;
+                }
+                
                 order.items.forEach(item => {
                     const product = PRODUCTS.find(p => p.name === item.name);
                     if (product) {
@@ -1075,7 +1088,7 @@
                         }
                     }
                 });
-                showToast('Items added to cart from order!');
+                showToast('Items added to cart from order! UTR cleared.');
                 openCart();
             }
         }
@@ -1181,6 +1194,18 @@
         }
 
         function openCart() {
+            // Clear UTR when opening cart
+            if (window.tempUtr) {
+                delete window.tempUtr;
+            }
+            if (utrNumber) {
+                utrNumber.value = '';
+                utrNumber.disabled = false;
+            }
+            if (confirmQrPayment) {
+                confirmQrPayment.disabled = false;
+            }
+            
             renderOrderSummary();
             renderAddresses();
             bottomSheet.classList.add('open');
