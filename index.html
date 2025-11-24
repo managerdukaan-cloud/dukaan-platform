@@ -1348,4 +1348,126 @@
                     break;
                 case 'wishlist':
                     wishlistPage.style.display = 'block';
-                    renderWish
+                    renderWishlist();
+                    break;
+                case 'productDetail':
+                    productDetailPage.style.display = 'block';
+                    break;
+                case 'categories':
+                    showToast('Categories page coming soon!');
+                    homePage.style.display = 'block';
+                    break;
+                case 'account':
+                    showToast('Account page coming soon!');
+                    homePage.style.display = 'block';
+                    break;
+                case 'cart':
+                    openCart();
+                    homePage.style.display = 'block';
+                    break;
+            }
+        }
+
+        // Add quantity functions for product detail
+        function changeQuantity(change) {
+            const quantityElement = document.getElementById('quantityValue');
+            let quantity = parseInt(quantityElement.textContent);
+            quantity = Math.max(1, quantity + change);
+            quantityElement.textContent = quantity;
+        }
+
+        function addToCartFromDetail() {
+            if (!currentProductDetail) return;
+            
+            const quantity = parseInt(document.getElementById('quantityValue').textContent);
+            for (let i = 0; i < quantity; i++) {
+                addToCart(currentProductDetail.id);
+            }
+            
+            showToast(`${currentProductDetail.name} added to cart!`);
+        }
+
+        function toggleWishlistFromDetail() {
+            if (!currentProductDetail) return;
+            toggleWishlist(currentProductDetail.id);
+            
+            // Update button state
+            const wishlistBtn = document.getElementById('wishlistDetailBtn');
+            const isInWishlist = wishlist.includes(currentProductDetail.id);
+            wishlistBtn.className = `wishlist-btn ${isInWishlist ? 'active' : ''}`;
+        }
+
+        // Update product card to include click event for product detail
+        function renderProducts(products) {
+            productGrid.innerHTML = '';
+            
+            if (products.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            products.forEach(product => {
+                const shop = SHOPS[product.shop];
+                const isInWishlist = wishlist.includes(product.id);
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" data-id="${product.id}">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="shop-badge">${shop.name}</div>
+                    <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300/3A8EF6/FFFFFF?text=${encodeURIComponent(product.name)}'">
+                    <div class="product-title">${product.name}</div>
+                    <div class="product-category">${product.category}</div>
+                    <div class="product-price">
+                        <span class="current-price">₹${product.price}</span>
+                        ${product.mrp > product.price ? `
+                            <span class="original-price">₹${product.mrp}</span>
+                            <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
+                        ` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-add-cart" data-id="${product.id}">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
+
+            // Add event listeners for product detail
+            document.querySelectorAll('.product-image, .product-title').forEach(element => {
+                element.addEventListener('click', (e) => {
+                    const productCard = e.target.closest('.product-card');
+                    const productId = productCard.querySelector('.btn-add-cart').getAttribute('data-id');
+                    showProductDetail(productId);
+                });
+            });
+
+            document.querySelectorAll('.btn-add-cart').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
+                    addToCart(productId);
+                });
+            });
+
+            document.querySelectorAll('.wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
+                    toggleWishlist(productId);
+                });
+            });
+        }
+
+        // ... (rest of your existing functions remain exactly the same) ...
+        // Cart Functions, Wishlist Functions, Address Management, Payment Methods, etc.
+        // ALL YOUR PREVIOUS CODE REMAINS UNCHANGED
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
