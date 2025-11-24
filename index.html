@@ -379,22 +379,32 @@
                 <div id="qrCodeSection" style="display: none;" class="qr-modal">
     <h5>Scan QR Code to Pay</h5>
     <div class="qr-code">
-        <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            <div style="color: #5F6368; font-size: 16px; font-weight: 600; margin-bottom: 10px;">Google Pay</div>
-            <div style="background: #000; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; margin-bottom: 15px; display: inline-block;">
-                Scan to Pay
+    <div style="background: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #f1f3f4;">
+        <div style="color: #5F6368; font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+            Google Pay
+        </div>
+        
+        <div style="background: #000; color: white; padding: 10px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; margin-bottom: 20px; display: inline-block;">
+            Scan to Pay
+        </div>
+        
+        <!-- ACTUAL QR CODE IMAGE FROM CLOUDINARY -->
+        <div style="height: 200px; width: 200px; margin: 0 auto 15px; border-radius: 12px; overflow: hidden; border: 2px solid #34A853;">
+            <img src="https://res.cloudinary.com/db1rbtgpe/image/upload/v1763973608/GooglePay_QR_qvu0wv.png" 
+                 alt="Google Pay QR Code" 
+                 style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 12px; border-radius: 10px;">
+            <div style="font-size: 13px; color: #5F6368; margin-bottom: 5px;">
+                <strong>UPI ID:</strong>
             </div>
-            <div style="height: 180px; width: 180px; background: linear-gradient(45deg, #4285F4, #34A853, #FBBC05, #EA4335); margin: 0 auto 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 3px solid #000;">
-                <div style="text-align: center; color: white; font-weight: bold;">
-                    <div style="font-size: 14px; margin-bottom: 5px;">QR CODE</div>
-                    <div style="font-size: 10px; opacity: 0.9;">Google Pay</div>
-                </div>
-            </div>
-            <div style="font-size: 12px; color: #5F6368; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 10px;">
-                <strong>UPI ID:</strong> damazingdeals-1@okaxis
+            <div style="font-size: 14px; color: #000; font-weight: 600; font-family: monospace;">
+                damazingdeals-1@okaxis
             </div>
         </div>
     </div>
+</div>
     <p class="text-muted">Amount: <span id="qrAmount">₹0</span></p>
     
     <div class="utr-input">
