@@ -1248,33 +1248,32 @@
 }
 
         function setupDemoLogin() {
-            // Auto-fill demo credentials
-            document.getElementById('loginEmail').value = 'demo@dukaan.com';
-            document.getElementById('loginPassword').value = 'demo123';
-            
-            const demoBtn = document.createElement('button');
-            demoBtn.type = 'button';
-            demoBtn.className = 'btn-outline w-100 mt-3';
-            demoBtn.innerHTML = '<i class="fas fa-rocket"></i> Try Demo Account';
-            demoBtn.onclick = async () => {
+    document.getElementById('loginEmail').value = 'demo@dukaan.com';
+    document.getElementById('loginPassword').value = 'demo123';
+    
+    const demoBtn = document.createElement('button');
+    demoBtn.type = 'button';
+    demoBtn.className = 'btn-outline w-100 mt-3';
+    demoBtn.innerHTML = '<i class="fas fa-rocket"></i> Try Demo Account';
+    demoBtn.onclick = async () => {
+        try {
+            await auth.signInWithEmailAndPassword('demo@dukaan.com', 'demo123');
+        } catch (error) {
+            if (error.code === 'auth/invalid-login-credentials') {
                 try {
-                    await auth.signInWithEmailAndPassword('demo@dukaan.com', 'demo123');
-                } catch (error) {
-                    if (error.code === 'auth/invalid-login-credentials') {
-                        try {
-                            await auth.createUserWithEmailAndPassword('demo@dukaan.com', 'demo123');
-                            showToast('Demo account created! Welcome to Dukaan!');
-                        } catch (signupError) {
-                            showToast('Please use Sign Up to create your account');
-                        }
-                    } else {
-                        showToast('Login error: ' + error.message);
-                    }
+                    await auth.createUserWithEmailAndPassword('demo@dukaan.com', 'demo123');
+                    showToast('Demo account created! Welcome to Dukaan!');
+                } catch (signupError) {
+                    showToast('Please use Sign Up to create your account');
                 }
-            };
-            
-            document.getElementById('loginForm').appendChild(demoBtn);
+            } else {
+                showToast('Login error: ' + error.message);
+            }
         }
+    };
+    
+    document.getElementById('loginForm').appendChild(demoBtn);
+}
 
         async function loadUserData() {
             if (!currentUser) return;
