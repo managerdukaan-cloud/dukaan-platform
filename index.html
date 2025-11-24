@@ -1235,18 +1235,22 @@
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
     auth.onAuthStateChanged((user) => {
-        console.log('Auth state changed:', user);
+        console.log('Auth State:', user);
         if (user) {
-            currentUser = { uid: user.uid, email: user.email, name: user.displayName };
+            currentUser = {
+                uid: user.uid,
+                email: user.email,
+                name: user.displayName || user.email.split('@')[0]
+            };
             showAppScreen();
             loadUserData();
+            showToast('Welcome ' + currentUser.name + '!', 'success');
         } else {
             currentUser = null;
             showAuthScreen();
         }
     });
 }
-
         function setupDemoLogin() {
     document.getElementById('loginEmail').value = 'demo@dukaan.com';
     document.getElementById('loginPassword').value = 'demo123';
