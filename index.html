@@ -488,42 +488,57 @@
         };
 
         const PRODUCTS = [
-    // FreshMart - Groceries (20 products)
-    { id: 'p1', name: 'Fresh Milk 1L', price: 60, mrp: 70, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk`, badge: 'Popular' },
-    { id: 'p2', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bread`, badge: 'Fresh' },
-    { id: 'p3', name: 'Basmati Rice 1kg', price: 120, mrp: 150, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/rice`, badge: 'Premium' },
-    { id: 'p4', name: 'Sugar 1kg', price: 45, mrp: 50, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sugar`, badge: 'Essential' },
-    { id: 'p5', name: 'Toor Dal 500g', price: 80, mrp: 90, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/dal`, badge: 'Healthy' },
-    { id: 'p6', name: 'Refined Oil 1L', price: 180, mrp: 200, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/oil`, badge: 'Cooking' },
-    { id: 'p7', name: 'Salt 1kg', price: 20, mrp: 25, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/salt`, badge: 'Basic' },
-    { id: 'p8', name: 'Tea Powder 500g', price: 150, mrp: 180, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tea`, badge: 'Beverage' },
-    { id: 'p9', name: 'Coffee Powder 200g', price: 220, mrp: 250, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/coffee`, badge: 'Premium' },
-    { id: 'p10', name: 'Biscuits Pack', price: 30, mrp: 40, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/biscuits`, badge: 'Snack' },
+    // FreshMart - Groceries (25 products)
+    { id: 'fm1', name: 'Fresh Cow Milk 1L', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk`, badge: 'Fresh' },
+    { id: 'fm2', name: 'Buffalo Milk 1L', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk_buffalo`, badge: 'Premium' },
+    { id: 'fm3', name: 'Curd 500g', price: 50, mrp: 60, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/curd`, badge: 'Homemade' },
+    { id: 'fm4', name: 'Panner 250g', price: 90, mrp: 110, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/paneer`, badge: 'Fresh' },
+    { id: 'fm5', name: 'Butter 100g', price: 55, mrp: 65, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/butter`, badge: 'Amul' },
     
-    // CosmeticStore - Cosmetics (20 products)
-    { id: 'p21', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facecream`, badge: 'New' },
-    { id: 'p22', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lipstick`, badge: 'Bestseller' },
-    { id: 'p23', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facewash`, badge: 'Popular' },
-    { id: 'p24', name: 'Shampoo 400ml', price: 180, mrp: 220, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shampoo`, badge: 'Hair Care' },
-    { id: 'p25', name: 'Conditioner 400ml', price: 200, mrp: 250, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/conditioner`, badge: 'Hair Care' },
-    { id: 'p26', name: 'Body Lotion', price: 250, mrp: 300, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lotion`, badge: 'Skincare' },
-    { id: 'p27', name: 'Perfume 100ml', price: 450, mrp: 550, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/perfume`, badge: 'Fragrance' },
-    { id: 'p28', name: 'Makeup Kit', price: 899, mrp: 1099, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/makeup`, badge: 'Premium' },
-    { id: 'p29', name: 'Nail Polish Set', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/nailpolish`, badge: 'Beauty' },
-    { id: 'p30', name: 'Sunscreen Lotion', price: 299, mrp: 349, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sunscreen`, badge: 'Protection' },
+    { id: 'fm6', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bread`, badge: 'Fresh' },
+    { id: 'fm7', name: 'Brown Bread', price: 45, mrp: 50, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/brown_bread`, badge: 'Healthy' },
+    { id: 'fm8', name: 'Bun 6pcs', price: 25, mrp: 30, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bun`, badge: 'Fresh' },
+    { id: 'fm9', name: 'Croissant 4pcs', price: 120, mrp: 150, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/croissant`, badge: 'Premium' },
+    
+    { id: 'fm10', name: 'Basmati Rice 1kg', price: 120, mrp: 150, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/rice`, badge: 'Premium' },
+    { id: 'fm11', name: 'Wheat Flour 1kg', price: 45, mrp: 55, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/wheat_flour`, badge: 'Local' },
+    { id: 'fm12', name: 'Toor Dal 500g', price: 80, mrp: 90, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/dal`, badge: 'Healthy' },
+    { id: 'fm13', name: 'Chana Dal 500g', price: 70, mrp: 80, category: 'grains', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/chana_dal`, badge: 'Protein' },
+    
+    { id: 'fm14', name: 'Sugar 1kg', price: 45, mrp: 50, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sugar`, badge: 'Essential' },
+    { id: 'fm15', name: 'Salt 1kg', price: 20, mrp: 25, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/salt`, badge: 'Basic' },
+    { id: 'fm16', name: 'Tea Powder 500g', price: 150, mrp: 180, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tea`, badge: 'Beverage' },
+    { id: 'fm17', name: 'Refined Oil 1L', price: 180, mrp: 200, category: 'groceries', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/oil`, badge: 'Cooking' },
+    
+    { id: 'fm18', name: 'Apple 1kg', price: 120, mrp: 150, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/apple`, badge: 'Fresh' },
+    { id: 'fm19', name: 'Banana 1dozen', price: 40, mrp: 50, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/banana`, badge: 'Local' },
+    { id: 'fm20', name: 'Orange 1kg', price: 80, mrp: 100, category: 'fruits', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/orange`, badge: 'Vitamin C' },
+    
+    { id: 'fm21', name: 'Tomatoes 1kg', price: 40, mrp: 50, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tomatoes`, badge: 'Fresh' },
+    { id: 'fm22', name: 'Potatoes 1kg', price: 30, mrp: 35, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/potatoes`, badge: 'Local' },
+    { id: 'fm23', name: 'Onions 1kg', price: 35, mrp: 45, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/onions`, badge: 'Fresh' },
+    { id: 'fm24', name: 'Carrot 1kg', price: 50, mrp: 60, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/carrot`, badge: 'Healthy' },
+    { id: 'fm25', name: 'Capsicum 1kg', price: 60, mrp: 80, category: 'vegetables', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/capsicum`, badge: 'Fresh' },
 
-    // FashionHub - Clothing (20 products)
-    { id: 'p41', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tshirt`, badge: 'Trending' },
-    { id: 'p42', name: 'Jeans', price: 899, mrp: 1199, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jeans`, badge: 'Fashion' },
-    { id: 'p43', name: 'Winter Jacket', price: 1299, mrp: 1599, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jacket`, badge: 'Winter' },
-    { id: 'p44', name: 'Formal Shirt', price: 599, mrp: 799, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shirt`, badge: 'Office' },
-    { id: 'p45', name: 'Sports Shoes', price: 1499, mrp: 1999, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shoes`, badge: 'Sports' },
-    { id: 'p46', name: 'Casual Dress', price: 799, mrp: 999, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/dress`, badge: 'Casual' },
-    { id: 'p47', name: 'Winter Sweater', price: 999, mrp: 1299, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/sweater`, badge: 'Winter' },
-    { id: 'p48', name: 'Kids T-Shirt', price: 299, mrp: 399, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/kidstshirt`, badge: 'Kids' },
-    { id: 'p49', name: 'Designer Kurti', price: 699, mrp: 899, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/kurti`, badge: 'Ethnic' },
-    { id: 'p50', name: 'Track Pants', price: 499, mrp: 699, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/trackpants`, badge: 'Sports' }
+    // CosmeticStore - Beauty (25 products)
+    { id: 'cs1', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facecream`, badge: 'New' },
+    { id: 'cs2', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lipstick`, badge: 'Bestseller' },
+    { id: 'cs3', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facewash`, badge: 'Popular' },
+    { id: 'cs4', name: 'Shampoo 400ml', price: 180, mrp: 220, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/shampoo`, badge: 'Hair Care' },
+    { id: 'cs5', name: 'Conditioner 400ml', price: 200, mrp: 250, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/conditioner`, badge: 'Hair Care' },
+    
+    // Continue adding more products for other shops...
 ];
+
+// Update SHOPS with more categories
+const SHOPS = {
+    freshmart: { id: 'freshmart', name: 'FreshMart', category: 'groceries', rating: 4.5, deliveryTime: '30 min' },
+    cosmeticstore: { id: 'cosmeticstore', name: 'CosmeticStore', category: 'cosmetics', rating: 4.3, deliveryTime: '45 min' },
+    fashionhub: { id: 'fashionhub', name: 'FashionHub', category: 'clothing', rating: 4.7, deliveryTime: '2 days' },
+    veggieking: { id: 'veggieking', name: 'VeggieKing', category: 'vegetables', rating: 4.4, deliveryTime: '40 min' },
+    gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6, deliveryTime: '1 day' },
+    bakerycorner: { id: 'bakerycorner', name: 'Bakery Corner', category: 'bakery', rating: 4.8, deliveryTime: '25 min' }
+};
 
         const AVAILABLE_COUPONS = [
             { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
