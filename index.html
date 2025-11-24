@@ -636,23 +636,46 @@
         }
 
         async function handleLogin(event) {
-            event.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+    event.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
 
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-                showToast('Welcome back to Dukaan!');
-            } catch (error) {
-                console.error('Login error:', error);
-                if (error.code === 'auth/invalid-login-credentials') {
-                    showToast('Account not found. Please sign up first.');
-                } else {
-                    showToast('Login failed: ' + error.message);
-                }
-            }
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        showToast('Welcome back to Dukaan!');
+    } catch (error) {
+        console.error('Login error:', error);
+        if (error.code === 'auth/invalid-login-credentials') {
+            showToast('Account not found. Please sign up first.');
+        } else {
+            showToast('Login failed: ' + error.message);
         }
+    }
+}
 
+async function handleSignup(event) {
+    event.preventDefault();
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+
+    try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        // Update user profile
+        await userCredential.user.updateProfile({
+            displayName: name
+        });
+        showToast('Account created successfully! Welcome to Dukaan!');
+    } catch (error) {
+        console.error('Signup error:', error);
+        if (error.code === 'auth/email-already-in-use') {
+            showToast('Email already registered. Please sign in.');
+            showLoginForm();
+        } else {
+            showToast('Signup failed: ' + error.message);
+        }
+    }
+}
         async function handleSignup(event) {
             event.preventDefault();
             const name = document.getElementById('signupName').value;
