@@ -534,6 +534,94 @@
             .product-detail-content { padding: 20px; }
             .reviews-section { padding: 20px; }
         }
+        /* Beautiful Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+}
+
+.custom-toast {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border-left: 4px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    overflow: hidden;
+}
+
+.custom-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.custom-toast.success {
+    border-left-color: var(--success);
+}
+
+.custom-toast.error {
+    border-left-color: var(--danger);
+}
+
+.custom-toast.warning {
+    border-left-color: var(--warning);
+}
+
+.toast-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+}
+
+.toast-success .toast-icon { background: var(--success); }
+.toast-error .toast-icon { background: var(--danger); }
+.toast-warning .toast-icon { background: var(--warning); }
+.toast-info .toast-icon { background: var(--accent); }
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-message {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-dark);
+}
+
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    width: 100%;
+    transform: scaleX(1);
+    transform-origin: left;
+    animation: toastProgress 3s linear forwards;
+}
+
+.toast-success .toast-progress { background: var(--success); }
+.toast-error .toast-progress { background: var(--danger); }
+.toast-warning .toast-progress { background: var(--warning); }
+
+@keyframes toastProgress {
+    to { transform: scaleX(0); }
+}
     </style>
 </head>
 <body>
