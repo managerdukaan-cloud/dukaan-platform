@@ -1145,24 +1145,18 @@
 
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
-            auth.onAuthStateChanged((user) => {
-                console.log('Auth state changed:', user);
-                if (user) {
-                    currentUser = {
-                        uid: user.uid,
-                        email: user.email,
-                        name: user.displayName || user.email.split('@')[0]
-                    };
-                    showAppScreen();
-                    loadUserData();
-                    updateCouponAuth();
-                    showToast('Welcome back to Dukaan!');
-                } else {
-                    currentUser = null;
-                    showAuthScreen();
-                }
-            });
+    auth.onAuthStateChanged((user) => {
+        console.log('Auth state changed:', user);
+        if (user) {
+            currentUser = { uid: user.uid, email: user.email, name: user.displayName };
+            showAppScreen();
+            loadUserData();
+        } else {
+            currentUser = null;
+            showAuthScreen();
         }
+    });
+}
 
         function setupDemoLogin() {
             // Auto-fill demo credentials
