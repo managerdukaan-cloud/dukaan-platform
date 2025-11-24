@@ -213,6 +213,83 @@
             color: var(--text-light);
             margin-top: 2px;
         }
+        /* Product Detail Page Styles */
+        .product-detail-container {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .product-detail-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        .product-detail-content {
+            padding: 30px;
+        }
+        .product-detail-header {
+            margin-bottom: 20px;
+        }
+        .product-detail-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .product-detail-category {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        .product-detail-price {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .product-detail-current {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .product-detail-original {
+            font-size: 1.5rem;
+            color: var(--text-light);
+            text-decoration: line-through;
+        }
+        .product-detail-discount {
+            background: var(--success);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .product-detail-actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .btn-quantity {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--neutral);
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+        .quantity-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--accent);
+        }
+        .quantity-value {
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
         /* Reviews Section Styles */
         .reviews-section {
             margin-top: 40px;
@@ -448,10 +525,14 @@
             .wishlist-card { flex-direction: column; text-align: center; }
             .wishlist-actions { justify-content: center; }
             .rating-summary { flex-direction: column; gap: 20px; text-align: center; }
+            .product-detail-actions { flex-direction: column; }
+            .product-detail-image { height: 300px; }
         }
         @media (max-width: 480px) {
             .container-main { padding: 0 12px; }
             .hero-banner { padding: 20px; }
+            .product-detail-content { padding: 20px; }
+            .reviews-section { padding: 20px; }
         }
     </style>
 </head>
@@ -927,7 +1008,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Firebase Configuration - FIXED VERSION
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD2-yz4xwYD5S_oXs6ryhNP8XIC94jzda4",
             authDomain: "dukaan-platform.firebaseapp.com",
@@ -944,16 +1025,15 @@
             apiKey: "156538295145313"
         };
 
-        // Initialize Firebase - FIXED VERSION
-        let auth, db;
+        // Initialize Firebase
         try {
             firebase.initializeApp(firebaseConfig);
             console.log('Firebase initialized successfully');
-            auth = firebase.auth();
-            db = firebase.firestore();
         } catch (error) {
-            console.log('Firebase initialization error:', error);
+            console.log('Firebase already initialized');
         }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
         // Sample Data with Cloudinary Images
         const SHOPS = {
@@ -961,14 +1041,21 @@
             cosmeticstore: { id: 'cosmeticstore', name: 'CosmeticStore', category: 'cosmetics', rating: 4.3, deliveryTime: '45 min' },
             fashionhub: { id: 'fashionhub', name: 'FashionHub', category: 'clothing', rating: 4.7, deliveryTime: '2 days' },
             veggieking: { id: 'veggieking', name: 'VeggieKing', category: 'vegetables', rating: 4.4, deliveryTime: '40 min' },
-            gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6, deliveryTime: '1 day' }
+            gadgetzone: { id: 'gadgetzone', name: 'GadgetZone', category: 'electronics', rating: 4.6, deliveryTime: '1 day' },
+            bakerycorner: { id: 'bakerycorner', name: 'Bakery Corner', category: 'bakery', rating: 4.8, deliveryTime: '25 min' }
         };
 
         const PRODUCTS = [
             { id: 'fm1', name: 'Fresh Cow Milk 1L', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk`, badge: 'Fresh' },
             { id: 'fm2', name: 'Buffalo Milk 1L', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/milk_buffalo`, badge: 'Premium' },
+            { id: 'fm3', name: 'Curd 500g', price: 50, mrp: 60, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/curd`, badge: 'Homemade' },
+            { id: 'fm4', name: 'Panner 250g', price: 90, mrp: 110, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/paneer`, badge: 'Fresh' },
+            { id: 'fm5', name: 'Butter 100g', price: 55, mrp: 65, category: 'dairy', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/butter`, badge: 'Amul' },
+            { id: 'fm6', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'bakery', shop: 'freshmart', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/bread`, badge: 'Fresh' },
             { id: 'cs1', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/facecream`, badge: 'New' },
-            { id: 'fh1', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tshirt`, badge: 'Trending' }
+            { id: 'cs2', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/lipstick`, badge: 'Bestseller' },
+            { id: 'fh1', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/tshirt`, badge: 'Trending' },
+            { id: 'fh2', name: 'Jeans', price: 899, mrp: 1199, category: 'clothing', shop: 'fashionhub', image: `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_400,h_300,c_fill,q_auto,f_auto/v1/dukaan/jeans`, badge: 'Fashion' }
         ];
 
         const AVAILABLE_COUPONS = [
@@ -988,8 +1075,8 @@
         let currentUser = null;
         let cart = JSON.parse(localStorage.getItem('dukaan_cart')) || [];
         let wishlist = JSON.parse(localStorage.getItem('dukaan_wishlist')) || [];
-        let addresses = JSON.parse(localStorage.getItem('dukaan_addresses')) || [];
         let productReviews = JSON.parse(localStorage.getItem('dukaan_product_reviews')) || [];
+        let addresses = JSON.parse(localStorage.getItem('dukaan_addresses')) || [];
         let appliedCoupon = null;
         let orders = JSON.parse(localStorage.getItem('dukaan_orders')) || [];
         let selectedPaymentMethod = null;
@@ -1008,29 +1095,56 @@
         const signupForm = document.getElementById('signupForm');
         const searchInput = document.getElementById('search');
         const searchResults = document.getElementById('searchResults');
+        const shopFilter = document.getElementById('shopFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
         const productGrid = document.getElementById('grid');
+        const emptyState = document.getElementById('empty');
+        const bottomSheet = document.getElementById('bsheet');
+        const closeSheetBtn = document.getElementById('closeB');
+        const orderList = document.getElementById('orderList');
+        const orderTotal = document.getElementById('orderTotal');
+        const placeOrderBtn = document.getElementById('placeOrderBtn');
+        const addressesContainer = document.getElementById('addresses');
+        const bottomNavCart = document.getElementById('bottomNavCart');
         const bottomCartCount = document.getElementById('bottomCartCount');
+        const wishlistNav = document.getElementById('wishlistNav');
         const wishlistCount = document.getElementById('wishlistCount');
+        const wishlistItems = document.getElementById('wishlistItems');
+        const noWishlist = document.getElementById('noWishlist');
         const navItems = document.querySelectorAll('.nav-item');
+        const ordersList = document.getElementById('ordersList');
+        const noOrders = document.getElementById('noOrders');
+        const couponCodeInput = document.getElementById('couponCode');
+        const applyCouponBtn = document.getElementById('applyCouponBtn');
+        const couponMessage = document.getElementById('couponMessage');
+        const couponLoginRequired = document.getElementById('couponLoginRequired');
+        const checkoutPhone = document.getElementById('checkoutPhone');
+        const phoneValidation = document.getElementById('phoneValidation');
+        const addrPhone = document.getElementById('addrPhone');
+        const addrPhoneValidation = document.getElementById('addrPhoneValidation');
+        const paymentOptions = document.querySelectorAll('.payment-option');
+        const qrCodeSection = document.getElementById('qrCodeSection');
+        const qrAmount = document.getElementById('qrAmount');
+        const confirmQrPayment = document.getElementById('confirmQrPayment');
+        const utrNumber = document.getElementById('utrNumber');
+        const utrValidation = document.getElementById('utrValidation');
+        const saveAddr = document.getElementById('saveAddr');
+        const orderTracking = document.getElementById('orderTracking');
 
-        // Initialize App - FIXED VERSION
+        // Initialize App
         function initApp() {
-            console.log('Initializing app...');
             setupEventListeners();
             setupFirebaseAuth();
             setupDemoLogin();
             renderProducts(PRODUCTS);
             updateCartUI();
             updateWishlistUI();
+            renderOrders();
+            renderAddresses();
         }
 
-        // Firebase Authentication - FIXED VERSION
+        // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
-            if (!auth) {
-                console.error('Firebase auth not available');
-                return;
-            }
-
             auth.onAuthStateChanged((user) => {
                 console.log('Auth state changed:', user);
                 if (user) {
@@ -1039,42 +1153,35 @@
                         email: user.email,
                         name: user.displayName || user.email.split('@')[0]
                     };
-                    console.log('User logged in:', currentUser);
                     showAppScreen();
                     loadUserData();
                     updateCouponAuth();
                     showToast('Welcome back to Dukaan!');
                 } else {
                     currentUser = null;
-                    console.log('No user logged in');
                     showAuthScreen();
                 }
             });
         }
 
         function setupDemoLogin() {
-            // Pre-fill demo credentials
+            // Auto-fill demo credentials
             document.getElementById('loginEmail').value = 'demo@dukaan.com';
             document.getElementById('loginPassword').value = 'demo123';
             
-            // Add demo button to login form
             const demoBtn = document.createElement('button');
             demoBtn.type = 'button';
             demoBtn.className = 'btn-outline w-100 mt-3';
             demoBtn.innerHTML = '<i class="fas fa-rocket"></i> Try Demo Account';
             demoBtn.onclick = async () => {
                 try {
-                    console.log('Trying demo login...');
                     await auth.signInWithEmailAndPassword('demo@dukaan.com', 'demo123');
                 } catch (error) {
-                    console.error('Demo login error:', error);
                     if (error.code === 'auth/invalid-login-credentials') {
                         try {
-                            console.log('Creating demo account...');
                             await auth.createUserWithEmailAndPassword('demo@dukaan.com', 'demo123');
                             showToast('Demo account created! Welcome to Dukaan!');
                         } catch (signupError) {
-                            console.error('Demo signup error:', signupError);
                             showToast('Please use Sign Up to create your account');
                         }
                     } else {
@@ -1090,15 +1197,14 @@
             if (!currentUser) return;
             
             try {
-                // Load addresses from Firebase
-                if (db) {
-                    const addressesSnapshot = await db.collection('users').doc(currentUser.uid).collection('addresses').get();
-                    addresses = [];
-                    addressesSnapshot.forEach(doc => {
-                        addresses.push({ id: doc.id, ...doc.data() });
-                    });
-                    localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
-                }
+                // Load addresses
+                const addressesSnapshot = await db.collection('users').doc(currentUser.uid).collection('addresses').get();
+                addresses = [];
+                addressesSnapshot.forEach(doc => {
+                    addresses.push({ id: doc.id, ...doc.data() });
+                });
+                localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
+                renderAddresses();
 
                 // Load orders
                 const ordersSnapshot = await db.collection('users').doc(currentUser.uid).collection('orders').get();
@@ -1118,24 +1224,32 @@
                 localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
                 updateWishlistUI();
 
+                // Load reviews
+                const reviewsSnapshot = await db.collection('productReviews').where('userId', '==', currentUser.uid).get();
+                const userReviews = [];
+                reviewsSnapshot.forEach(doc => {
+                    userReviews.push(doc.data());
+                });
+                // Merge with existing reviews
+                productReviews = [...productReviews, ...userReviews];
+                localStorage.setItem('dukaan_product_reviews', JSON.stringify(productReviews));
+
             } catch (error) {
                 console.error('Error loading user data:', error);
             }
         }
 
-        // Auth Functions - FIXED VERSION
+        // Auth Functions - FIXED
         function showAuthScreen() {
-            console.log('Showing auth screen');
             authScreen.style.display = 'block';
             appScreen.style.display = 'none';
         }
 
         function showAppScreen() {
-            console.log('Showing app screen');
             authScreen.style.display = 'none';
             appScreen.style.display = 'block';
             updateCouponAuth();
-            renderProducts(PRODUCTS);
+            renderProducts(PRODUCTS); // Ensure products are rendered
         }
 
         async function handleLogin(event) {
@@ -1145,7 +1259,8 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                console.log('Login successful:', userCredential.user);
                 showToast('Welcome back to Dukaan!');
             } catch (error) {
                 console.error('Login error:', error);
@@ -1169,6 +1284,7 @@
                 await userCredential.user.updateProfile({
                     displayName: name
                 });
+                console.log('Signup successful:', userCredential.user);
                 showToast('Account created successfully! Welcome to Dukaan!');
             } catch (error) {
                 console.error('Signup error:', error);
@@ -1179,295 +1295,4 @@
                     showToast('Signup failed: ' + error.message);
                 }
             }
-        }
-
-        function showSignupForm() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupForm').style.display = 'block';
-            document.getElementById('loginFooter').style.display = 'none';
-            document.getElementById('signupFooter').style.display = 'block';
-            document.querySelector('.auth-title').textContent = 'Create Account';
-            document.querySelector('.auth-subtitle').textContent = 'Join Dukaan today';
-        }
-
-        function showLoginForm() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('loginFooter').style.display = 'block';
-            document.getElementById('signupFooter').style.display = 'none';
-            document.querySelector('.auth-title').textContent = 'Welcome to Dukaan';
-            document.querySelector('.auth-subtitle').textContent = 'Sign in to your account';
-        }
-
-        function updateCouponAuth() {
-            const couponCodeInput = document.getElementById('couponCode');
-            const applyCouponBtn = document.getElementById('applyCouponBtn');
-            const couponLoginRequired = document.getElementById('couponLoginRequired');
-            
-            if (currentUser) {
-                couponCodeInput.disabled = false;
-                applyCouponBtn.disabled = false;
-                couponLoginRequired.style.display = 'none';
-            } else {
-                couponCodeInput.disabled = true;
-                applyCouponBtn.disabled = true;
-                couponLoginRequired.style.display = 'block';
-            }
-        }
-
-        // Product Functions
-        function renderProducts(products) {
-            productGrid.innerHTML = '';
-            
-            if (products.length === 0) {
-                document.getElementById('empty').style.display = 'block';
-                return;
-            }
-
-            document.getElementById('empty').style.display = 'none';
-
-            products.forEach(product => {
-                const shop = SHOPS[product.shop];
-                const isInWishlist = wishlist.includes(product.id);
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" data-id="${product.id}">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <div class="shop-badge">${shop.name}</div>
-                    <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300/3A8EF6/FFFFFF?text=${encodeURIComponent(product.name)}'">
-                    <div class="product-title">${product.name}</div>
-                    <div class="product-category">${product.category}</div>
-                    <div class="product-price">
-                        <span class="current-price">₹${product.price}</span>
-                        ${product.mrp > product.price ? `
-                            <span class="original-price">₹${product.mrp}</span>
-                            <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
-                        ` : ''}
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-add-cart" data-id="${product.id}">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                    </div>
-                `;
-                productGrid.appendChild(productCard);
-            });
-
-            // Add event listeners
-            document.querySelectorAll('.btn-add-cart').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
-                    addToCart(productId);
-                });
-            });
-
-            document.querySelectorAll('.wishlist-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
-                    toggleWishlist(productId);
-                });
-            });
-
-            // Add click event for product image and title
-            document.querySelectorAll('.product-image, .product-title').forEach(element => {
-                element.addEventListener('click', (e) => {
-                    const productCard = e.target.closest('.product-card');
-                    const productId = productCard.querySelector('.btn-add-cart').getAttribute('data-id');
-                    showProductDetail(productId);
-                });
-            });
-        }
-
-        // Cart Functions
-        function addToCart(productId) {
-            const product = PRODUCTS.find(p => p.id === productId);
-            if (product) {
-                const existingItem = cart.find(item => item.id === productId);
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                } else {
-                    cart.push({
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        image: product.image,
-                        shop: product.shop,
-                        quantity: 1
-                    });
-                }
-                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-                updateCartUI();
-                showToast(`${product.name} added to cart!`);
-            }
-        }
-
-        function updateCartUI() {
-            bottomCartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
-        }
-
-        // Wishlist Functions
-        function toggleWishlist(productId) {
-            const product = PRODUCTS.find(p => p.id === productId);
-            if (!product) return;
-
-            const index = wishlist.indexOf(productId);
-            if (index > -1) {
-                wishlist.splice(index, 1);
-                showToast(`${product.name} removed from wishlist`);
-            } else {
-                wishlist.push(productId);
-                showToast(`${product.name} added to wishlist ❤️`);
-            }
-
-            localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
-            updateWishlistUI();
-            renderProducts(PRODUCTS);
-        }
-
-        function updateWishlistUI() {
-            wishlistCount.textContent = wishlist.length;
-        }
-
-        // Page Navigation
-        function showPage(page) {
-            homePage.style.display = 'none';
-            ordersPage.style.display = 'none';
-            wishlistPage.style.display = 'none';
-            productDetailPage.style.display = 'none';
-
-            switch(page) {
-                case 'home':
-                    homePage.style.display = 'block';
-                    break;
-                case 'orders':
-                    ordersPage.style.display = 'block';
-                    renderOrders();
-                    break;
-                case 'wishlist':
-                    wishlistPage.style.display = 'block';
-                    renderWishlist();
-                    break;
-                case 'productDetail':
-                    productDetailPage.style.display = 'block';
-                    break;
-                case 'categories':
-                    showToast('Categories page coming soon!');
-                    homePage.style.display = 'block';
-                    break;
-                case 'account':
-                    showToast('Account page coming soon!');
-                    homePage.style.display = 'block';
-                    break;
-                case 'cart':
-                    openCart();
-                    homePage.style.display = 'block';
-                    break;
-            }
-        }
-
-        // Add quantity functions for product detail
-        function changeQuantity(change) {
-            const quantityElement = document.getElementById('quantityValue');
-            let quantity = parseInt(quantityElement.textContent);
-            quantity = Math.max(1, quantity + change);
-            quantityElement.textContent = quantity;
-        }
-
-        function addToCartFromDetail() {
-            if (!currentProductDetail) return;
-            
-            const quantity = parseInt(document.getElementById('quantityValue').textContent);
-            for (let i = 0; i < quantity; i++) {
-                addToCart(currentProductDetail.id);
-            }
-            
-            showToast(`${currentProductDetail.name} added to cart!`);
-        }
-
-        function toggleWishlistFromDetail() {
-            if (!currentProductDetail) return;
-            toggleWishlist(currentProductDetail.id);
-            
-            // Update button state
-            const wishlistBtn = document.getElementById('wishlistDetailBtn');
-            const isInWishlist = wishlist.includes(currentProductDetail.id);
-            wishlistBtn.className = `wishlist-btn ${isInWishlist ? 'active' : ''}`;
-        }
-
-        // Update product card to include click event for product detail
-        function renderProducts(products) {
-            productGrid.innerHTML = '';
-            
-            if (products.length === 0) {
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-
-            products.forEach(product => {
-                const shop = SHOPS[product.shop];
-                const isInWishlist = wishlist.includes(product.id);
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" data-id="${product.id}">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <div class="shop-badge">${shop.name}</div>
-                    <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/400x300/3A8EF6/FFFFFF?text=${encodeURIComponent(product.name)}'">
-                    <div class="product-title">${product.name}</div>
-                    <div class="product-category">${product.category}</div>
-                    <div class="product-price">
-                        <span class="current-price">₹${product.price}</span>
-                        ${product.mrp > product.price ? `
-                            <span class="original-price">₹${product.mrp}</span>
-                            <span class="discount">${Math.round((1 - product.price/product.mrp) * 100)}% OFF</span>
-                        ` : ''}
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-add-cart" data-id="${product.id}">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                    </div>
-                `;
-                productGrid.appendChild(productCard);
-            });
-
-            // Add event listeners for product detail
-            document.querySelectorAll('.product-image, .product-title').forEach(element => {
-                element.addEventListener('click', (e) => {
-                    const productCard = e.target.closest('.product-card');
-                    const productId = productCard.querySelector('.btn-add-cart').getAttribute('data-id');
-                    showProductDetail(productId);
-                });
-            });
-
-            document.querySelectorAll('.btn-add-cart').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const productId = e.target.closest('.btn-add-cart').getAttribute('data-id');
-                    addToCart(productId);
-                });
-            });
-
-            document.querySelectorAll('.wishlist-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const productId = e.target.closest('.wishlist-btn').getAttribute('data-id');
-                    toggleWishlist(productId);
-                });
-            });
-        }
-
-        // ... (rest of your existing functions remain exactly the same) ...
-        // Cart Functions, Wishlist Functions, Address Management, Payment Methods, etc.
-        // ALL YOUR PREVIOUS CODE REMAINS UNCHANGED
-
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
-</body>
-</html>
+       
