@@ -138,6 +138,69 @@
         .address-phone { font-size: 12px; color: var(--text-light); }
         .address-form { background: var(--neutral); padding: 20px; border-radius: 12px; margin-top: 15px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .order-timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+        .order-timeline::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: var(--border);
+            z-index: 1;
+        }
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+        .step-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+        .step-icon.active {
+            background: var(--success);
+            color: white;
+        }
+        .step-icon.completed {
+            background: var(--accent);
+            color: white;
+        }
+        .step-label {
+            font-size: 12px;
+            text-align: center;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        .step-label.active {
+            color: var(--success);
+            font-weight: 600;
+        }
+        .step-label.completed {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .step-time {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
         @media (max-width: 768px) {
             .header-container { flex-direction: column; gap: 12px; }
             .search-container { margin: 0; width: 100%; }
@@ -454,6 +517,56 @@
             </div>
         </div>
 
+        <!-- Order Tracking Modal -->
+        <div class="bottom-sheet" id="orderTracking">
+            <span class="sheet-handle"></span>
+            <div class="sheet-header">
+                <strong class="sheet-title">Track Your Order</strong>
+                <button class="sheet-close" onclick="closeOrderTracking()">&times;</button>
+            </div>
+            <div class="sheet-body">
+                <div class="order-timeline" id="orderTimeline">
+                    <div class="timeline-step">
+                        <div class="step-icon completed" id="stepConfirmed">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="step-label completed">Order Confirmed</div>
+                        <div class="step-time" id="timeConfirmed">Today, 10:30 AM</div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-icon active" id="stepPreparing">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="step-label active">Preparing</div>
+                        <div class="step-time" id="timePreparing">In progress</div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-icon" id="stepDispatched">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <div class="step-label">Dispatched</div>
+                        <div class="step-time" id="timeDispatched">--</div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="step-icon" id="stepDelivered">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="step-label">Delivered</div>
+                        <div class="step-time" id="timeDelivered">--</div>
+                    </div>
+                </div>
+                
+                <div class="order-details-card">
+                    <h5>Order Details</h5>
+                    <div id="trackingOrderDetails"></div>
+                </div>
+                
+                <button class="btn-outline w-100 mt-3" id="cancelOrderBtn" onclick="cancelOrder()">
+                    <i class="fas fa-times"></i> Cancel Order
+                </button>
+            </div>
+        </div>
+
         <!-- Confirmation Modal -->
         <div class="modal fade" id="confirmationModal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
@@ -634,6 +747,7 @@
         const utrNumber = document.getElementById('utrNumber');
         const utrValidation = document.getElementById('utrValidation');
         const saveAddr = document.getElementById('saveAddr');
+        const orderTracking = document.getElementById('orderTracking');
 
         // Initialize App
         function initApp() {
@@ -1356,6 +1470,88 @@
             renderOrderSummary();
         }
 
+        // Order Tracking Functions
+        function openOrderTracking(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // Update timeline based on order status
+            updateOrderTimeline(order);
+            
+            // Show order details
+            document.getElementById('trackingOrderDetails').innerHTML = `
+                <div class="order-item-summary">
+                    <div><strong>Order ID:</strong></div>
+                    <div>${order.id}</div>
+                </div>
+                ${order.items.map(item => `
+                    <div class="order-item-summary">
+                        <div>${item.name} x${item.quantity}</div>
+                        <div>₹${item.price * item.quantity}</div>
+                    </div>
+                `).join('')}
+                <div class="order-total-summary">
+                    <span>Total Amount</span>
+                    <span>₹${order.total}</span>
+                </div>
+            `;
+
+            // Show/hide cancel button based on status
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            if (order.status === 'confirmed' || order.status === 'preparing') {
+                cancelBtn.style.display = 'block';
+                cancelBtn.setAttribute('data-order', orderId);
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+
+            orderTracking.classList.add('open');
+        }
+
+        function closeOrderTracking() {
+            orderTracking.classList.remove('open');
+        }
+
+        function updateOrderTimeline(order) {
+            const statusOrder = ['confirmed', 'preparing', 'dispatched', 'delivered'];
+            const currentStatusIndex = statusOrder.indexOf(order.status);
+            
+            statusOrder.forEach((status, index) => {
+                const stepIcon = document.getElementById(`step${status.charAt(0).toUpperCase() + status.slice(1)}`);
+                const stepLabel = stepIcon.nextElementSibling;
+                const stepTime = stepLabel.nextElementSibling;
+                
+                if (index < currentStatusIndex) {
+                    stepIcon.className = 'step-icon completed';
+                    stepLabel.className = 'step-label completed';
+                } else if (index === currentStatusIndex) {
+                    stepIcon.className = 'step-icon active';
+                    stepLabel.className = 'step-label active';
+                } else {
+                    stepIcon.className = 'step-icon';
+                    stepLabel.className = 'step-label';
+                }
+                
+                // Set timestamps
+                if (order.timestamps && order.timestamps[status]) {
+                    stepTime.textContent = new Date(order.timestamps[status]).toLocaleString();
+                }
+            });
+        }
+
+        function cancelOrder() {
+            const orderId = document.getElementById('cancelOrderBtn').getAttribute('data-order');
+            const order = orders.find(o => o.id === orderId);
+            
+            if (order && (order.status === 'confirmed' || order.status === 'preparing')) {
+                order.status = 'cancelled';
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                renderOrders();
+                closeOrderTracking();
+                showToast('Order cancelled successfully');
+            }
+        }
+
         // Toast Function
         function showToast(message) {
             const toast = document.createElement('div');
@@ -1518,25 +1714,5 @@
         // Initialize the app
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
-
-    <!-- Confirmation Modal - ADD THIS BEFORE CLOSING BODY TAG -->
-    <div class="modal fade" id="confirmationModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" style="background: var(--primary); color: white;">
-                    <h5 class="modal-title" id="confirmationTitle">Confirm Action</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="confirmationMessage">
-                    <!-- Message will be inserted here -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-primary" id="confirmAction">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </body>
 </html>
