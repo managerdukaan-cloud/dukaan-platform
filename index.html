@@ -1353,14 +1353,31 @@
     const password = document.getElementById('signupPassword').value;
 
     try {
+        showToast('Creating account...', 'info');
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         await userCredential.user.updateProfile({ displayName: name });
-        // AUTO LOGIN AFTER SIGNUP
+        showToast('Account created successfully!', 'success');
+        
+        // Auto login after signup
         await auth.signInWithEmailAndPassword(email, password);
     } catch (error) {
-        showToast('Signup failed: ' + error.message);
+        showToast('Signup failed: ' + error.message, 'error');
     }
-        }
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+        showToast('Signing in...', 'info');
+        await auth.signInWithEmailAndPassword(email, password);
+        showToast('Welcome back!', 'success');
+    } catch (error) {
+        showToast('Login failed: ' + error.message, 'error');
+    }
+}
             function showSignupForm() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('signupForm').style.display = 'block';
