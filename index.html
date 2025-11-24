@@ -1273,28 +1273,20 @@
         }
 
         async function handleSignup(event) {
-            event.preventDefault();
-            console.log('Signup function called');
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
+    event.preventDefault();
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
 
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                await userCredential.user.updateProfile({
-                    displayName: name
-                });
-                console.log('Signup successful:', userCredential.user);
-                showToast('Account created successfully! Welcome to Dukaan!');
-            } catch (error) {
-                console.error('Signup error:', error);
-                if (error.code === 'auth/email-already-in-use') {
-                    showToast('Email already registered. Please sign in.');
-                    showLoginForm();
-                } else {
-                    showToast('Signup failed: ' + error.message);
-                }
-            }
+    try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        await userCredential.user.updateProfile({ displayName: name });
+        // AUTO LOGIN AFTER SIGNUP
+        await auth.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+        showToast('Signup failed: ' + error.message);
+    }
+        }
             function showSignupForm() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('signupForm').style.display = 'block';
