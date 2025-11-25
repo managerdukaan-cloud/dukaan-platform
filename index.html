@@ -955,6 +955,166 @@
                 </div>
             </div>
         </div>
+                    <!-- User Profile Page - PHASE 1 -->
+            <div id="profilePage" class="profile-page">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <span id="avatarText">U</span>
+                        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                        <div class="avatar-upload" onclick="document.getElementById('avatarUpload').click()">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                    <h2 class="profile-name" id="profileUserName">User Name</h2>
+                    <p class="profile-email" id="profileUserEmail">user@email.com</p>
+                </div>
+
+                <!-- Personal Details Section -->
+                <div class="profile-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user"></i>
+                        Personal Details
+                    </h3>
+                    <ul class="profile-menu">
+                        <li class="profile-menu-item" onclick="editPersonalDetails()">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Edit Profile</div>
+                                    <div class="menu-item-desc">Update your name, email and phone</div>
+                                </div>
+                            </div>
+                            <div class="menu-item-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </li>
+                        <li class="profile-menu-item" onclick="changeProfilePicture()">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Profile Picture</div>
+                                    <div class="menu-item-desc">Change your profile photo</div>
+                                </div>
+                            </div>
+                            <div class="menu-item-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Security Section -->
+                <div class="profile-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Security
+                    </h3>
+                    <ul class="profile-menu">
+                        <li class="profile-menu-item" onclick="changePassword()">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Change Password</div>
+                                    <div class="menu-item-desc">Update your login password</div>
+                                </div>
+                            </div>
+                            <div class="menu-item-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </li>
+                        <li class="profile-menu-item" onclick="showLoginHistory()">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-history"></i>
+                                </div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Login History</div>
+                                    <div class="menu-item-desc">View your recent login activity</div>
+                                </div>
+                            </div>
+                            <div class="menu-item-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </li>
+                        <li class="profile-menu-item">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Account Verification</div>
+                                    <div class="menu-item-desc">Your account is verified</div>
+                                </div>
+                            </div>
+                            <div class="security-badge">Verified</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Preferences Section -->
+                <div class="profile-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Preferences
+                    </h3>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-title">Push Notifications</div>
+                            <div class="preference-desc">Receive order updates and offers</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="pushNotifications" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-title">Email Notifications</div>
+                            <div class="preference-desc">Get updates via email</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="emailNotifications" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-title">SMS Notifications</div>
+                            <div class="preference-desc">Receive order alerts via SMS</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="smsNotifications">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item" onclick="changeLanguage()">
+                        <div class="preference-info">
+                            <div class="preference-title">Language</div>
+                            <div class="preference-desc">English</div>
+                        </div>
+                        <div class="menu-item-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Login History Section (Hidden by default) -->
+                <div class="profile-section" id="loginHistorySection" style="display: none;">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Login History
+                    </h3>
+                    <div id="loginHistoryList">
+                        <!-- Login sessions will be populated here -->
+                    </div>
+                </div>
+            </div>
                 <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="home">
                 <i class="fas fa-home nav-icon"></i>
