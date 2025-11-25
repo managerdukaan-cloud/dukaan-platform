@@ -721,6 +721,214 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+                /* Enhanced Search Styles - PHASE 2 */
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+        .search-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            z-index: 9999;
+            border-radius: 0 0 20px 20px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+        }
+        .search-modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .search-modal-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+        .search-modal-input:focus {
+            border-color: var(--accent);
+        }
+        .search-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .search-modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .search-section {
+            margin-bottom: 25px;
+        }
+        .search-section-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            justify-content: between;
+        }
+        .clear-recent {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .recent-searches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .recent-search-item {
+            background: var(--neutral);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+        .recent-search-item:hover {
+            background: var(--accent);
+            color: white;
+        }
+        .popular-searches {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .popular-search-item {
+            background: white;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .popular-search-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .search-suggestions {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .search-suggestion-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .search-suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .search-suggestion-item:hover {
+            background: var(--neutral);
+            margin: 0 -20px;
+            padding: 12px 20px;
+        }
+        .suggestion-icon {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        .advanced-filters {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: var(--shadow);
+        }
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        .filter-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+        .price-range {
+            padding: 0 10px;
+        }
+        .price-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .price-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .rating-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .rating-filter-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+        .rating-stars-small {
+            display: flex;
+            gap: 2px;
+        }
+        .rating-star-small {
+            color: #FFB800;
+            font-size: 14px;
+        }
+        .shop-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .shop-filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .shop-filter-item:hover {
+            border-color: var(--accent);
+        }
+        .shop-filter-item.selected {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
         @media (max-width: 768px) {
             .header-container { flex-direction: column; gap: 12px; }
             .search-container { margin: 0; width: 100%; }
