@@ -2399,53 +2399,116 @@
             });
         }
 
-        // Search Functionality
+                // Enhanced Search Functionality - PHASE 2
         function handleSearch() {
-            const query = searchInput.value.toLowerCase().trim();
-            
-            if (query.length === 0) {
-                searchResults.style.display = 'none';
-                applyFilters();
-                return;
-            }
-            
-            const filteredProducts = PRODUCTS.filter(product => 
-                product.name.toLowerCase().includes(query) ||
-                product.category.toLowerCase().includes(query) ||
-                SHOPS[product.shop].name.toLowerCase().includes(query)
-            );
-            
-            displaySearchResults(filteredProducts, query);
+            openEnhancedSearch();
         }
 
-        function displaySearchResults(products, query) {
-            searchResults.innerHTML = '';
+        function openEnhancedSearch() {
+            document.getElementById('searchOverlay').style.display = 'block';
+            document.getElementById('searchModal').style.display = 'block';
+            document.getElementById('enhancedSearchInput').focus();
             
-            if (products.length === 0) {
-                searchResults.style.display = 'none';
+            loadRecentSearches();
+            loadPopularSearches();
+            loadShopFilters();
+            
+            // Hide suggestions initially
+            document.getElementById('searchSuggestionsSection').style.display = 'none';
+            document.getElementById('searchSuggestions').style.display = 'none';
+        }
+
+        function closeEnhancedSearch() {
+            document.getElementById('searchOverlay').style.display = 'none';
+            document.getElementById('searchModal').style.display = 'none';
+            document.getElementById('enhancedSearchInput').value = '';
+        }
+
+        function loadRecentSearches() {
+            const recentSearches = JSON.parse(localStorage.getItem('dukaan_recent_searches')) || [];
+            const recentSearchesList = document.getElementById('recentSearchesList');
+            
+            recentSearchesList.innerHTML = '';
+            
+            if (recentSearches.length === 0) {
+                document.getElementById('recentSearchesSection').style.display = 'none';
                 return;
             }
             
-            products.forEach(product => {
-                const resultItem = document.createElement('div');
-                resultItem.className = 'search-result-item';
-                resultItem.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}" class="search-result-image">
-                    <div class="search-result-info">
-                        <div class="search-result-name">${product.name}</div>
-                        <div class="search-result-category">${product.category} • ${SHOPS[product.shop].name}</div>
-                    </div>
-                    <div class="search-result-price">₹${product.price}</div>
-                `;
-                resultItem.addEventListener('click', () => {
-                    searchInput.value = product.name;
-                    searchResults.style.display = 'none';
-                    showProductDetail(product.id);
-                });
-                searchResults.appendChild(resultItem);
-            });
+            document.getElementById('recentSearchesSection').style.display = 'block';
             
-            searchResults.style.display = 'block';
+            recentSearches.slice(0, 8).forEach(search => {
+                const searchItem = document.createElement('div');
+                searchItem.className = 'recent-search-item';
+                searchItem.textContent = search;
+                searchItem.addEventListener('click', () => {
+                    document.getElementById('enhancedSearchInput').value = search;
+                    performEnhancedSearch(search);
+                });
+                recentSearchesList.appendChild(searchItem);
+            });
+        }
+
+        function loadPopularSearches() {
+            const popularSearches = [
+                'Milk', 'Bread', 'Eggs', 'Shampoo', 
+                'T-Shirt', 'Vegetables', 'Earbuds', 'Face Cream'
+            ];
+            
+            const popularSearchesList = document.getElementById('popularSearchesList');
+            popularSearchesList.innerHTML = '';
+            
+            popularSearches.forEach(search => {
+                const searchItem = document.createElement('div');
+                searchItem.className = 'popular-search-item';
+                searchItem.innerHTML = `
+                    <i class="fas fa-search suggestion-icon"></i>
+                    ${search}
+                `;
+                searchItem.addEventListener('click', () => {
+                    document.getElementById('enhancedSearchInput').value = search;
+                    performEnhancedSearch(search);
+                });
+                popularSearchesList.appendChild(searchItem);
+            });
+        }
+
+        function loadShopFilters() {
+            const shopFiltersList = document.getElementById('shopFiltersList');
+            shopFiltersList.innerHTML = '';
+            
+            Object.values(SHOPS).forEach(shop => {
+                const shopItem = document.createElement('label');
+                shopItem.className = 'shop-filter-item';
+                shopItem.innerHTML = `
+                    <input type="checkbox" class="shop-filter" value="${shop.id}">
+                    <span>${shop.name}</span>
+                `;
+                shopFiltersList.appendChild(shopItem);
+            });
+        }
+
+        function clearRecentSearches() {
+            localStorage.removeItem('dukaan_recent_searches');
+            loadRecentSearches();
+            showToast('Recent searches cleared');
+        }
+
+        function addToRecentSearches(query) {
+            if (!query.trim()) return;
+            
+            let recentSearches = JSON.parse(localStorage.getItem('dukaan_recent_searches')) || [];
+            
+            // Remove if already exists
+            recentSearches = recentSearches.filter(item => item.toLowerCase() !== query.toLowerCase());
+            
+            // Add to beginning
+            recentSearches.unshift(query);
+            
+            // Keep only last 10 searches
+            recentSearches = recentSearches.slice(0, 10);
+            
+            localStorage.setItem('dukaan_recent_searches', JSON.stringify(recentSearches));
         }
 
         // Filter Functionality
