@@ -1004,6 +1004,25 @@
             .search-modal-body {
                 max-height: 70vh;
             }
+                    @media (max-width: 768px) {
+            .header-container { flex-direction: column; gap: 12px; }
+            .search-container { margin: 0; width: 100%; }
+            
+            /* 🎯 YAHAN ADD KARO - Filter Section Mobile Fix */
+            .filter-section > div {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-section .d-flex {
+                margin-bottom: 15px;
+            }
+            .filter-section .category-filter {
+                flex: 1;
+            }
+            .sorting-options {
+                width: 100%;
+                justify-content: center;
+            }
             .popular-searches {
                 grid-template-columns: 1fr;
             }
