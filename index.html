@@ -1776,6 +1776,175 @@
             document.getElementById('signupForm').style.display = 'block';
             document.getElementById('loginFooter').style.display = 'none';
             document.getElementById('signupFooter').style.display = 'block';
+        
+        }
+                // User Profile Functions - PHASE 1
+        function loadUserProfile() {
+            if (!currentUser) return;
+            
+            // Update profile information
+            document.getElementById('profileUserName').textContent = currentUser.name;
+            document.getElementById('profileUserEmail').textContent = currentUser.email;
+            document.getElementById('avatarText').textContent = currentUser.name.charAt(0).toUpperCase();
+            
+            // Load user preferences
+            loadUserPreferences();
+            loadLoginHistory();
+        }
+
+        function loadUserPreferences() {
+            const preferences = JSON.parse(localStorage.getItem('dukaan_preferences')) || {
+                pushNotifications: true,
+                emailNotifications: true,
+                smsNotifications: false,
+                language: 'english'
+            };
+            
+            document.getElementById('pushNotifications').checked = preferences.pushNotifications;
+            document.getElementById('emailNotifications').checked = preferences.emailNotifications;
+            document.getElementById('smsNotifications').checked = preferences.smsNotifications;
+        }
+
+        function loadLoginHistory() {
+            const loginHistory = JSON.parse(localStorage.getItem('dukaan_login_history')) || [];
+            const historyList = document.getElementById('loginHistoryList');
+            
+            if (loginHistory.length === 0) {
+                // Add current session as first history
+                const currentSession = {
+                    device: 'Current Device',
+                    location: 'Current Location',
+                    time: new Date().toISOString(),
+                    active: true
+                };
+                loginHistory.unshift(currentSession);
+                localStorage.setItem('dukaan_login_history', JSON.stringify(loginHistory));
+            }
+            
+            renderLoginHistory(loginHistory);
+        }
+
+        function renderLoginHistory(history) {
+            const historyList = document.getElementById('loginHistoryList');
+            historyList.innerHTML = '';
+            
+            history.forEach((session, index) => {
+                const sessionElement = document.createElement('div');
+                sessionElement.className = `login-session ${session.active ? 'session-active' : 'session-inactive'}`;
+                sessionElement.innerHTML = `
+                    <div style="display: flex; justify-content: between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>${session.device}</strong>
+                            <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 4px;">
+                                ${session.location}
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 2px;">
+                                ${new Date(session.time).toLocaleString()}
+                            </div>
+                        </div>
+                        ${session.active ? '<div class="security-badge">Active</div>' : ''}
+                    </div>
+                `;
+                historyList.appendChild(sessionElement);
+            });
+        }
+
+        function editPersonalDetails() {
+            showConfirmationModal(
+                'Edit Personal Details',
+                'This feature will allow you to update your name, email, and phone number. Coming in the next update!',
+                () => {
+                    showToast('Edit profile feature coming soon!');
+                }
+            );
+        }
+
+        function changeProfilePicture() {
+            document.getElementById('avatarUpload').click();
+        }
+
+        function changePassword() {
+            showConfirmationModal(
+                'Change Password',
+                'You will be able to update your password securely. This feature is coming in the next update!',
+                () => {
+                    showToast('Password change feature coming soon!');
+                }
+            );
+        }
+
+        function showLoginHistory() {
+            document.getElementById('loginHistorySection').style.display = 'block';
+            // Scroll to login history section
+            setTimeout(() => {
+                document.getElementById('loginHistorySection').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        function changeLanguage() {
+            showConfirmationModal(
+                'Change Language',
+                'You will be able to select your preferred language. This feature is coming in the next update!',
+                () => {
+                    showToast('Language selection feature coming soon!');
+                }
+            );
+        }
+
+        // Handle profile picture upload
+        document.getElementById('avatarUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatar = document.getElementById('profileAvatar');
+                    const avatarText = document.getElementById('avatarText');
+                    
+                    avatarText.style.display = 'none';
+                    avatar.style.backgroundImage = `url(${e.target.result})`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                    
+                    // Save to localStorage
+                    localStorage.setItem('dukaan_profile_picture', e.target.result);
+                    showToast('Profile picture updated successfully!');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle preference changes
+        document.getElementById('pushNotifications').addEventListener('change', function() {
+            savePreference('pushNotifications', this.checked);
+        });
+
+        document.getElementById('emailNotifications').addEventListener('change', function() {
+            savePreference('emailNotifications', this.checked);
+        });
+
+        document.getElementById('smsNotifications').addEventListener('change', function() {
+            savePreference('smsNotifications', this.checked);
+        });
+
+        function savePreference(key, value) {
+            const preferences = JSON.parse(localStorage.getItem('dukaan_preferences')) || {};
+            preferences[key] = value;
+            localStorage.setItem('dukaan_preferences', JSON.stringify(preferences));
+            showToast('Preferences updated!');
+        }
+
+        // Load saved profile picture on app start
+        function loadProfilePicture() {
+            const savedPicture = localStorage.getItem('dukaan_profile_picture');
+            if (savedPicture) {
+                const avatar = document.getElementById('profileAvatar');
+                const avatarText = document.getElementById('avatarText');
+                
+                avatarText.style.display = 'none';
+                avatar.style.backgroundImage = `url(${savedPicture})`;
+                avatar.style.backgroundSize = 'cover';
+                avatar.style.backgroundPosition = 'center';
+            }
         }
 
         // Setup Event Listeners
