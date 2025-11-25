@@ -2185,6 +2185,19 @@ function initApp() {
     renderOrders();
     renderAddresses();
     
+function initApp() {
+    setupEventListeners();
+    setupFirebaseAuth();
+    setupDemoLogin();
+    renderProducts(PRODUCTS);
+    updateCartUI();
+    updateWishlistUI();
+    renderOrders();
+    renderAddresses();
+    setupSorting();
+    updateNotificationBadge(); // ADD THIS LINE
+}
+    
     // 🎯 YAHAN ADD KARO - Sorting Setup
     setupSorting();
 }
