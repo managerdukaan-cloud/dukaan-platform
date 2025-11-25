@@ -1202,9 +1202,26 @@
                         </div>
                     </div>
                 </div>
-                                                                <div class="filter-section mb-4">
+                                                                                <div class="filter-section mb-4">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-                        <h2 class="section-title" style="margin: 0;">Popular Products</h2>
+                        <div class="d-flex gap-3 flex-wrap" style="flex: 1;">
+                            <select id="shopFilter" class="category-filter">
+                                <option value="">All Shops</option>
+                                <option value="freshmart">FreshMart</option>
+                                <option value="cosmeticstore">CosmeticStore</option>
+                                <option value="fashionhub">FashionHub</option>
+                                <option value="veggieking">VeggieKing</option>
+                                <option value="gadgetzone">GadgetZone</option>
+                            </select>
+                            <select id="categoryFilter" class="category-filter">
+                                <option value="">All Categories</option>
+                                <option value="groceries">Groceries</option>
+                                <option value="cosmetics">Cosmetics</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="vegetables">Vegetables</option>
+                                <option value="electronics">Electronics</option>
+                            </select>
+                        </div>
                         <div class="sorting-options" style="margin: 0;">
                             <span class="sort-label">Sort by:</span>
                             <select id="sortSelect" class="sort-select">
@@ -1214,30 +1231,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="d-flex gap-3 flex-wrap">
-                        <select id="shopFilter" class="category-filter">
-                            <option value="">All Shops</option>
-                            <option value="freshmart">FreshMart</option>
-                    <div class="d-flex gap-3 flex-wrap">
-                        <select id="shopFilter" class="category-filter">
-                            <option value="">All Shops</option>
-                            <option value="freshmart">FreshMart</option>
-                            <option value="cosmeticstore">CosmeticStore</option>
-                            <option value="fashionhub">FashionHub</option>
-                            <option value="veggieking">VeggieKing</option>
-                            <option value="gadgetzone">GadgetZone</option>
-                        </select>
-                        <select id="categoryFilter" class="category-filter">
-                            <option value="">All Categories</option>
-                            <option value="groceries">Groceries</option>
-                            <option value="cosmetics">Cosmetics</option>
-                            <option value="clothing">Clothing</option>
-                            <option value="vegetables">Vegetables</option>
-                            <option value="electronics">Electronics</option>
-                        </select>
-                    </div>
                 </div>
-
                 <div id="grid" class="product-grid"></div>
                 
                 <div id="empty" class="empty-state" style="display:none">
