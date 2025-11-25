@@ -1035,6 +1035,15 @@
     align-items: center;
     flex-wrap: wrap;
 }
+            /* Force remove badge from hamburger menu */
+.nav-item[onclick*="openHamburgerMenu"] .nav-badge {
+    display: none !important;
+}
+
+/* Hide any badge near hamburger icon */
+.nav-item:first-child .nav-badge {
+    display: none !important;
+}
 @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
