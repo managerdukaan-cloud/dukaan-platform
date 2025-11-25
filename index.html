@@ -4329,6 +4329,32 @@ function contactDeliveryAgent(orderId) {
         }
     );
 }
+        // Notification Core Functions
+function loadNotificationsPage() {
+    renderNotificationsList();
+    updateNotificationPreferencesUI();
+}
+
+function createNotification(title, message, type = 'info', action = null) {
+    const notification = {
+        id: generateId(),
+        title,
+        message, 
+        type,
+        action,
+        timestamp: new Date().toISOString(),
+        read: false
+    };
+    
+    notifications.unshift(notification);
+    localStorage.setItem('dukaan_notifications', JSON.stringify(notifications));
+    updateNotificationBadge();
+    
+    // Show browser notification if enabled
+    if (notificationPreferences.pushEnabled && 'Notification' in window) {
+        new Notification(title, { body: message, icon: '/favicon.ico' });
+    }
+}
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
