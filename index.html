@@ -3892,15 +3892,51 @@ This action cannot be undone.`,
             orderTracking.classList.remove('open');
         }
 
-        function cancelOrder() {
-            showConfirmationModal(
-                'Cancel Order',
-                'Are you sure you want to cancel this order? This action cannot be undone.',
-                () => {
-                    showToast('Order cancellation feature will be available soon!');
+        function cancelOrder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    showConfirmationModal(
+        'Cancel Order',
+        `Are you sure you want to cancel order #${orderId.slice(-6)}? 
+        
+This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be processed within 3-5 business days.' : ''}`,
+        () => {
+            // Update order status to cancelled
+            const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex !== -1) {
+                orders[orderIndex].status = 'cancelled';
+                orders[orderIndex].cancelledAt = new Date().toISOString();
+                
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                
+                // Update Firebase if user is logged in
+                if (currentUser) {
+                    db.collection('users').doc(currentUser.uid).collection('orders')
+                        .where('id', '==', orderId)
+                        .get()
+                        .then(snapshot => {
+                            snapshot.forEach(doc => {
+                                doc.ref.update({
+                                    status: 'cancelled',
+                                    cancelledAt: orders[orderIndex].cancelledAt
+                                });
+                            });
+                        });
                 }
-            );
+                
+                // Close tracking modal
+                closeOrderTracking();
+                
+                // Show success message
+                showToast('Order cancelled successfully!');
+                
+                // Update orders list
+                renderOrders();
+            }
         }
+    );
+}
 
         // Utility Functions
         function generateId() {
