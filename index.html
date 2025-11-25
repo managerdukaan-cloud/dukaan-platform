@@ -3400,19 +3400,27 @@ switch(page) {
         }
 
         function updateWishlistUI() {
-            wishlistCount.textContent = wishlist.length;
-            
-            if (wishlistItems) {
-                if (wishlist.length === 0) {
-                    wishlistItems.style.display = 'none';
-                    noWishlist.style.display = 'block';
-                } else {
-                    wishlistItems.style.display = 'block';
-                    noWishlist.style.display = 'none';
-                }
-            }
+    // Safely update wishlist count if element exists
+    if (wishlistCount) {
+        wishlistCount.textContent = wishlist.length;
+    }
+    
+    // Update hamburger wishlist count safely
+    const hamburgerWishlistCount = document.getElementById('hamburgerWishlistCount');
+    if (hamburgerWishlistCount) {
+        hamburgerWishlistCount.textContent = wishlist.length;
+    }
+    
+    if (wishlistItems) {
+        if (wishlist.length === 0) {
+            wishlistItems.style.display = 'none';
+            noWishlist.style.display = 'block';
+        } else {
+            wishlistItems.style.display = 'block';
+            noWishlist.style.display = 'none';
         }
-
+    }
+}
         function renderWishlistItems() {
             if (!wishlistItems) return;
             
