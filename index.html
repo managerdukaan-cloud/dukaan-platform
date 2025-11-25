@@ -2510,7 +2510,164 @@
             
             localStorage.setItem('dukaan_recent_searches', JSON.stringify(recentSearches));
         }
+                // Enhanced Search Core Functions
+        function performEnhancedSearch(query) {
+            if (!query.trim()) return;
+            
+            addToRecentSearches(query);
+            closeEnhancedSearch();
+            
+            // Perform search and show results
+            searchInput.value = query;
+            const filteredProducts = PRODUCTS.filter(product => 
+                product.name.toLowerCase().includes(query.toLowerCase()) ||
+                product.category.toLowerCase().includes(query.toLowerCase()) ||
+                SHOPS[product.shop].name.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            renderProducts(filteredProducts);
+            showToast(`Found ${filteredProducts.length} products for "${query}"`);
+            
+            // Scroll to products
+            document.getElementById('homePage').scrollIntoView({ behavior: 'smooth' });
+        }
 
+        function applyAdvancedFilters() {
+            const minPrice = parseInt(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseInt(document.getElementById('maxPrice').value) || 5000;
+            const selectedRatings = Array.from(document.querySelectorAll('.rating-filter:checked')).map(cb => parseInt(cb.value));
+            const selectedShops = Array.from(document.querySelectorAll('.shop-filter:checked')).map(cb => cb.value);
+            
+            let filteredProducts = PRODUCTS;
+            
+            // Price filter
+            filteredProducts = filteredProducts.filter(product => 
+                product.price >= minPrice && product.price <= maxPrice
+            );
+            
+            // Rating filter (placeholder - will implement when we have actual ratings)
+            if (selectedRatings.length > 0) {
+                // For now, just show a message
+                showToast('Rating filter will work when products have actual ratings');
+            }
+            
+            // Shop filter
+            if (selectedShops.length > 0) {
+                filteredProducts = filteredProducts.filter(product => 
+                    selectedShops.includes(product.shop)
+                );
+            }
+            
+            closeEnhancedSearch();
+            renderProducts(filteredProducts);
+            
+            const filterText = [];
+            if (minPrice > 0 || maxPrice < 5000) filterText.push(`Price: ₹${minPrice}-₹${maxPrice}`);
+            if (selectedShops.length > 0) filterText.push(`${selectedShops.length} shops`);
+            
+            showToast(`Applied filters: ${filterText.join(', ')} - ${filteredProducts.length} products`);
+        }
+
+        function resetFilters() {
+            document.getElementById('minPrice').value = 0;
+            document.getElementById('maxPrice').value = 5000;
+            document.getElementById('priceRange').value = 5000;
+            
+            document.querySelectorAll('.rating-filter').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.shop-filter').forEach(cb => cb.checked = false);
+            
+            showToast('Filters reset');
+        }
+
+        // Enhanced Search Event Listeners
+        document.getElementById('enhancedSearchInput').addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            if (query.length === 0) {
+                document.getElementById('searchSuggestionsSection').style.display = 'none';
+                document.getElementById('searchSuggestions').style.display = 'none';
+                return;
+            }
+            
+            // Show search suggestions
+            showSearchSuggestions(query);
+        });
+
+        document.getElementById('enhancedSearchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performEnhancedSearch(this.value);
+            }
+        });
+
+        function showSearchSuggestions(query) {
+            const suggestions = generateSearchSuggestions(query);
+            const suggestionsList = document.getElementById('searchSuggestionsList');
+            
+            suggestionsList.innerHTML = '';
+            
+            if (suggestions.length === 0) {
+                document.getElementById('searchSuggestionsSection').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('searchSuggestionsSection').style.display = 'block';
+            
+            suggestions.forEach(suggestion => {
+                const suggestionItem = document.createElement('li');
+                suggestionItem.className = 'search-suggestion-item';
+                suggestionItem.innerHTML = `
+                    <i class="fas fa-search suggestion-icon"></i>
+                    <span>${suggestion}</span>
+                `;
+                suggestionItem.addEventListener('click', () => {
+                    document.getElementById('enhancedSearchInput').value = suggestion;
+                    performEnhancedSearch(suggestion);
+                });
+                suggestionsList.appendChild(suggestionItem);
+            });
+        }
+
+        function generateSearchSuggestions(query) {
+            const lowerQuery = query.toLowerCase();
+            const suggestions = new Set();
+            
+            // Product name suggestions
+            PRODUCTS.forEach(product => {
+                if (product.name.toLowerCase().includes(lowerQuery)) {
+                    suggestions.add(product.name);
+                }
+            });
+            
+            // Category suggestions
+            const categories = [...new Set(PRODUCTS.map(p => p.category))];
+            categories.forEach(category => {
+                if (category.toLowerCase().includes(lowerQuery)) {
+                    suggestions.add(category);
+                }
+            });
+            
+            // Shop suggestions
+            Object.values(SHOPS).forEach(shop => {
+                if (shop.name.toLowerCase().includes(lowerQuery)) {
+                    suggestions.add(shop.name);
+                }
+            });
+            
+            return Array.from(suggestions).slice(0, 8);
+        }
+
+        // Price range sync
+        document.getElementById('priceRange').addEventListener('input', function() {
+            document.getElementById('maxPrice').value = this.value;
+        });
+
+        document.getElementById('minPrice').addEventListener('input', function() {
+            document.getElementById('priceRange').min = this.value;
+        });
+
+        document.getElementById('maxPrice').addEventListener('input', function() {
+            document.getElementById('priceRange').value = this.value;
+        });
         // Filter Functionality
         function applyFilters() {
             const shopValue = shopFilter.value;
