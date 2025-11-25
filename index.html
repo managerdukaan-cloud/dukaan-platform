@@ -1834,13 +1834,14 @@
                 }
             });
         }
-                // Navigation
+                        // Navigation
         function navigateToPage(page) {
             // Hide all pages
             homePage.style.display = 'none';
             ordersPage.style.display = 'none';
             wishlistPage.style.display = 'none';
             productDetailPage.style.display = 'none';
+            profilePage.style.display = 'none';
 
             // Update nav items
             navItems.forEach(item => {
@@ -1862,6 +1863,10 @@
                 case 'wishlist':
                     wishlistPage.style.display = 'block';
                     renderWishlistItems();
+                    break;
+                case 'account':
+                    profilePage.style.display = 'block';
+                    loadUserProfile();
                     break;
                 case 'cart':
                     openBottomSheet();
