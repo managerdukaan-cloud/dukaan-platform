@@ -4389,6 +4389,36 @@ function updateNotificationBadge() {
         badge.style.display = 'none';
     }
 }
+        function updateNotificationPreference(key, value) {
+    notificationPreferences[key] = value;
+    localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
+}
+
+function togglePushNotifications() {
+    if (!('Notification' in window)) {
+        showToast('Browser does not support notifications');
+        document.getElementById('pushNotificationsToggle').checked = false;
+        return;
+    }
+    
+    if (Notification.permission === 'granted') {
+        notificationPreferences.pushEnabled = !notificationPreferences.pushEnabled;
+    } else {
+        Notification.requestPermission().then(permission => {
+            notificationPreferences.pushEnabled = permission === 'granted';
+            document.getElementById('pushNotificationsToggle').checked = permission === 'granted';
+        });
+    }
+    
+    localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
+}
+
+function updateNotificationPreferencesUI() {
+    document.getElementById('orderUpdatesToggle').checked = notificationPreferences.orderUpdates;
+    document.getElementById('priceAlertsToggle').checked = notificationPreferences.priceAlerts;
+    document.getElementById('promotionsToggle').checked = notificationPreferences.promotions;
+    document.getElementById('pushNotificationsToggle').checked = notificationPreferences.pushEnabled;
+}
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
