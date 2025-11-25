@@ -4495,6 +4495,13 @@ function updateNotificationPreferencesUI() {
     document.getElementById('promotionsToggle').checked = notificationPreferences.promotions;
     document.getElementById('pushNotificationsToggle').checked = notificationPreferences.pushEnabled;
 }
+        function openHamburgerMenu() {
+    document.getElementById('hamburgerMenu').classList.add('open');
+}
+
+function closeHamburgerMenu() {
+    document.getElementById('hamburgerMenu').classList.remove('open');
+}
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
