@@ -3266,12 +3266,19 @@ switch(page) {
         }
 
         function updateCartUI() {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            bottomCartCount.textContent = totalItems;
-            
-            // Update order summary in bottom sheet
-            updateOrderSummary();
-        }
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    bottomCartCount.textContent = totalItems;
+    
+    // HIDE BADGE WHEN 0
+    if (totalItems === 0) {
+        bottomCartCount.style.display = 'none';
+    } else {
+        bottomCartCount.style.display = 'block';
+    }
+    
+    // Update order summary in bottom sheet
+    updateOrderSummary();
+}
 
         function updateOrderSummary() {
             if (!orderList) return;
