@@ -3740,51 +3740,79 @@ This action cannot be undone.`,
         }
                 // Order Management
         function renderOrders() {
-            if (!ordersList) return;
-            
-            ordersList.innerHTML = '';
-            
-            if (orders.length === 0) {
-                noOrders.style.display = 'block';
-                return;
-            }
-            
-            noOrders.style.display = 'none';
-            
-            // Sort orders by date (newest first)
-            const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            sortedOrders.forEach(order => {
-                const orderCard = document.createElement('div');
-                orderCard.className = 'order-card';
-                
-                const statusClass = `status-${order.status}`;
-                const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
-                
-                orderCard.innerHTML = `
-                    <div class="order-header">
-                        <div class="order-id">Order #${order.id.slice(-6)}</div>
-                        <div class="order-status ${statusClass}">${statusText}</div>
+    if (!ordersList) return;
+    
+    ordersList.innerHTML = '';
+    
+    if (orders.length === 0) {
+        noOrders.style.display = 'block';
+        return;
+    }
+    
+    noOrders.style.display = 'none';
+    
+    // Sort orders by date (newest first)
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    sortedOrders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+        
+        const statusClass = `status-${order.status}`;
+        const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+        
+        orderCard.innerHTML = `
+            <div class="order-header">
+                <div class="order-id">Order #${order.id.slice(-6)}</div>
+                <div class="order-status ${statusClass}">${statusText}</div>
+            </div>
+            <div class="order-items">
+                ${order.items.map(item => `
+                    <div class="order-item">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>₹${item.price * item.quantity}</span>
                     </div>
-                    <div class="order-items">
-                        ${order.items.map(item => `
-                            <div class="order-item">
-                                <span>${item.name} × ${item.quantity}</span>
-                                <span>₹${item.price * item.quantity}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="order-footer">
-                        <div class="order-total">₹${order.total}</div>
+                `).join('')}
+            </div>
+            <div class="order-footer">
+                <div class="order-total">₹${order.total}</div>
+                <div class="order-actions">
+                    <button class="btn-reorder" onclick="reorder('${order.id}')">
+                        <i class="fas fa-redo"></i> Reorder
+                    </button>
+                    <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
+                        <i class="fas fa-map-marker-alt"></i> Track
+                    </button>
+                    ${order.status === 'confirmed' || order.status === 'preparing' ? `
+                        <button class="btn-outline" onclick="modifyOrder('${order.id}')">
+                            <i class="fas fa-edit"></i> Modify
+                        </button>
+                    ` : ''}
+                    <button class="btn-outline" onclick="shareOrder('${order.id}')">
+                        <i class="fas fa-share"></i> Share
+                    </button>
+                </div>
+            </div>
+            ${order.deliveryAgent ? `
+                <div class="delivery-agent-info mt-3 p-3 bg-light rounded">
+                    <h6><i class="fas fa-motorcycle"></i> Delivery Agent</h6>
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <button class="btn-reorder" onclick="reorder('${order.id}')">Reorder</button>
-                            <button class="btn-outline" onclick="showOrderTracking('${order.id}')">Track</button>
+                            <strong>${order.deliveryAgent.name}</strong>
+                            <div class="text-muted small">
+                                ${order.deliveryAgent.vehicle} • ⭐ ${order.deliveryAgent.rating}
+                            </div>
                         </div>
+                        <button class="btn-primary btn-sm" onclick="contactDeliveryAgent('${order.id}')">
+                            <i class="fas fa-phone"></i> Call
+                        </button>
                     </div>
-                `;
-                ordersList.appendChild(orderCard);
-            });
-        }
+                </div>
+            ` : ''}
+        `;
+        ordersList.appendChild(orderCard);
+    });
+}
 
         function reorder(orderId) {
             const order = orders.find(o => o.id === orderId);
