@@ -2586,7 +2586,10 @@ function initApp() {
             wishlistPage.style.display = 'none';
             productDetailPage.style.display = 'none';
             profilePage.style.display = 'none';
-
+            case 'notifications':
+            notificationsPage.style.display = 'block';
+            loadNotificationsPage();
+            break;
             // Update nav items
             navItems.forEach(item => {
                 item.classList.remove('active');
