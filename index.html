@@ -929,6 +929,63 @@
             gap: 10px;
             margin-top: 20px;
         }
+                /* Sorting Styles - PHASE 2.1 */
+        .sorting-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .sort-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+        }
+        .sort-select {
+            padding: 10px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 160px;
+        }
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(58, 142, 246, 0.1);
+        }
+        .sort-select:hover {
+            border-color: var(--accent);
+        }
+        .sort-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .sort-badge {
+            padding: 8px 16px;
+            background: var(--neutral);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .sort-badge:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .sort-badge.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
         @media (max-width: 768px) {
             .header-container { flex-direction: column; gap: 12px; }
             .search-container { margin: 0; width: 100%; }
