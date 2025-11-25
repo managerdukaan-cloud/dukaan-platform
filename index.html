@@ -1106,6 +1106,26 @@
 #hamburgerMenu .nav-badge {
     display: none !important;
 }
+            /* Bottom nav badge proper position fix */
+.bottom-nav .nav-item {
+    position: relative;
+}
+
+.bottom-nav .nav-badge {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    right: auto;
+    transform: translateX(10px);
+    background: var(--accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    text-align: center;
+}
 @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
