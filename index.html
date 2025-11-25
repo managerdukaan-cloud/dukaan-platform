@@ -1167,6 +1167,16 @@
     gap: 10px !important;
     white-space: nowrap !important;
 }
+            /* REMOVE BADGE FROM HAMBURGER MENU ITEMS */
+#hamburgerMenu .nav-badge,
+.nav-item[onclick*="openHamburgerMenu"] .nav-badge {
+    display: none !important;
+}
+
+/* KEEP BADGES FOR OTHER NAV ITEMS */
+.nav-item[data-page] .nav-badge {
+    display: block; /* This keeps badges for Home, Orders, Account, Cart */
+}
 @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
