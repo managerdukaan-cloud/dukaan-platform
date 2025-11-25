@@ -3806,33 +3806,49 @@ This action cannot be undone.`,
         }
 
         function showOrderTracking(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            // Update tracking timeline
-            updateTrackingTimeline(order);
-            
-            // Update order details
-            const trackingDetails = document.getElementById('trackingOrderDetails');
-            trackingDetails.innerHTML = `
-                <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
-                <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
-                <p><strong>Total Amount:</strong> ₹${order.total}</p>
-                <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
-                <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
-            `;
-            
-            // Show/hide cancel button based on order status
-            const cancelBtn = document.getElementById('cancelOrderBtn');
-            if (order.status === 'confirmed' || order.status === 'preparing') {
-                cancelBtn.style.display = 'block';
-            } else {
-                cancelBtn.style.display = 'none';
-            }
-            
-            orderTracking.classList.add('open');
-        }
-
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    currentTrackingOrder = order;
+    
+    // Update tracking timeline
+    updateTrackingTimeline(order);
+    
+    // Update order details
+    const trackingDetails = document.getElementById('trackingOrderDetails');
+    trackingDetails.innerHTML = `
+        <div class="order-tracking-details">
+            <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
+            <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
+            <p><strong>Total Amount:</strong> ₹${order.total}</p>
+            <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
+            <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
+            ${order.status !== 'delivered' && order.status !== 'cancelled' ? `
+                <div class="eta-section mt-3 p-3 bg-light rounded">
+                    <h6><i class="fas fa-clock"></i> Estimated Delivery</h6>
+                    <div id="etaCountdown" class="fw-bold text-primary"></div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    // Show/hide cancel button based on order status
+    const cancelBtn = document.getElementById('cancelOrderBtn');
+    if (order.status === 'confirmed' || order.status === 'preparing') {
+        cancelBtn.style.display = 'block';
+        cancelBtn.setAttribute('onclick', `cancelOrder('${order.id}')`);
+    } else {
+        cancelBtn.style.display = 'none';
+    }
+    
+    // Start real-time tracking simulation for active orders
+    if (order.status !== 'delivered' && order.status !== 'cancelled') {
+        startOrderTrackingSimulation(order);
+        updateETACountdown(order);
+    }
+    
+    orderTracking.classList.add('open');
+}
         function updateTrackingTimeline(order) {
             const tracking = order.tracking;
             
