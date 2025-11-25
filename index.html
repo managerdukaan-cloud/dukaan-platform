@@ -3965,7 +3965,171 @@ This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be 
         }
     );
 }
+         function startOrderTrackingSimulation(order) {
+    // Clear any existing interval
+    if (orderTrackingInterval) {
+        clearInterval(orderTrackingInterval);
+    }
+    
+    // Simulate order progress for demo purposes
+    orderTrackingInterval = setInterval(() => {
+        if (!currentTrackingOrder) return;
+        
+        const statusOrder = ['confirmed', 'preparing', 'dispatched', 'delivered'];
+        const currentIndex = statusOrder.indexOf(currentTrackingOrder.status);
+        
+        // Only progress if not already delivered
+        if (currentIndex < statusOrder.length - 1) {
+            // Simulate random progress (for demo)
+            if (Math.random() > 0.7) { // 30% chance to progress
+                const nextStatus = statusOrder[currentIndex + 1];
+                updateOrderStatus(currentTrackingOrder.id, nextStatus);
+            }
+        } else {
+            clearInterval(orderTrackingInterval);
+        }
+    }, 10000); // Check every 10 seconds
+}
 
+function updateOrderStatus(orderId, newStatus) {
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) return;
+    
+    const order = orders[orderIndex];
+    const now = new Date().toISOString();
+    
+    // Update status and tracking times
+    order.status = newStatus;
+    
+    switch(newStatus) {
+        case 'preparing':
+            order.tracking.preparing = now;
+            showToast('👨‍🍳 Your order is now being prepared!');
+            break;
+        case 'dispatched':
+            order.tracking.dispatched = now;
+            showToast('🚚 Your order has been dispatched!');
+            // Simulate delivery agent assignment
+            assignDeliveryAgent(orderId);
+            break;
+        case 'delivered':
+            order.tracking.delivered = now;
+            showToast('🎉 Order delivered successfully!');
+            if (orderTrackingInterval) {
+                clearInterval(orderTrackingInterval);
+            }
+            break;
+    }
+    
+    // Update localStorage
+    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+    
+    // Update Firebase if user is logged in
+    if (currentUser) {
+        db.collection('users').doc(currentUser.uid).collection('orders')
+            .where('id', '==', orderId)
+            .get()
+            .then(snapshot => {
+                snapshot.forEach(doc => {
+                    doc.ref.update({
+                        status: newStatus,
+                        tracking: order.tracking
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error updating order status:', error);
+            });
+    }
+    
+    // Update UI if this order is currently being tracked
+    if (currentTrackingOrder && currentTrackingOrder.id === orderId) {
+        updateTrackingTimeline(order);
+        updateETACountdown(order);
+    }
+    
+    // Update orders page
+    renderOrders();
+}
+
+function assignDeliveryAgent(orderId) {
+    const orderIndex = orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) return;
+    
+    // Simulate delivery agent details
+    const deliveryAgents = [
+        { name: 'Rahul Kumar', phone: '9876543210', vehicle: 'Bike', rating: 4.5 },
+        { name: 'Priya Singh', phone: '9876543211', vehicle: 'Scooter', rating: 4.8 },
+        { name: 'Amit Sharma', phone: '9876543212', vehicle: 'Bike', rating: 4.3 }
+    ];
+    
+    const randomAgent = deliveryAgents[Math.floor(Math.random() * deliveryAgents.length)];
+    orders[orderIndex].deliveryAgent = randomAgent;
+    
+    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+    
+    // Show delivery agent notification
+    showToast(`🚚 Delivery agent assigned: ${randomAgent.name}`);
+}
+
+function updateETACountdown(order) {
+    const etaElement = document.getElementById('etaCountdown');
+    if (!etaElement) return;
+    
+    let etaMinutes = 45; // Default ETA
+    
+    switch(order.status) {
+        case 'confirmed':
+            etaMinutes = 45;
+            break;
+        case 'preparing':
+            etaMinutes = 35;
+            break;
+        case 'dispatched':
+            etaMinutes = 20;
+            break;
+        default:
+            etaMinutes = 0;
+    }
+    
+    if (etaMinutes > 0) {
+        const deliveryTime = new Date(new Date().getTime() + etaMinutes * 60000);
+        etaElement.textContent = `${deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${etaMinutes} min)`;
+    } else {
+        etaElement.textContent = 'Delivered';
+    }
+}
+
+function shareOrder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    const orderDetails = `
+Order #${orderId.slice(-6)}
+Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+Total: ₹${order.total}
+Items: ${order.items.map(item => `${item.name} (Qty: ${item.quantity})`).join(', ')}
+Placed on: ${new Date(order.date).toLocaleDateString()}
+
+Track your order: ${window.location.href}
+    `.trim();
+    
+    // Check if Web Share API is available
+    if (navigator.share) {
+        navigator.share({
+            title: `My Dukaan Order #${orderId.slice(-6)}`,
+            text: orderDetails,
+            url: window.location.href
+        }).then(() => {
+            showToast('Order shared successfully!');
+        }).catch(error => {
+            console.log('Error sharing:', error);
+            fallbackShare(orderDetails);
+        });
+    } else {
+        fallbackShare(orderDetails);
+    }
+}
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
