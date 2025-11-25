@@ -1142,7 +1142,15 @@
             /* DEBUG - COLOR CODE BADGES */
 #bottomCartCount { background: red !important; }
 #hamburgerWishlistCount { background: blue !important; }
-            
+
+            /* HIDE WISHLIST BADGE IN HAMBURGER MENU */
+#hamburgerWishlistCount {
+    display: none !important;
+}
+/* HIDE ALL BADGES IN HAMBURGER MENU */
+#hamburgerMenu .nav-badge {
+    display: none !important;
+}
 @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
