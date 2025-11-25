@@ -1578,6 +1578,85 @@
                     </div>
                 </div>
             </div>
+                <!-- Notifications Page - PHASE 4 -->
+<div id="notificationsPage" class="notifications-page" style="display: none;">
+    <div class="profile-header">
+        <h2 class="profile-name">
+            <i class="fas fa-bell"></i>
+            Notifications
+        </h2>
+        <p class="profile-email">Manage your alerts and preferences</p>
+    </div>
+
+    <!-- Notification Preferences -->
+    <div class="profile-section">
+        <h3 class="section-title">
+            <i class="fas fa-cog"></i>
+            Notification Preferences
+        </h3>
+        <div class="preference-item">
+            <div class="preference-info">
+                <div class="preference-title">Push Notifications</div>
+                <div class="preference-desc">Receive browser push notifications</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="pushNotificationsToggle" onchange="togglePushNotifications()">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="preference-item">
+            <div class="preference-info">
+                <div class="preference-title">Order Updates</div>
+                <div class="preference-desc">Order status and delivery alerts</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="orderUpdatesToggle" checked onchange="updateNotificationPreference('orderUpdates', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="preference-item">
+            <div class="preference-info">
+                <div class="preference-title">Price Alerts</div>
+                <div class="preference-desc">Price drops on wishlist items</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="priceAlertsToggle" checked onchange="updateNotificationPreference('priceAlerts', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="preference-item">
+            <div class="preference-info">
+                <div class="preference-title">Promotions</div>
+                <div class="preference-desc">Offers, discounts and new arrivals</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="promotionsToggle" checked onchange="updateNotificationPreference('promotions', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="profile-section">
+        <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>
+                <i class="fas fa-bell"></i>
+                Recent Notifications
+            </span>
+            <button class="btn-outline btn-sm" onclick="clearAllNotifications()">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+        </div>
+        <div id="notificationsList">
+            <!-- Notifications will be loaded here -->
+        </div>
+        <div id="noNotifications" class="empty-state">
+            <div class="empty-icon"><i class="fas fa-bell-slash"></i></div>
+            <h3 class="empty-text">No notifications yet</h3>
+            <p class="text-muted">You're all caught up!</p>
+        </div>
+    </div>
+</div>
                 <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="home">
                 <i class="fas fa-home nav-icon"></i>
