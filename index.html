@@ -1357,21 +1357,20 @@
                         </div>
                         
                         <div class="product-detail-actions">
-            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+    <div class="quantity-cart-container">
         <div class="btn-quantity">
             <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
             <span id="quantityValue" class="quantity-value">1</span>
             <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
         </div>
-        <button class="btn-primary" onclick="addToCartFromDetail()" style="flex: 1;">
+        <button class="btn-primary btn-add-cart-detail" onclick="addToCartFromDetail()">
             <i class="fas fa-shopping-cart"></i> Add to Cart
         </button>
-        <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
-            <i class="fas fa-heart"></i>
-        </button>
     </div>
+    <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
+        <i class="fas fa-heart"></i>
+    </button>
 </div>
-
                         <!-- Reviews Section -->
                         <div class="reviews-section">
                             <h3 class="section-title">Customer Reviews</h3>
