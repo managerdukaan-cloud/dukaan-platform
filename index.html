@@ -3850,42 +3850,44 @@ This action cannot be undone.`,
     orderTracking.classList.add('open');
 }
         function updateTrackingTimeline(order) {
-            const tracking = order.tracking;
-            
-            // Update confirmed step
-            if (tracking.confirmed) {
-                document.getElementById('stepConfirmed').className = 'step-icon completed';
-                document.getElementById('timeConfirmed').textContent = new Date(tracking.confirmed).toLocaleString();
-            }
-            
-            // Update preparing step
-            if (tracking.preparing) {
-                document.getElementById('stepPreparing').className = 'step-icon completed';
-                document.getElementById('timePreparing').textContent = new Date(tracking.preparing).toLocaleString();
-            } else if (order.status === 'preparing' || order.status === 'dispatched' || order.status === 'delivered') {
-                document.getElementById('stepPreparing').className = 'step-icon active';
-                document.getElementById('timePreparing').textContent = 'In progress';
-            }
-            
-            // Update dispatched step
-            if (tracking.dispatched) {
-                document.getElementById('stepDispatched').className = 'step-icon completed';
-                document.getElementById('timeDispatched').textContent = new Date(tracking.dispatched).toLocaleString();
-            } else if (order.status === 'dispatched' || order.status === 'delivered') {
-                document.getElementById('stepDispatched').className = 'step-icon active';
-                document.getElementById('timeDispatched').textContent = 'In progress';
-            }
-            
-            // Update delivered step
-            if (tracking.delivered) {
-                document.getElementById('stepDelivered').className = 'step-icon completed';
-                document.getElementById('timeDelivered').textContent = new Date(tracking.delivered).toLocaleString();
-            } else if (order.status === 'delivered') {
-                document.getElementById('stepDelivered').className = 'step-icon active';
-                document.getElementById('timeDelivered').textContent = 'In progress';
-            }
-        }
-
+    const tracking = order.tracking;
+    
+    // Update confirmed step
+    if (tracking.confirmed) {
+        document.getElementById('stepConfirmed').className = 'step-icon completed';
+        document.getElementById('timeConfirmed').textContent = new Date(tracking.confirmed).toLocaleString();
+    }
+    
+    // Update preparing step
+    if (tracking.preparing) {
+        document.getElementById('stepPreparing').className = 'step-icon completed';
+        document.getElementById('timePreparing').textContent = new Date(tracking.preparing).toLocaleString();
+    } else if (order.status === 'preparing' || order.status === 'dispatched' || order.status === 'delivered') {
+        document.getElementById('stepPreparing').className = 'step-icon active';
+        document.getElementById('timePreparing').textContent = 'In progress';
+    }
+    
+    // Update dispatched step
+    if (tracking.dispatched) {
+        document.getElementById('stepDispatched').className = 'step-icon completed';
+        document.getElementById('timeDispatched').textContent = new Date(tracking.dispatched).toLocaleString();
+    } else if (order.status === 'dispatched' || order.status === 'delivered') {
+        document.getElementById('stepDispatched').className = 'step-icon active';
+        document.getElementById('timeDispatched').textContent = 'In progress';
+    }
+    
+    // Update delivered step
+    if (tracking.delivered) {
+        document.getElementById('stepDelivered').className = 'step-icon completed';
+        document.getElementById('timeDelivered').textContent = new Date(tracking.delivered).toLocaleString();
+    } else if (order.status === 'delivered') {
+        document.getElementById('stepDelivered').className = 'step-icon active';
+        document.getElementById('timeDelivered').textContent = 'In progress';
+    }
+    
+    // Update ETA countdown
+    updateETACountdown(order);
+}
         function closeOrderTracking() {
             orderTracking.classList.remove('open');
         }
