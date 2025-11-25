@@ -2065,386 +2065,373 @@
             document.getElementById('addrLandmark').value = '';
         }
 
-        // Payment Methods
-        function selectPaymentMethod(method) {
-            selectedPaymentMethod = method;
-            
-            paymentOptions.forEach(option => {
-                option.classList.remove('selected');
-                if (option.getAttribute('data-method') === method) {
-                    option.classList.add('selected');
-                }
-            });
-            
-            if (method === 'qr') {
-                qrCodeSection.style.display = 'block';
-            } else {
-                qrCodeSection.style.display = 'none';
-            }
-        }
+        // Replace the entire order management section with this corrected version
 
-        // Validation Functions
-        function validatePhone() {
-            const phone = checkoutPhone.value.trim();
-            const isValid = validatePhoneNumber(phone);
-            
-            if (phone.length === 0) {
-                checkoutPhone.classList.remove('phone-valid', 'phone-invalid');
-                phoneValidation.textContent = '';
-                return;
-            }
-            
-            if (isValid) {
-                checkoutPhone.classList.add('phone-valid');
-                checkoutPhone.classList.remove('phone-invalid');
-                phoneValidation.textContent = '✓ Valid phone number';
-                phoneValidation.className = 'validation-message validation-success';
-            } else {
-                checkoutPhone.classList.add('phone-invalid');
-                checkoutPhone.classList.remove('phone-valid');
-                phoneValidation.textContent = 'Please enter a valid 10-digit phone number';
-                phoneValidation.className = 'validation-message validation-error';
-            }
+// Payment Methods
+function selectPaymentMethod(method) {
+    selectedPaymentMethod = method;
+    
+    paymentOptions.forEach(option => {
+        option.classList.remove('selected');
+        if (option.getAttribute('data-method') === method) {
+            option.classList.add('selected');
         }
+    });
+    
+    if (method === 'qr') {
+        qrCodeSection.style.display = 'block';
+    } else {
+        qrCodeSection.style.display = 'none';
+    }
+}
 
-        function validateAddrPhone() {
-            const phone = addrPhone.value.trim();
-            const isValid = validatePhoneNumber(phone);
-            
-            if (phone.length === 0) {
-                addrPhone.classList.remove('phone-valid', 'phone-invalid');
-                addrPhoneValidation.textContent = '';
-                return;
-            }
-            
-            if (isValid) {
-                addrPhone.classList.add('phone-valid');
-                addrPhone.classList.remove('phone-invalid');
-                addrPhoneValidation.textContent = '✓ Valid phone number';
-                addrPhoneValidation.className = 'validation-message validation-success';
-            } else {
-                addrPhone.classList.add('phone-invalid');
-                addrPhone.classList.remove('phone-valid');
-                addrPhoneValidation.textContent = 'Please enter a valid 10-digit phone number';
-                addrPhoneValidation.className = 'validation-message validation-error';
-            }
+// Coupon System - FIXED: Only applies coupon, doesn't place order
+function applyCoupon() {
+    if (!currentUser) {
+        showToast('Please login to apply coupons');
+        return;
+    }
+    
+    const couponCode = couponCodeInput.value.trim().toUpperCase();
+    const coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
+    
+    if (!coupon) {
+        couponMessage.textContent = 'Invalid coupon code';
+        couponMessage.className = 'coupon-error';
+        appliedCoupon = null;
+        updateOrderSummary();
+        return;
+    }
+    
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    if (subtotal < coupon.minOrder) {
+        couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
+        couponMessage.className = 'coupon-error';
+        appliedCoupon = null;
+        updateOrderSummary();
+        return;
+    }
+    
+    appliedCoupon = coupon;
+    couponMessage.textContent = `🎉 ${coupon.description}`;
+    couponMessage.className = 'coupon-success';
+    updateOrderSummary();
+    showToast('Coupon applied successfully!');
+}
+
+// QR Payment Confirmation - FIXED: Only confirms QR payment, doesn't place order
+function confirmQRPayment() {
+    const utr = utrNumber.value.trim();
+    if (!/^\d{12}$/.test(utr)) {
+        showToast('Please enter a valid UTR number');
+        return;
+    }
+    
+    // Show confirmation modal for QR payment only
+    showConfirmationModal(
+        'Confirm QR Payment',
+        `You are about to confirm your QR payment with UTR: ${utr}. Total amount: ${qrAmount.textContent}. Please ensure you have completed the payment via QR scan.`,
+        () => {
+            // Just confirm the QR payment, don't place order
+            showToast('QR payment confirmed! Please click "Place Order Securely" to complete your order.');
+            // You can add any QR-specific confirmation logic here
         }
+    );
+}
 
-        function validatePhoneNumber(phone) {
-            return /^[6-9]\d{9}$/.test(phone);
+// Order Placement - FIXED: Separate function with proper confirmation
+function placeOrder() {
+    if (cart.length === 0) {
+        showToast('Your cart is empty');
+        return;
+    }
+    
+    if (!selectedAddress) {
+        showToast('Please select a delivery address');
+        return;
+    }
+    
+    const phone = checkoutPhone.value.trim();
+    if (!validatePhoneNumber(phone)) {
+        showToast('Please enter a valid phone number');
+        return;
+    }
+    
+    if (!selectedPaymentMethod) {
+        showToast('Please select a payment method');
+        return;
+    }
+    
+    // For QR payments, check if UTR is entered and valid
+    if (selectedPaymentMethod === 'qr') {
+        const utr = utrNumber.value.trim();
+        if (!/^\d{12}$/.test(utr)) {
+            showToast('Please enter a valid UTR number for QR payment');
+            return;
         }
-
-        function validateUTR() {
-            const utr = utrNumber.value.trim();
-            const isValid = /^\d{12}$/.test(utr);
-            
-            if (utr.length === 0) {
-                utrValidation.textContent = '';
-                return;
-            }
-            
-            if (isValid) {
-                utrValidation.textContent = '✓ Valid UTR number';
-                utrValidation.className = 'validation-message validation-success';
-            } else {
-                utrValidation.textContent = 'Please enter a valid 12-digit UTR number';
-                utrValidation.className = 'validation-message validation-error';
-            }
+    }
+    
+    const address = addresses.find(addr => addr.id === selectedAddress);
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    let discount = 0;
+    
+    if (appliedCoupon) {
+        if (appliedCoupon.type === 'percentage') {
+            discount = (subtotal * appliedCoupon.value) / 100;
+        } else {
+            discount = appliedCoupon.value;
         }
-
-        // Coupon System
-        function updateCouponAuth() {
-            if (currentUser) {
-                couponCodeInput.disabled = false;
-                applyCouponBtn.disabled = false;
-                couponLoginRequired.style.display = 'none';
-            } else {
-                couponCodeInput.disabled = true;
-                applyCouponBtn.disabled = true;
-                couponLoginRequired.style.display = 'block';
-            }
+        discount = Math.min(discount, subtotal);
+    }
+    
+    const total = subtotal - discount;
+    
+    const newOrder = {
+        id: generateId(),
+        date: new Date().toISOString(),
+        items: [...cart],
+        address: {...address},
+        phone: phone,
+        paymentMethod: selectedPaymentMethod,
+        status: selectedPaymentMethod === 'cod' ? 'confirmed' : 'paid',
+        subtotal: subtotal,
+        discount: discount,
+        total: total,
+        tracking: {
+            confirmed: new Date().toISOString(),
+            preparing: null,
+            dispatched: null,
+            delivered: null
         }
+    };
+    
+    // Show final order confirmation modal
+    showConfirmationModal(
+        'Confirm Your Order',
+        `Are you sure you want to place this order?
+        
+Order Summary:
+• ${cart.length} item(s)
+• Total: ₹${total}
+• Delivery to: ${address.city}
+• Payment: ${selectedPaymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}
+${selectedPaymentMethod === 'qr' ? `• UTR: ${utrNumber.value.trim()}` : ''}
 
-        function applyCoupon() {
-            if (!currentUser) {
-                showToast('Please login to apply coupons');
-                return;
-            }
-            
-            const couponCode = couponCodeInput.value.trim().toUpperCase();
-            const coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
-            
-            if (!coupon) {
-                couponMessage.textContent = 'Invalid coupon code';
-                couponMessage.className = 'coupon-error';
-                appliedCoupon = null;
-                updateOrderSummary();
-                return;
-            }
-            
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            if (subtotal < coupon.minOrder) {
-                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
-                couponMessage.className = 'coupon-error';
-                appliedCoupon = null;
-                updateOrderSummary();
-                return;
-            }
-            
-            appliedCoupon = coupon;
-            couponMessage.textContent = `🎉 ${coupon.description}`;
-            couponMessage.className = 'coupon-success';
-            updateOrderSummary();
-            showToast('Coupon applied successfully!');
+This action cannot be undone.`,
+        () => {
+            // User confirmed - proceed with actual order placement
+            completeOrderPlacement(newOrder);
         }
+    );
+}
 
-        // Order Management
-        function placeOrder() {
-            if (cart.length === 0) {
-                showToast('Your cart is empty');
-                return;
-            }
-            
-            if (!selectedAddress) {
-                showToast('Please select a delivery address');
-                return;
-            }
-            
-            const phone = checkoutPhone.value.trim();
-            if (!validatePhoneNumber(phone)) {
-                showToast('Please enter a valid phone number');
-                return;
-            }
-            
-            if (!selectedPaymentMethod) {
-                showToast('Please select a payment method');
-                return;
-            }
-            
-            if (selectedPaymentMethod === 'qr') {
-                const utr = utrNumber.value.trim();
-                if (!/^\d{12}$/.test(utr)) {
-                    showToast('Please enter a valid UTR number for QR payment');
-                    return;
-                }
-            }
-            
-            const address = addresses.find(addr => addr.id === selectedAddress);
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let discount = 0;
-            
-            if (appliedCoupon) {
-                if (appliedCoupon.type === 'percentage') {
-                    discount = (subtotal * appliedCoupon.value) / 100;
-                } else {
-                    discount = appliedCoupon.value;
-                }
-                discount = Math.min(discount, subtotal);
-            }
-            
-            const total = subtotal - discount;
-            
-            const newOrder = {
-                id: generateId(),
-                date: new Date().toISOString(),
-                items: [...cart],
-                address: {...address},
-                phone: phone,
-                paymentMethod: selectedPaymentMethod,
-                status: selectedPaymentMethod === 'cod' ? 'confirmed' : 'paid',
-                subtotal: subtotal,
-                discount: discount,
-                total: total,
-                tracking: {
-                    confirmed: new Date().toISOString(),
-                    preparing: null,
-                    dispatched: null,
-                    delivered: null
-                }
-            };
-            
-            orders.push(newOrder);
-            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-            
-            // Save to Firebase if user is logged in
-            if (currentUser) {
-                db.collection('users').doc(currentUser.uid).collection('orders').add(newOrder).catch(error => {
-                    console.error('Error saving order to Firebase:', error);
-                });
-            }
-            
-            // Clear cart
-            cart = [];
-            localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-            updateCartUI();
-            
-            // Reset checkout
-            appliedCoupon = null;
-            selectedAddress = null;
-            selectedPaymentMethod = null;
-            couponCodeInput.value = '';
-            couponMessage.textContent = '';
-            checkoutPhone.value = '';
-            utrNumber.value = '';
-            
-            closeBottomSheet();
-            showToast('Order placed successfully!');
-            
-            // Show order tracking if not COD
-            if (selectedPaymentMethod !== 'cod') {
-                showOrderTracking(newOrder.id);
-            }
-        }
+// Separate function for actual order placement after confirmation
+function completeOrderPlacement(newOrder) {
+    orders.push(newOrder);
+    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+    
+    // Save to Firebase if user is logged in
+    if (currentUser) {
+        db.collection('users').doc(currentUser.uid).collection('orders').add(newOrder).catch(error => {
+            console.error('Error saving order to Firebase:', error);
+        });
+    }
+    
+    // Clear cart
+    cart = [];
+    localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+    updateCartUI();
+    
+    // Reset checkout state
+    appliedCoupon = null;
+    selectedAddress = null;
+    selectedPaymentMethod = null;
+    couponCodeInput.value = '';
+    couponMessage.textContent = '';
+    checkoutPhone.value = '';
+    utrNumber.value = '';
+    
+    closeBottomSheet();
+    showToast('🎉 Order placed successfully!');
+    
+    // Show order tracking
+    setTimeout(() => {
+        showOrderTracking(newOrder.id);
+    }, 1500);
+}
 
-        function confirmQRPayment() {
-            const utr = utrNumber.value.trim();
-            if (!/^\d{12}$/.test(utr)) {
-                showToast('Please enter a valid UTR number');
-                return;
-            }
-            
-            placeOrder();
-        }
-
-        function renderOrders() {
-            if (!ordersList) return;
-            
-            ordersList.innerHTML = '';
-            
-            if (orders.length === 0) {
-                noOrders.style.display = 'block';
-                return;
-            }
-            
-            noOrders.style.display = 'none';
-            
-            // Sort orders by date (newest first)
-            const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            sortedOrders.forEach(order => {
-                const orderCard = document.createElement('div');
-                orderCard.className = 'order-card';
-                
-                const statusClass = `status-${order.status}`;
-                const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
-                
-                orderCard.innerHTML = `
-                    <div class="order-header">
-                        <div class="order-id">Order #${order.id.slice(-6)}</div>
-                        <div class="order-status ${statusClass}">${statusText}</div>
+// Order Management
+function renderOrders() {
+    if (!ordersList) return;
+    
+    ordersList.innerHTML = '';
+    
+    if (orders.length === 0) {
+        noOrders.style.display = 'block';
+        return;
+    }
+    
+    noOrders.style.display = 'none';
+    
+    // Sort orders by date (newest first)
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    sortedOrders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+        
+        const statusClass = `status-${order.status}`;
+        const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+        
+        orderCard.innerHTML = `
+            <div class="order-header">
+                <div class="order-id">Order #${order.id.slice(-6)}</div>
+                <div class="order-status ${statusClass}">${statusText}</div>
+            </div>
+            <div class="order-items">
+                ${order.items.map(item => `
+                    <div class="order-item">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>₹${item.price * item.quantity}</span>
                     </div>
-                    <div class="order-items">
-                        ${order.items.map(item => `
-                            <div class="order-item">
-                                <span>${item.name} × ${item.quantity}</span>
-                                <span>₹${item.price * item.quantity}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="order-footer">
-                        <div class="order-total">₹${order.total}</div>
-                        <div>
-                            <button class="btn-reorder" onclick="reorder('${order.id}')">Reorder</button>
-                            <button class="btn-outline" onclick="showOrderTracking('${order.id}')">Track</button>
-                        </div>
-                    </div>
-                `;
-                ordersList.appendChild(orderCard);
-            });
-        }
+                `).join('')}
+            </div>
+            <div class="order-footer">
+                <div class="order-total">₹${order.total}</div>
+                <div>
+                    <button class="btn-reorder" onclick="reorder('${order.id}')">Reorder</button>
+                    <button class="btn-outline" onclick="showOrderTracking('${order.id}')">Track</button>
+                </div>
+            </div>
+        `;
+        ordersList.appendChild(orderCard);
+    });
+}
 
-        function reorder(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            order.items.forEach(item => {
-                const existingItem = cart.find(cartItem => cartItem.id === item.id);
-                if (existingItem) {
-                    existingItem.quantity += item.quantity;
-                } else {
-                    cart.push({...item});
-                }
-            });
-            
-            localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-            updateCartUI();
-            showToast('Items added to cart!');
-            openBottomSheet();
+function reorder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    order.items.forEach(item => {
+        const existingItem = cart.find(cartItem => cartItem.id === item.id);
+        if (existingItem) {
+            existingItem.quantity += item.quantity;
+        } else {
+            cart.push({...item});
         }
+    });
+    
+    localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+    updateCartUI();
+    showToast('Items added to cart!');
+    openBottomSheet();
+}
 
-        function showOrderTracking(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            // Update tracking timeline
-            updateTrackingTimeline(order);
-            
-            // Update order details
-            const trackingDetails = document.getElementById('trackingOrderDetails');
-            trackingDetails.innerHTML = `
-                <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
-                <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
-                <p><strong>Total Amount:</strong> ₹${order.total}</p>
-                <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
-            `;
-            
-            // Show/hide cancel button based on order status
-            const cancelBtn = document.getElementById('cancelOrderBtn');
-            if (order.status === 'confirmed' || order.status === 'preparing') {
-                cancelBtn.style.display = 'block';
-            } else {
-                cancelBtn.style.display = 'none';
-            }
-            
-            orderTracking.classList.add('open');
+function showOrderTracking(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    // Update tracking timeline
+    updateTrackingTimeline(order);
+    
+    // Update order details
+    const trackingDetails = document.getElementById('trackingOrderDetails');
+    trackingDetails.innerHTML = `
+        <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
+        <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
+        <p><strong>Total Amount:</strong> ₹${order.total}</p>
+        <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
+        <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
+    `;
+    
+    // Show/hide cancel button based on order status
+    const cancelBtn = document.getElementById('cancelOrderBtn');
+    if (order.status === 'confirmed' || order.status === 'preparing') {
+        cancelBtn.style.display = 'block';
+    } else {
+        cancelBtn.style.display = 'none';
+    }
+    
+    orderTracking.classList.add('open');
+}
+
+function updateTrackingTimeline(order) {
+    const tracking = order.tracking;
+    
+    // Update confirmed step
+    if (tracking.confirmed) {
+        document.getElementById('stepConfirmed').className = 'step-icon completed';
+        document.getElementById('timeConfirmed').textContent = new Date(tracking.confirmed).toLocaleString();
+    }
+    
+    // Update preparing step
+    if (tracking.preparing) {
+        document.getElementById('stepPreparing').className = 'step-icon completed';
+        document.getElementById('timePreparing').textContent = new Date(tracking.preparing).toLocaleString();
+    } else if (order.status === 'preparing' || order.status === 'dispatched' || order.status === 'delivered') {
+        document.getElementById('stepPreparing').className = 'step-icon active';
+        document.getElementById('timePreparing').textContent = 'In progress';
+    }
+    
+    // Update dispatched step
+    if (tracking.dispatched) {
+        document.getElementById('stepDispatched').className = 'step-icon completed';
+        document.getElementById('timeDispatched').textContent = new Date(tracking.dispatched).toLocaleString();
+    } else if (order.status === 'dispatched' || order.status === 'delivered') {
+        document.getElementById('stepDispatched').className = 'step-icon active';
+        document.getElementById('timeDispatched').textContent = 'In progress';
+    }
+    
+    // Update delivered step
+    if (tracking.delivered) {
+        document.getElementById('stepDelivered').className = 'step-icon completed';
+        document.getElementById('timeDelivered').textContent = new Date(tracking.delivered).toLocaleString();
+    } else if (order.status === 'delivered') {
+        document.getElementById('stepDelivered').className = 'step-icon active';
+        document.getElementById('timeDelivered').textContent = 'In progress';
+    }
+}
+
+function closeOrderTracking() {
+    orderTracking.classList.remove('open');
+}
+
+function cancelOrder() {
+    showConfirmationModal(
+        'Cancel Order',
+        'Are you sure you want to cancel this order? This action cannot be undone.',
+        () => {
+            showToast('Order cancellation feature will be available soon!');
         }
+    );
+}
 
-        function updateTrackingTimeline(order) {
-            const tracking = order.tracking;
-            
-            // Update confirmed step
-            if (tracking.confirmed) {
-                document.getElementById('stepConfirmed').className = 'step-icon completed';
-                document.getElementById('timeConfirmed').textContent = new Date(tracking.confirmed).toLocaleString();
-            }
-            
-            // Update preparing step
-            if (tracking.preparing) {
-                document.getElementById('stepPreparing').className = 'step-icon completed';
-                document.getElementById('timePreparing').textContent = new Date(tracking.preparing).toLocaleString();
-            } else if (order.status === 'preparing' || order.status === 'dispatched' || order.status === 'delivered') {
-                document.getElementById('stepPreparing').className = 'step-icon active';
-                document.getElementById('timePreparing').textContent = 'In progress';
-            }
-            
-            // Update dispatched step
-            if (tracking.dispatched) {
-                document.getElementById('stepDispatched').className = 'step-icon completed';
-                document.getElementById('timeDispatched').textContent = new Date(tracking.dispatched).toLocaleString();
-            } else if (order.status === 'dispatched' || order.status === 'delivered') {
-                document.getElementById('stepDispatched').className = 'step-icon active';
-                document.getElementById('timeDispatched').textContent = 'In progress';
-            }
-            
-            // Update delivered step
-            if (tracking.delivered) {
-                document.getElementById('stepDelivered').className = 'step-icon completed';
-                document.getElementById('timeDelivered').textContent = new Date(tracking.delivered).toLocaleString();
-            } else if (order.status === 'delivered') {
-                document.getElementById('stepDelivered').className = 'step-icon active';
-                document.getElementById('timeDelivered').textContent = 'In progress';
-            }
-        }
-
-        function closeOrderTracking() {
-            orderTracking.classList.remove('open');
-        }
-
-        function cancelOrder() {
-            showToast('Order cancellation feature coming soon!');
-        }
-
+// Confirmation Modal System
+function showConfirmationModal(title, message, onConfirm) {
+    document.getElementById('confirmationTitle').textContent = title;
+    document.getElementById('confirmationMessage').textContent = message;
+    
+    const confirmButton = document.getElementById('confirmAction');
+    const modalElement = document.getElementById('confirmationModal');
+    const modal = new bootstrap.Modal(modalElement);
+    
+    // Set up one-time event listener
+    const handleConfirm = () => {
+        onConfirm();
+        modal.hide();
+        confirmButton.removeEventListener('click', handleConfirm);
+    };
+    
+    confirmButton.addEventListener('click', handleConfirm);
+    
+    // Clean up when modal is hidden
+    modalElement.addEventListener('hidden.bs.modal', () => {
+        confirmButton.removeEventListener('click', handleConfirm);
+    });
+    
+    modal.show();
+}
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
