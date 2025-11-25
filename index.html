@@ -4130,6 +4130,68 @@ Track your order: ${window.location.href}
         fallbackShare(orderDetails);
     }
 }
+        function fallbackShare(orderDetails) {
+    // Copy to clipboard as fallback
+    navigator.clipboard.writeText(orderDetails).then(() => {
+        showToast('Order details copied to clipboard!');
+    }).catch(() => {
+        // Final fallback - show in alert
+        alert('Order Details:\n\n' + orderDetails);
+    });
+}
+
+function modifyOrder(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    if (order.status !== 'confirmed') {
+        showToast('Order cannot be modified after preparation has started.');
+        return;
+    }
+    
+    showConfirmationModal(
+        'Modify Order',
+        'You will be able to add or remove items from this order. The order total will be updated accordingly.',
+        () => {
+            // Add order items to cart for modification
+            order.items.forEach(item => {
+                const existingItem = cart.find(cartItem => cartItem.id === item.id);
+                if (existingItem) {
+                    existingItem.quantity += item.quantity;
+                } else {
+                    cart.push({...item});
+                }
+            });
+            
+            localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+            updateCartUI();
+            
+            // Cancel the original order
+            cancelOrder(orderId);
+            
+            showToast('Order items added to cart. Please review and place your modified order.');
+            openBottomSheet();
+        }
+    );
+}
+
+function contactDeliveryAgent(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order || !order.deliveryAgent) {
+        showToast('Delivery agent not assigned yet.');
+        return;
+    }
+    
+    const agent = order.deliveryAgent;
+    
+    showConfirmationModal(
+        'Contact Delivery Agent',
+        `Would you like to call ${agent.name}?`,
+        () => {
+            window.location.href = `tel:${agent.phone}`;
+        }
+    );
+}
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
