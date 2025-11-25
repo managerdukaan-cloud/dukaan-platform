@@ -4355,6 +4355,40 @@ function createNotification(title, message, type = 'info', action = null) {
         new Notification(title, { body: message, icon: '/favicon.ico' });
     }
 }
+        function renderNotificationsList() {
+    const list = document.getElementById('notificationsList');
+    const empty = document.getElementById('noNotifications');
+    
+    if (notifications.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+    
+    empty.style.display = 'none';
+    list.innerHTML = notifications.map(notif => `
+        <div class="notification-item ${notif.read ? '' : 'notification-unread'}" 
+             onclick="markNotificationRead('${notif.id}')">
+            <div style="flex: 1;">
+                <strong>${notif.title}</strong>
+                <p style="margin: 5px 0; color: var(--text-light);">${notif.message}</p>
+                <small>${new Date(notif.timestamp).toLocaleString()}</small>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateNotificationBadge() {
+    const badge = document.getElementById('notificationCount');
+    const unreadCount = notifications.filter(n => !n.read).length;
+    
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = 'block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
