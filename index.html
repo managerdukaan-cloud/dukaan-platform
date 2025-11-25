@@ -2015,6 +2015,14 @@
         let selectedAddress = null;
         let currentProductDetail = null;
         let selectedRating = 0;
+        // Notification System State
+        let notifications = JSON.parse(localStorage.getItem('dukaan_notifications')) || [];
+        let notificationPreferences = JSON.parse(localStorage.getItem('dukaan_notification_prefs')) || {
+        orderUpdates: true,
+        priceAlerts: true,
+        promotions: true,
+        pushEnabled: false
+    };
 
         // DOM Elements
         const authScreen = document.getElementById('authScreen');
