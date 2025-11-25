@@ -1971,6 +1971,8 @@
         let currentUser = null;
         let cart = JSON.parse(localStorage.getItem('dukaan_cart')) || [];
         let wishlist = JSON.parse(localStorage.getItem('dukaan_wishlist')) || [];
+        let orderTrackingInterval = null;
+        let currentTrackingOrder = null;
         let productReviews = JSON.parse(localStorage.getItem('dukaan_product_reviews')) || [];
         let addresses = JSON.parse(localStorage.getItem('dukaan_addresses')) || [];
         let appliedCoupon = null;
