@@ -2770,7 +2770,73 @@
             
             renderProducts(filteredProducts);
         }
+                 // Sorting Functionality - PHASE 2.1
+        function setupSorting() {
+            document.getElementById('sortSelect').addEventListener('change', function() {
+                applySorting(this.value);
+            });
+        }
 
+        function applySorting(sortType) {
+            let productsToSort = [...PRODUCTS];
+            
+            switch(sortType) {
+                case 'price_high_low':
+                    productsToSort.sort((a, b) => b.price - a.price);
+                    showToast('Sorted: High to Low');
+                    break;
+                case 'price_low_high':
+                    productsToSort.sort((a, b) => a.price - b.price);
+                    showToast('Sorted: Low to High');
+                    break;
+                case 'newest':
+                    // For demo, we'll sort by ID (assuming newer products have higher IDs)
+                    productsToSort.sort((a, b) => b.id.localeCompare(a.id));
+                    showToast('Sorted: Newest First');
+                    break;
+                default:
+                    productsToSort = PRODUCTS;
+            }
+            
+            renderProducts(productsToSort);
+        }
+
+        function applyFilters() {
+            const shopValue = shopFilter.value;
+            const categoryValue = categoryFilter.value;
+            const sortValue = document.getElementById('sortSelect').value;
+            
+            let filteredProducts = PRODUCTS;
+            
+            if (shopValue) {
+                filteredProducts = filteredProducts.filter(product => product.shop === shopValue);
+            }
+            
+            if (categoryValue) {
+                filteredProducts = filteredProducts.filter(product => product.category === categoryValue);
+            }
+            
+            // Apply sorting to filtered products
+            applySortingToProducts(filteredProducts, sortValue);
+        }
+
+        function applySortingToProducts(products, sortType) {
+            let sortedProducts = [...products];
+            
+            switch(sortType) {
+                case 'price_high_low':
+                    sortedProducts.sort((a, b) => b.price - a.price);
+                    break;
+                case 'price_low_high':
+                    sortedProducts.sort((a, b) => a.price - b.price);
+                    break;
+                case 'newest':
+                    sortedProducts.sort((a, b) => b.id.localeCompare(a.id));
+                    break;
+            }
+            
+            renderProducts(sortedProducts);
+        }
         // Cart Functionality
         function addToCart(productId) {
             const product = PRODUCTS.find(p => p.id === productId);
