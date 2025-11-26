@@ -3344,55 +3344,62 @@
         }
 
         function updateOrderSummary() {
-            if (!orderList) return;
-            
-            orderList.innerHTML = '';
-            let subtotal = 0;
-            
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
-                
-                const orderItem = document.createElement('div');
-                orderItem.className = 'order-item-summary';
-                orderItem.innerHTML = `
-                    <div>
-                        <strong>${item.name}</strong>
-                        <div class="text-muted">Qty: ${item.quantity} × ₹${item.price}</div>
-                    </div>
-                    <div>₹${itemTotal}</div>
-                `;
-                orderList.appendChild(orderItem);
-            });
-            
-            // Apply coupon discount if any
-            let discount = 0;
-            if (appliedCoupon) {
-                if (appliedCoupon.type === 'percentage') {
-                    discount = (subtotal * appliedCoupon.value) / 100;
-                } else {
-                    discount = appliedCoupon.value;
-                }
-                // Ensure discount doesn't exceed subtotal
-                discount = Math.min(discount, subtotal);
-            }
-            
-            const total = subtotal - discount;
-            
-            orderTotal.textContent = `₹${total}`;
-            qrAmount.textContent = `₹${total}`;
-            
-            // Update discount section
-            const discountSection = document.getElementById('discountSection');
-            const discountAmount = document.getElementById('discountAmount');
-            
-            if (discount > 0) {
-                discountSection.style.display = 'block';
-                discountAmount.textContent = `-₹${discount}`;
-            } else {
-                discountSection.style.display = 'none';
-            }
+    if (!orderList) return;
+    
+    orderList.innerHTML = '';
+    let subtotal = 0;
+    
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        
+        const orderItem = document.createElement('div');
+        orderItem.className = 'order-item-summary';
+        orderItem.innerHTML = `
+            <div style="flex: 1;">
+                <strong>${item.name}</strong>
+                <div class="text-muted">₹${item.price} each</div>
+                <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                    <button class="btn-quantity-minus" onclick="updateCartQuantity(${index}, -1)" 
+                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">-</button>
+                    <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
+                    <button class="btn-quantity-plus" onclick="updateCartQuantity(${index}, 1)" 
+                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">+</button>
+                </div>
+            </div>
+            <div>₹${itemTotal}</div>
+        `;
+        orderList.appendChild(orderItem);
+    });
+    
+    // Apply coupon discount if any
+    let discount = 0;
+    if (appliedCoupon) {
+        if (appliedCoupon.type === 'percentage') {
+            discount = (subtotal * appliedCoupon.value) / 100;
+        } else {
+            discount = appliedCoupon.value;
         }
+        // Ensure discount doesn't exceed subtotal
+        discount = Math.min(discount, subtotal);
+    }
+    
+    const total = subtotal - discount;
+    
+    orderTotal.textContent = `₹${total}`;
+    qrAmount.textContent = `₹${total}`;
+    
+    // Update discount section
+    const discountSection = document.getElementById('discountSection');
+    const discountAmount = document.getElementById('discountAmount');
+    
+    if (discount > 0) {
+        discountSection.style.display = 'block';
+        discountAmount.textContent = `-₹${discount}`;
+    } else {
+        discountSection.style.display = 'none';
+    }
+}
 
         // Wishlist Functionality
         function toggleWishlist(productId) {
