@@ -1177,6 +1177,84 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
+
+            /* Referral & Social Sharing Styles */
+.referral-card {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.referral-locked {
+    background: linear-gradient(135deg, #6B7280, #4B5563);
+    opacity: 0.8;
+}
+.referral-code {
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin: 15px 0;
+}
+.upcoming-badge {
+    background: var(--warning);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+.share-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+}
+.share-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.share-whatsapp { background: #25D366; color: white; }
+.share-facebook { background: #1877F2; color: white; }
+.share-twitter { background: #1DA1F2; color: white; }
+.share-copy { background: var(--accent); color: white; }
+.product-share-btn {
+    position: absolute;
+    top: 12px;
+    right: 95px;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-light);
+}
+.product-share-btn:hover {
+    background: white;
+    transform: scale(1.1);
+    color: var(--accent);
+}
 @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
