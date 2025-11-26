@@ -1168,12 +1168,12 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
-/* FIX CART BADGE POSITION - FINAL */
-#bottomNavCart .nav-badge {
+/* FIX CART BADGE - FINAL SOLUTION */
+.nav-item[data-page="cart"] .nav-badge {
     position: absolute !important;
-    top: 0px !important;
-    left: 60% !important;
-    background: var(--accent) !important;
+    top: -2px !important;
+    left: 55% !important;
+    background: #3A8EF6 !important;
     color: white !important;
     padding: 2px 6px !important;
     border-radius: 10px !important;
@@ -1183,7 +1183,7 @@
     text-align: center !important;
     transform: none !important;
 }
-@media (max-width: 768px) {
+    @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
     }
