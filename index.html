@@ -3342,7 +3342,27 @@
             // Update order summary in bottom sheet
             updateOrderSummary();
         }
-
+// ADD THIS NEW FUNCTION FOR QUANTITY UPDATES
+            function updateCartQuantity(index, change) {
+    if (cart[index]) {
+        cart[index].quantity += change;
+        
+        // Remove item if quantity becomes 0
+        if (cart[index].quantity <= 0) {
+            cart.splice(index, 1);
+            showToast('Item removed from cart');
+        } else if (cart[index].quantity > 10) {
+            cart[index].quantity = 10;
+            showToast('Maximum 10 items allowed');
+        } else {
+            showToast('Quantity updated');
+        }
+        
+        localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+        updateCartUI();
+        updateOrderSummary();
+    }
+}
         function updateOrderSummary() {
     if (!orderList) return;
     
