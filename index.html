@@ -4898,11 +4898,11 @@ Track your order: ${window.location.href}
             document.getElementById('hamburgerMenu').classList.remove('open');
         }
 
-        // Utility Functions
+                // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
-            
+
         function showToast(message) {
             // Create toast element
             const toast = document.createElement('div');
@@ -4924,9 +4924,9 @@ Track your order: ${window.location.href}
                 toast.remove();
             }, 3000);
         }
+
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
-            
-</script>
+    </script>
 </body>
 </html>
