@@ -39,7 +39,19 @@
         .nav-item.active { color: var(--accent); }
         .nav-icon { font-size: 20px; }
         .nav-label { font-size: 12px; font-weight: 500; }
-        .nav-badge { position: absolute; top: -5px; right: 20px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; min-width: 18px; text-align: center; }
+        .nav-badge {
+            position: absolute;
+            top: -5px;
+            right: 50px;
+            background: var(--accent);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            text-align: center;
+        }
         .container-main { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
         .hero-banner { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 40px 20px; border-radius: 20px; margin-bottom: 30px; position: relative; overflow: hidden; }
         .hero-content { position: relative; z-index: 2; max-width: 600px; }
@@ -985,7 +997,8 @@
             background: var(--accent);
             color: white;
             border-color: var(--accent);
-            /* ORDER ENHANCEMENTS CSS */
+        }
+        /* ORDER ENHANCEMENTS CSS */
 .order-actions {
     display: flex;
     gap: 8px;
@@ -1035,13 +1048,8 @@
     align-items: center;
     flex-wrap: wrap;
 }
-            /* Force remove badge from hamburger menu */
-.nav-item[onclick*="openHamburgerMenu"] .nav-badge {
-    display: none !important;
-}
-
-/* Hide any badge near hamburger icon */
-.nav-item:first-child .nav-badge {
+            /* HIDE ALL BADGES IN HAMBURGER MENU */
+#hamburgerMenu .nav-badge {
     display: none !important;
 }
             .quantity-cart-container {
@@ -1099,9 +1107,29 @@
     align-items: center;
     gap: 15px;
 }
-/* FORCE REMOVE ALL HAMBURGER BADGES */
+/* HIDE ALL BADGES IN HAMBURGER MENU */
 #hamburgerMenu .nav-badge {
     display: none !important;
+}
+            /* Bottom nav badge proper position fix */
+.bottom-nav .nav-item {
+    position: relative;
+}
+
+.bottom-nav .nav-badge {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    right: auto;
+    transform: translateX(4px);
+    background: var(--accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    text-align: center;
 }
             /* FINAL QUANTITY FIX */
 .product-detail-actions {
@@ -1115,6 +1143,17 @@
     align-items: center;
     gap: 15px;
     flex: 1;
+}
+            #hamburgerWishlistCount {
+    display: none !important;
+}
+            /* DEBUG - COLOR CODE BADGES */
+#bottomCartCount { background: red !important; }
+#hamburgerWishlistCount { background: blue !important; }
+
+            /* HIDE WISHLIST BADGE IN HAMBURGER MENU */
+#hamburgerWishlistCount {
+    display: none !important;
 }
 /* HIDE ALL BADGES IN HAMBURGER MENU */
 #hamburgerMenu .nav-badge {
@@ -1146,55 +1185,7 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
-/* FIX CART BADGE POSITION - SPECIFIC */
-#bottomNavCart .nav-badge {
-    position: absolute !important;
-    top: -5px !important;
-    left: 60% !important;
-    background: #3A8EF6 !important;
-    color: white !important;
-    padding: 2px 6px !important;
-    border-radius: 10px !important;
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    min-width: 18px !important;
-    text-align: center !important;
-    transform: none !important;
-}
-            /* DESKTOP CART BADGE FIX */
-@media (min-width: 769px) {
-    .nav-badge {
-        position: absolute;
-        top: -5px;
-        right: 50px;
-        background: var(--accent);
-        color: white;
-        padding: 2px 6px;
-        border-radius: 10px;
-        font-size: 10px;
-        font-weight: 700;
-        min-width: 18px;
-        text-align: center;
-    }
-}
-
-/* MOBILE - DEFAULT POSITION */
 @media (max-width: 768px) {
-    .nav-badge {
-        position: absolute;
-        top: -5px;
-        right: 20px;
-        background: var(--accent);
-        color: white;
-        padding: 2px 6px;
-        border-radius: 10px;
-        font-size: 10px;
-        font-weight: 700;
-        min-width: 18px;
-        text-align: center;
-    }
-}
-    @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
     }
@@ -1881,6 +1872,17 @@
                         </div>
                     </div>
                 </div>
+                <!-- Referral Program Menu Item - Coming Soon -->
+                <div class="profile-menu-item" onclick="showComingSoon('Referral Program')">
+                    <div class="menu-item-content">
+                        <div class="menu-item-icon"><i class="fas fa-user-plus"></i></div>
+                        <div class="menu-item-text">
+                            <div class="menu-item-title">Referral Program</div>
+                            <div class="menu-item-desc">Invite friends & earn rewards</div>
+                        </div>
+                    </div>
+                    <div class="security-badge" style="background: var(--warning);">Soon</div>
+                </div>
             </div>
         </div>
     </div>
@@ -2387,34 +2389,8 @@
             updateWishlistUI();
             renderOrders();
             renderAddresses();
+            setupSorting();
         }
-            // Initialize App function ke andar ADD karo:
-function initApp() {
-    setupEventListeners();
-    setupFirebaseAuth();
-    setupDemoLogin();
-    renderProducts(PRODUCTS);
-    updateCartUI();
-    updateWishlistUI();
-    renderOrders();
-    renderAddresses();
-    
-function initApp() {
-    setupEventListeners();
-    setupFirebaseAuth();
-    setupDemoLogin();
-    renderProducts(PRODUCTS);
-    updateCartUI();
-    updateWishlistUI();
-    renderOrders();
-    renderAddresses();
-    setupSorting();
-    updateNotificationBadge(); // ADD THIS LINE
-}
-    
-    // 🎯 YAHAN ADD KARO - Sorting Setup
-    setupSorting();
-}
 
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
@@ -2583,9 +2559,9 @@ function initApp() {
             document.getElementById('signupForm').style.display = 'block';
             document.getElementById('loginFooter').style.display = 'none';
             document.getElementById('signupFooter').style.display = 'block';
-        
         }
-                // User Profile Functions - PHASE 1
+
+        // User Profile Functions - PHASE 1
         function loadUserProfile() {
             if (!currentUser) return;
             
@@ -2775,9 +2751,11 @@ function initApp() {
                     navigateToPage(page);
                 });
             });
-                         // Profile picture load on app start
+
+            // Profile picture load on app start
             loadProfilePicture();
-                        // Enhanced Search Overlay Click
+
+            // Enhanced Search Overlay Click
             document.getElementById('searchOverlay').addEventListener('click', closeEnhancedSearch);
             // Bottom sheet listeners
             closeSheetBtn.addEventListener('click', closeBottomSheet);
@@ -2813,51 +2791,24 @@ function initApp() {
                 }
             });
         }
-                        // Navigation
+
+        // Navigation
         function navigateToPage(page) {
             // Hide all pages
-homePage.style.display = 'none';
-ordersPage.style.display = 'none';
-wishlistPage.style.display = 'none';
-productDetailPage.style.display = 'none';
-profilePage.style.display = 'none';
-notificationsPage.style.display = 'none';
+            homePage.style.display = 'none';
+            ordersPage.style.display = 'none';
+            wishlistPage.style.display = 'none';
+            productDetailPage.style.display = 'none';
+            profilePage.style.display = 'none';
+            notificationsPage.style.display = 'none';
 
-// Update nav items
-navItems.forEach(item => {
-    item.classList.remove('active');
-    if (item.getAttribute('data-page') === page) {
-        item.classList.add('active');
-    }
-});
-
-// Show selected page
-switch(page) {
-    case 'home':
-        homePage.style.display = 'block';
-        break;
-    case 'orders':
-        ordersPage.style.display = 'block';
-        renderOrders();
-        break;
-    case 'wishlist':
-        wishlistPage.style.display = 'block';
-        renderWishlistItems();
-        break;
-    case 'account':
-        profilePage.style.display = 'block';
-        loadUserProfile();
-        break;
-    case 'notifications':
-        notificationsPage.style.display = 'block';
-        loadNotificationsPage();
-        break;
-    case 'cart':
-        openBottomSheet();
-        break;
-    default:
-        homePage.style.display = 'block';
-}
+            // Update nav items
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('active');
+                }
+            });
 
             // Show selected page
             switch(page) {
@@ -2875,6 +2826,10 @@ switch(page) {
                 case 'account':
                     profilePage.style.display = 'block';
                     loadUserProfile();
+                    break;
+                case 'notifications':
+                    notificationsPage.style.display = 'block';
+                    loadNotificationsPage();
                     break;
                 case 'cart':
                     openBottomSheet();
@@ -2926,7 +2881,7 @@ switch(page) {
             });
         }
 
-                // Enhanced Search Functionality - PHASE 2
+        // Enhanced Search Functionality - PHASE 2
         function handleSearch() {
             openEnhancedSearch();
         }
@@ -3037,7 +2992,8 @@ switch(page) {
             
             localStorage.setItem('dukaan_recent_searches', JSON.stringify(recentSearches));
         }
-                // Enhanced Search Core Functions
+
+        // Enhanced Search Core Functions
         function performEnhancedSearch(query) {
             if (!query.trim()) return;
             
@@ -3195,6 +3151,7 @@ switch(page) {
         document.getElementById('maxPrice').addEventListener('input', function() {
             document.getElementById('priceRange').value = this.value;
         });
+
         // Filter Functionality
         function applyFilters() {
             const shopValue = shopFilter.value;
@@ -3212,7 +3169,8 @@ switch(page) {
             
             renderProducts(filteredProducts);
         }
-                 // Sorting Functionality - PHASE 2.1
+
+        // Sorting Functionality - PHASE 2.1
         function setupSorting() {
             document.getElementById('sortSelect').addEventListener('change', function() {
                 applySorting(this.value);
@@ -3279,6 +3237,7 @@ switch(page) {
             
             renderProducts(sortedProducts);
         }
+
         // Cart Functionality
         function addToCart(productId) {
             const product = PRODUCTS.find(p => p.id === productId);
@@ -3333,34 +3292,20 @@ switch(page) {
             closeProductDetail();
         }
 
-        // ADD THIS TO updateCartUI FUNCTION
-function updateCartUI() {
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    bottomCartCount.textContent = totalItems;
-    
-    // HIDE BADGE WHEN 0
-    if (totalItems === 0) {
-        bottomCartCount.style.display = 'none';
-    } else {
-        bottomCartCount.style.display = 'block';
-    }
-    
-    // FORCE BADGE POSITION
-    bottomCartCount.style.position = 'absolute';
-    bottomCartCount.style.top = '-5px';
-    bottomCartCount.style.right = '50px';
-    bottomCartCount.style.background = '#3A8EF6';
-    bottomCartCount.style.color = 'white';
-    bottomCartCount.style.padding = '2px 6px';
-    bottomCartCount.style.borderRadius = '10px';
-    bottomCartCount.style.fontSize = '10px';
-    bottomCartCount.style.fontWeight = '700';
-    bottomCartCount.style.minWidth = '18px';
-    bottomCartCount.style.textAlign = 'center';
-    bottomCartCount.style.zIndex = '1001';
-    
-    updateOrderSummary();
-}
+        function updateCartUI() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            bottomCartCount.textContent = totalItems;
+            
+            // HIDE BADGE WHEN 0
+            if (totalItems === 0) {
+                bottomCartCount.style.display = 'none';
+            } else {
+                bottomCartCount.style.display = 'block';
+            }
+            
+            // Update order summary in bottom sheet
+            updateOrderSummary();
+        }
 
         function updateOrderSummary() {
             if (!orderList) return;
@@ -3441,27 +3386,28 @@ function updateCartUI() {
         }
 
         function updateWishlistUI() {
-    // Safely update wishlist count if element exists
-    if (wishlistCount) {
-        wishlistCount.textContent = wishlist.length;
-    }
-    
-    // Update hamburger wishlist count safely
-    const hamburgerWishlistCount = document.getElementById('hamburgerWishlistCount');
-    if (hamburgerWishlistCount) {
-        hamburgerWishlistCount.textContent = wishlist.length;
-    }
-    
-    if (wishlistItems) {
-        if (wishlist.length === 0) {
-            wishlistItems.style.display = 'none';
-            noWishlist.style.display = 'block';
-        } else {
-            wishlistItems.style.display = 'block';
-            noWishlist.style.display = 'none';
+            // Safely update wishlist count if element exists
+            if (wishlistCount) {
+                wishlistCount.textContent = wishlist.length;
+            }
+            
+            // Update hamburger wishlist count safely
+            const hamburgerWishlistCount = document.getElementById('hamburgerWishlistCount');
+            if (hamburgerWishlistCount) {
+                hamburgerWishlistCount.textContent = wishlist.length;
+            }
+            
+            if (wishlistItems) {
+                if (wishlist.length === 0) {
+                    wishlistItems.style.display = 'none';
+                    noWishlist.style.display = 'block';
+                } else {
+                    wishlistItems.style.display = 'block';
+                    noWishlist.style.display = 'none';
+                }
+            }
         }
-    }
-}
+
         function renderWishlistItems() {
             if (!wishlistItems) return;
             
@@ -3759,7 +3705,8 @@ function updateCartUI() {
             document.getElementById('reviewText').value = '';
             document.querySelectorAll('.star-input').forEach(star => star.classList.remove('active'));
         }
-                // Bottom Sheet (Checkout)
+
+        // Bottom Sheet (Checkout)
         function openBottomSheet() {
             if (cart.length === 0) {
                 showToast('Your cart is empty');
@@ -4157,81 +4104,82 @@ This action cannot be undone.`,
             
             modal.show();
         }
-                // Order Management
+
+        // Order Management
         function renderOrders() {
-    if (!ordersList) return;
-    
-    ordersList.innerHTML = '';
-    
-    if (orders.length === 0) {
-        noOrders.style.display = 'block';
-        return;
-    }
-    
-    noOrders.style.display = 'none';
-    
-    // Sort orders by date (newest first)
-    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    sortedOrders.forEach(order => {
-        const orderCard = document.createElement('div');
-        orderCard.className = 'order-card';
-        
-        const statusClass = `status-${order.status}`;
-        const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
-        
-        orderCard.innerHTML = `
-            <div class="order-header">
-                <div class="order-id">Order #${order.id.slice(-6)}</div>
-                <div class="order-status ${statusClass}">${statusText}</div>
-            </div>
-            <div class="order-items">
-                ${order.items.map(item => `
-                    <div class="order-item">
-                        <span>${item.name} × ${item.quantity}</span>
-                        <span>₹${item.price * item.quantity}</span>
+            if (!ordersList) return;
+            
+            ordersList.innerHTML = '';
+            
+            if (orders.length === 0) {
+                noOrders.style.display = 'block';
+                return;
+            }
+            
+            noOrders.style.display = 'none';
+            
+            // Sort orders by date (newest first)
+            const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedOrders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+                
+                const statusClass = `status-${order.status}`;
+                const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+                
+                orderCard.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-id">Order #${order.id.slice(-6)}</div>
+                        <div class="order-status ${statusClass}">${statusText}</div>
                     </div>
-                `).join('')}
-            </div>
-            <div class="order-footer">
-                <div class="order-total">₹${order.total}</div>
-                <div class="order-actions">
-                    <button class="btn-reorder" onclick="reorder('${order.id}')">
-                        <i class="fas fa-redo"></i> Reorder
-                    </button>
-                    <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
-                        <i class="fas fa-map-marker-alt"></i> Track
-                    </button>
-                    ${order.status === 'confirmed' || order.status === 'preparing' ? `
-                        <button class="btn-outline" onclick="modifyOrder('${order.id}')">
-                            <i class="fas fa-edit"></i> Modify
-                        </button>
-                    ` : ''}
-                    <button class="btn-outline" onclick="shareOrder('${order.id}')">
-                        <i class="fas fa-share"></i> Share
-                    </button>
-                </div>
-            </div>
-            ${order.deliveryAgent ? `
-                <div class="delivery-agent-info mt-3 p-3 bg-light rounded">
-                    <h6><i class="fas fa-motorcycle"></i> Delivery Agent</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>${order.deliveryAgent.name}</strong>
-                            <div class="text-muted small">
-                                ${order.deliveryAgent.vehicle} • ⭐ ${order.deliveryAgent.rating}
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name} × ${item.quantity}</span>
+                                <span>₹${item.price * item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-total">₹${order.total}</div>
+                        <div class="order-actions">
+                            <button class="btn-reorder" onclick="reorder('${order.id}')">
+                                <i class="fas fa-redo"></i> Reorder
+                            </button>
+                            <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
+                                <i class="fas fa-map-marker-alt"></i> Track
+                            </button>
+                            ${order.status === 'confirmed' || order.status === 'preparing' ? `
+                                <button class="btn-outline" onclick="modifyOrder('${order.id}')">
+                                    <i class="fas fa-edit"></i> Modify
+                                </button>
+                            ` : ''}
+                            <button class="btn-outline" onclick="shareOrder('${order.id}')">
+                                <i class="fas fa-share"></i> Share
+                            </button>
+                        </div>
+                    </div>
+                    ${order.deliveryAgent ? `
+                        <div class="delivery-agent-info mt-3 p-3 bg-light rounded">
+                            <h6><i class="fas fa-motorcycle"></i> Delivery Agent</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${order.deliveryAgent.name}</strong>
+                                    <div class="text-muted small">
+                                        ${order.deliveryAgent.vehicle} • ⭐ ${order.deliveryAgent.rating}
+                                    </div>
+                                </div>
+                                <button class="btn-primary btn-sm" onclick="contactDeliveryAgent('${order.id}')">
+                                    <i class="fas fa-phone"></i> Call
+                                </button>
                             </div>
                         </div>
-                        <button class="btn-primary btn-sm" onclick="contactDeliveryAgent('${order.id}')">
-                            <i class="fas fa-phone"></i> Call
-                        </button>
-                    </div>
-                </div>
-            ` : ''}
-        `;
-        ordersList.appendChild(orderCard);
-    });
-}
+                    ` : ''}
+                `;
+                ordersList.appendChild(orderCard);
+            });
+        }
 
         function reorder(orderId) {
             const order = orders.find(o => o.id === orderId);
@@ -4253,277 +4201,280 @@ This action cannot be undone.`,
         }
 
         function showOrderTracking(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    currentTrackingOrder = order;
-    
-    // Update tracking timeline
-    updateTrackingTimeline(order);
-    
-    // Update order details
-    const trackingDetails = document.getElementById('trackingOrderDetails');
-    trackingDetails.innerHTML = `
-        <div class="order-tracking-details">
-            <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
-            <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
-            <p><strong>Total Amount:</strong> ₹${order.total}</p>
-            <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
-            <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
-            ${order.status !== 'delivered' && order.status !== 'cancelled' ? `
-                <div class="eta-section mt-3 p-3 bg-light rounded">
-                    <h6><i class="fas fa-clock"></i> Estimated Delivery</h6>
-                    <div id="etaCountdown" class="fw-bold text-primary"></div>
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            currentTrackingOrder = order;
+            
+            // Update tracking timeline
+            updateTrackingTimeline(order);
+            
+            // Update order details
+            const trackingDetails = document.getElementById('trackingOrderDetails');
+            trackingDetails.innerHTML = `
+                <div class="order-tracking-details">
+                    <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
+                    <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
+                    <p><strong>Total Amount:</strong> ₹${order.total}</p>
+                    <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
+                    <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
+                    ${order.status !== 'delivered' && order.status !== 'cancelled' ? `
+                        <div class="eta-section mt-3 p-3 bg-light rounded">
+                            <h6><i class="fas fa-clock"></i> Estimated Delivery</h6>
+                            <div id="etaCountdown" class="fw-bold text-primary"></div>
+                        </div>
+                    ` : ''}
                 </div>
-            ` : ''}
-        </div>
-    `;
-    
-    // Show/hide cancel button based on order status
-    const cancelBtn = document.getElementById('cancelOrderBtn');
-    if (order.status === 'confirmed' || order.status === 'preparing') {
-        cancelBtn.style.display = 'block';
-        cancelBtn.setAttribute('onclick', `cancelOrder('${order.id}')`);
-    } else {
-        cancelBtn.style.display = 'none';
-    }
-    
-    // Start real-time tracking simulation for active orders
-    if (order.status !== 'delivered' && order.status !== 'cancelled') {
-        startOrderTrackingSimulation(order);
-        updateETACountdown(order);
-    }
-    
-    orderTracking.classList.add('open');
-}
+            `;
+            
+            // Show/hide cancel button based on order status
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            if (order.status === 'confirmed' || order.status === 'preparing') {
+                cancelBtn.style.display = 'block';
+                cancelBtn.setAttribute('onclick', `cancelOrder('${order.id}')`);
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+            
+            // Start real-time tracking simulation for active orders
+            if (order.status !== 'delivered' && order.status !== 'cancelled') {
+                startOrderTrackingSimulation(order);
+                updateETACountdown(order);
+            }
+            
+            orderTracking.classList.add('open');
+        }
+
         function updateTrackingTimeline(order) {
-    const tracking = order.tracking;
-    
-    // Update confirmed step
-    if (tracking.confirmed) {
-        document.getElementById('stepConfirmed').className = 'step-icon completed';
-        document.getElementById('timeConfirmed').textContent = new Date(tracking.confirmed).toLocaleString();
-    }
-    
-    // Update preparing step
-    if (tracking.preparing) {
-        document.getElementById('stepPreparing').className = 'step-icon completed';
-        document.getElementById('timePreparing').textContent = new Date(tracking.preparing).toLocaleString();
-    } else if (order.status === 'preparing' || order.status === 'dispatched' || order.status === 'delivered') {
-        document.getElementById('stepPreparing').className = 'step-icon active';
-        document.getElementById('timePreparing').textContent = 'In progress';
-    }
-    
-    // Update dispatched step
-    if (tracking.dispatched) {
-        document.getElementById('stepDispatched').className = 'step-icon completed';
-        document.getElementById('timeDispatched').textContent = new Date(tracking.dispatched).toLocaleString();
-    } else if (order.status === 'dispatched' || order.status === 'delivered') {
-        document.getElementById('stepDispatched').className = 'step-icon active';
-        document.getElementById('timeDispatched').textContent = 'In progress';
-    }
-    
-    // Update delivered step
-    if (tracking.delivered) {
-        document.getElementById('stepDelivered').className = 'step-icon completed';
-        document.getElementById('timeDelivered').textContent = new Date(tracking.delivered).toLocaleString();
-    } else if (order.status === 'delivered') {
-        document.getElementById('stepDelivered').className = 'step-icon active';
-        document.getElementById('timeDelivered').textContent = 'In progress';
-    }
-    
-    // Update ETA countdown
-    updateETACountdown(order);
-}
+            const tracking = order.tracking;
+            
+            // Update confirmed step
+            if (tracking.confirmed) {
+                document.getElementById('stepConfirmed').className = 'step-icon completed';
+                document.getElementById('timeConfirmed').textContent = new Date(tracking.confirmed).toLocaleString();
+            }
+            
+            // Update preparing step
+            if (tracking.preparing) {
+                document.getElementById('stepPreparing').className = 'step-icon completed';
+                document.getElementById('timePreparing').textContent = new Date(tracking.preparing).toLocaleString();
+            } else if (order.status === 'preparing' || order.status === 'dispatched' || order.status === 'delivered') {
+                document.getElementById('stepPreparing').className = 'step-icon active';
+                document.getElementById('timePreparing').textContent = 'In progress';
+            }
+            
+            // Update dispatched step
+            if (tracking.dispatched) {
+                document.getElementById('stepDispatched').className = 'step-icon completed';
+                document.getElementById('timeDispatched').textContent = new Date(tracking.dispatched).toLocaleString();
+            } else if (order.status === 'dispatched' || order.status === 'delivered') {
+                document.getElementById('stepDispatched').className = 'step-icon active';
+                document.getElementById('timeDispatched').textContent = 'In progress';
+            }
+            
+            // Update delivered step
+            if (tracking.delivered) {
+                document.getElementById('stepDelivered').className = 'step-icon completed';
+                document.getElementById('timeDelivered').textContent = new Date(tracking.delivered).toLocaleString();
+            } else if (order.status === 'delivered') {
+                document.getElementById('stepDelivered').className = 'step-icon active';
+                document.getElementById('timeDelivered').textContent = 'In progress';
+            }
+            
+            // Update ETA countdown
+            updateETACountdown(order);
+        }
+
         function closeOrderTracking() {
             orderTracking.classList.remove('open');
         }
 
         function cancelOrder(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    showConfirmationModal(
-        'Cancel Order',
-        `Are you sure you want to cancel order #${orderId.slice(-6)}? 
-        
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            showConfirmationModal(
+                'Cancel Order',
+                `Are you sure you want to cancel order #${orderId.slice(-6)}? 
+                
 This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be processed within 3-5 business days.' : ''}`,
-        () => {
-            // Update order status to cancelled
-            const orderIndex = orders.findIndex(o => o.id === orderId);
-            if (orderIndex !== -1) {
-                orders[orderIndex].status = 'cancelled';
-                orders[orderIndex].cancelledAt = new Date().toISOString();
-                
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                
-                // Update Firebase if user is logged in
-                if (currentUser) {
-                    db.collection('users').doc(currentUser.uid).collection('orders')
-                        .where('id', '==', orderId)
-                        .get()
-                        .then(snapshot => {
-                            snapshot.forEach(doc => {
-                                doc.ref.update({
-                                    status: 'cancelled',
-                                    cancelledAt: orders[orderIndex].cancelledAt
+                () => {
+                    // Update order status to cancelled
+                    const orderIndex = orders.findIndex(o => o.id === orderId);
+                    if (orderIndex !== -1) {
+                        orders[orderIndex].status = 'cancelled';
+                        orders[orderIndex].cancelledAt = new Date().toISOString();
+                        
+                        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                        
+                        // Update Firebase if user is logged in
+                        if (currentUser) {
+                            db.collection('users').doc(currentUser.uid).collection('orders')
+                                .where('id', '==', orderId)
+                                .get()
+                                .then(snapshot => {
+                                    snapshot.forEach(doc => {
+                                        doc.ref.update({
+                                            status: 'cancelled',
+                                            cancelledAt: orders[orderIndex].cancelledAt
+                                        });
+                                    });
                                 });
-                            });
-                        });
+                        }
+                        
+                        // Close tracking modal
+                        closeOrderTracking();
+                        
+                        // Show success message
+                        showToast('Order cancelled successfully!');
+                        
+                        // Update orders list
+                        renderOrders();
+                    }
                 }
-                
-                // Close tracking modal
-                closeOrderTracking();
-                
-                // Show success message
-                showToast('Order cancelled successfully!');
-                
-                // Update orders list
-                renderOrders();
-            }
+            );
         }
-    );
-}
-         function startOrderTrackingSimulation(order) {
-    // Clear any existing interval
-    if (orderTrackingInterval) {
-        clearInterval(orderTrackingInterval);
-    }
-    
-    // Simulate order progress for demo purposes
-    orderTrackingInterval = setInterval(() => {
-        if (!currentTrackingOrder) return;
-        
-        const statusOrder = ['confirmed', 'preparing', 'dispatched', 'delivered'];
-        const currentIndex = statusOrder.indexOf(currentTrackingOrder.status);
-        
-        // Only progress if not already delivered
-        if (currentIndex < statusOrder.length - 1) {
-            // Simulate random progress (for demo)
-            if (Math.random() > 0.7) { // 30% chance to progress
-                const nextStatus = statusOrder[currentIndex + 1];
-                updateOrderStatus(currentTrackingOrder.id, nextStatus);
-            }
-        } else {
-            clearInterval(orderTrackingInterval);
-        }
-    }, 10000); // Check every 10 seconds
-}
 
-function updateOrderStatus(orderId, newStatus) {
-    const orderIndex = orders.findIndex(o => o.id === orderId);
-    if (orderIndex === -1) return;
-    
-    const order = orders[orderIndex];
-    const now = new Date().toISOString();
-    
-    // Update status and tracking times
-    order.status = newStatus;
-    
-    switch(newStatus) {
-        case 'preparing':
-            order.tracking.preparing = now;
-            showToast('👨‍🍳 Your order is now being prepared!');
-            break;
-        case 'dispatched':
-            order.tracking.dispatched = now;
-            showToast('🚚 Your order has been dispatched!');
-            // Simulate delivery agent assignment
-            assignDeliveryAgent(orderId);
-            break;
-        case 'delivered':
-            order.tracking.delivered = now;
-            showToast('🎉 Order delivered successfully!');
+        function startOrderTrackingSimulation(order) {
+            // Clear any existing interval
             if (orderTrackingInterval) {
                 clearInterval(orderTrackingInterval);
             }
-            break;
-    }
-    
-    // Update localStorage
-    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-    
-    // Update Firebase if user is logged in
-    if (currentUser) {
-        db.collection('users').doc(currentUser.uid).collection('orders')
-            .where('id', '==', orderId)
-            .get()
-            .then(snapshot => {
-                snapshot.forEach(doc => {
-                    doc.ref.update({
-                        status: newStatus,
-                        tracking: order.tracking
+            
+            // Simulate order progress for demo purposes
+            orderTrackingInterval = setInterval(() => {
+                if (!currentTrackingOrder) return;
+                
+                const statusOrder = ['confirmed', 'preparing', 'dispatched', 'delivered'];
+                const currentIndex = statusOrder.indexOf(currentTrackingOrder.status);
+                
+                // Only progress if not already delivered
+                if (currentIndex < statusOrder.length - 1) {
+                    // Simulate random progress (for demo)
+                    if (Math.random() > 0.7) { // 30% chance to progress
+                        const nextStatus = statusOrder[currentIndex + 1];
+                        updateOrderStatus(currentTrackingOrder.id, nextStatus);
+                    }
+                } else {
+                    clearInterval(orderTrackingInterval);
+                }
+            }, 10000); // Check every 10 seconds
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+            
+            const order = orders[orderIndex];
+            const now = new Date().toISOString();
+            
+            // Update status and tracking times
+            order.status = newStatus;
+            
+            switch(newStatus) {
+                case 'preparing':
+                    order.tracking.preparing = now;
+                    showToast('👨‍🍳 Your order is now being prepared!');
+                    break;
+                case 'dispatched':
+                    order.tracking.dispatched = now;
+                    showToast('🚚 Your order has been dispatched!');
+                    // Simulate delivery agent assignment
+                    assignDeliveryAgent(orderId);
+                    break;
+                case 'delivered':
+                    order.tracking.delivered = now;
+                    showToast('🎉 Order delivered successfully!');
+                    if (orderTrackingInterval) {
+                        clearInterval(orderTrackingInterval);
+                    }
+                    break;
+            }
+            
+            // Update localStorage
+            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+            
+            // Update Firebase if user is logged in
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).collection('orders')
+                    .where('id', '==', orderId)
+                    .get()
+                    .then(snapshot => {
+                        snapshot.forEach(doc => {
+                            doc.ref.update({
+                                status: newStatus,
+                                tracking: order.tracking
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error updating order status:', error);
                     });
-                });
-            })
-            .catch(error => {
-                console.error('Error updating order status:', error);
-            });
-    }
-    
-    // Update UI if this order is currently being tracked
-    if (currentTrackingOrder && currentTrackingOrder.id === orderId) {
-        updateTrackingTimeline(order);
-        updateETACountdown(order);
-    }
-    
-    // Update orders page
-    renderOrders();
-}
+            }
+            
+            // Update UI if this order is currently being tracked
+            if (currentTrackingOrder && currentTrackingOrder.id === orderId) {
+                updateTrackingTimeline(order);
+                updateETACountdown(order);
+            }
+            
+            // Update orders page
+            renderOrders();
+        }
 
-function assignDeliveryAgent(orderId) {
-    const orderIndex = orders.findIndex(o => o.id === orderId);
-    if (orderIndex === -1) return;
-    
-    // Simulate delivery agent details
-    const deliveryAgents = [
-        { name: 'Rahul Kumar', phone: '9876543210', vehicle: 'Bike', rating: 4.5 },
-        { name: 'Priya Singh', phone: '9876543211', vehicle: 'Scooter', rating: 4.8 },
-        { name: 'Amit Sharma', phone: '9876543212', vehicle: 'Bike', rating: 4.3 }
-    ];
-    
-    const randomAgent = deliveryAgents[Math.floor(Math.random() * deliveryAgents.length)];
-    orders[orderIndex].deliveryAgent = randomAgent;
-    
-    localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-    
-    // Show delivery agent notification
-    showToast(`🚚 Delivery agent assigned: ${randomAgent.name}`);
-}
+        function assignDeliveryAgent(orderId) {
+            const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+            
+            // Simulate delivery agent details
+            const deliveryAgents = [
+                { name: 'Rahul Kumar', phone: '9876543210', vehicle: 'Bike', rating: 4.5 },
+                { name: 'Priya Singh', phone: '9876543211', vehicle: 'Scooter', rating: 4.8 },
+                { name: 'Amit Sharma', phone: '9876543212', vehicle: 'Bike', rating: 4.3 }
+            ];
+            
+            const randomAgent = deliveryAgents[Math.floor(Math.random() * deliveryAgents.length)];
+            orders[orderIndex].deliveryAgent = randomAgent;
+            
+            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+            
+            // Show delivery agent notification
+            showToast(`🚚 Delivery agent assigned: ${randomAgent.name}`);
+        }
 
-function updateETACountdown(order) {
-    const etaElement = document.getElementById('etaCountdown');
-    if (!etaElement) return;
-    
-    let etaMinutes = 45; // Default ETA
-    
-    switch(order.status) {
-        case 'confirmed':
-            etaMinutes = 45;
-            break;
-        case 'preparing':
-            etaMinutes = 35;
-            break;
-        case 'dispatched':
-            etaMinutes = 20;
-            break;
-        default:
-            etaMinutes = 0;
-    }
-    
-    if (etaMinutes > 0) {
-        const deliveryTime = new Date(new Date().getTime() + etaMinutes * 60000);
-        etaElement.textContent = `${deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${etaMinutes} min)`;
-    } else {
-        etaElement.textContent = 'Delivered';
-    }
-}
+        function updateETACountdown(order) {
+            const etaElement = document.getElementById('etaCountdown');
+            if (!etaElement) return;
+            
+            let etaMinutes = 45; // Default ETA
+            
+            switch(order.status) {
+                case 'confirmed':
+                    etaMinutes = 45;
+                    break;
+                case 'preparing':
+                    etaMinutes = 35;
+                    break;
+                case 'dispatched':
+                    etaMinutes = 20;
+                    break;
+                default:
+                    etaMinutes = 0;
+            }
+            
+            if (etaMinutes > 0) {
+                const deliveryTime = new Date(new Date().getTime() + etaMinutes * 60000);
+                etaElement.textContent = `${deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${etaMinutes} min)`;
+            } else {
+                etaElement.textContent = 'Delivered';
+            }
+        }
 
-function shareOrder(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    const orderDetails = `
+        function shareOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            const orderDetails = `
 Order #${orderId.slice(-6)}
 Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
 Total: ₹${order.total}
@@ -4532,182 +4483,226 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
 Track your order: ${window.location.href}
     `.trim();
-    
-    // Check if Web Share API is available
-    if (navigator.share) {
-        navigator.share({
-            title: `My Dukaan Order #${orderId.slice(-6)}`,
-            text: orderDetails,
-            url: window.location.href
-        }).then(() => {
-            showToast('Order shared successfully!');
-        }).catch(error => {
-            console.log('Error sharing:', error);
-            fallbackShare(orderDetails);
-        });
-    } else {
-        fallbackShare(orderDetails);
-    }
-}
+            
+            // Check if Web Share API is available
+            if (navigator.share) {
+                navigator.share({
+                    title: `My Dukaan Order #${orderId.slice(-6)}`,
+                    text: orderDetails,
+                    url: window.location.href
+                }).then(() => {
+                    showToast('Order shared successfully!');
+                }).catch(error => {
+                    console.log('Error sharing:', error);
+                    fallbackShare(orderDetails);
+                });
+            } else {
+                fallbackShare(orderDetails);
+            }
+        }
+
         function fallbackShare(orderDetails) {
-    // Copy to clipboard as fallback
-    navigator.clipboard.writeText(orderDetails).then(() => {
-        showToast('Order details copied to clipboard!');
-    }).catch(() => {
-        // Final fallback - show in alert
-        alert('Order Details:\n\n' + orderDetails);
-    });
-}
-
-function modifyOrder(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    if (order.status !== 'confirmed') {
-        showToast('Order cannot be modified after preparation has started.');
-        return;
-    }
-    
-    showConfirmationModal(
-        'Modify Order',
-        'You will be able to add or remove items from this order. The order total will be updated accordingly.',
-        () => {
-            // Add order items to cart for modification
-            order.items.forEach(item => {
-                const existingItem = cart.find(cartItem => cartItem.id === item.id);
-                if (existingItem) {
-                    existingItem.quantity += item.quantity;
-                } else {
-                    cart.push({...item});
-                }
+            // Copy to clipboard as fallback
+            navigator.clipboard.writeText(orderDetails).then(() => {
+                showToast('Order details copied to clipboard!');
+            }).catch(() => {
+                // Final fallback - show in alert
+                alert('Order Details:\n\n' + orderDetails);
             });
-            
-            localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-            updateCartUI();
-            
-            // Cancel the original order
-            cancelOrder(orderId);
-            
-            showToast('Order items added to cart. Please review and place your modified order.');
-            openBottomSheet();
         }
-    );
-}
 
-function contactDeliveryAgent(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order || !order.deliveryAgent) {
-        showToast('Delivery agent not assigned yet.');
-        return;
-    }
-    
-    const agent = order.deliveryAgent;
-    
-    showConfirmationModal(
-        'Contact Delivery Agent',
-        `Would you like to call ${agent.name}?`,
-        () => {
-            window.location.href = `tel:${agent.phone}`;
+        function modifyOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            if (order.status !== 'confirmed') {
+                showToast('Order cannot be modified after preparation has started.');
+                return;
+            }
+            
+            showConfirmationModal(
+                'Modify Order',
+                'You will be able to add or remove items from this order. The order total will be updated accordingly.',
+                () => {
+                    // Add order items to cart for modification
+                    order.items.forEach(item => {
+                        const existingItem = cart.find(cartItem => cartItem.id === item.id);
+                        if (existingItem) {
+                            existingItem.quantity += item.quantity;
+                        } else {
+                            cart.push({...item});
+                        }
+                    });
+                    
+                    localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                    updateCartUI();
+                    
+                    // Cancel the original order
+                    cancelOrder(orderId);
+                    
+                    showToast('Order items added to cart. Please review and place your modified order.');
+                    openBottomSheet();
+                }
+            );
         }
-    );
-}
+
+        function contactDeliveryAgent(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order || !order.deliveryAgent) {
+                showToast('Delivery agent not assigned yet.');
+                return;
+            }
+            
+            const agent = order.deliveryAgent;
+            
+            showConfirmationModal(
+                'Contact Delivery Agent',
+                `Would you like to call ${agent.name}?`,
+                () => {
+                    window.location.href = `tel:${agent.phone}`;
+                }
+            );
+        }
+
         // Notification Core Functions
-function loadNotificationsPage() {
-    renderNotificationsList();
-    updateNotificationPreferencesUI();
-}
+        function loadNotificationsPage() {
+            renderNotificationsList();
+            updateNotificationPreferencesUI();
+        }
 
-function createNotification(title, message, type = 'info', action = null) {
-    const notification = {
-        id: generateId(),
-        title,
-        message, 
-        type,
-        action,
-        timestamp: new Date().toISOString(),
-        read: false
-    };
-    
-    notifications.unshift(notification);
-    localStorage.setItem('dukaan_notifications', JSON.stringify(notifications));
-    updateNotificationBadge();
-    
-    // Show browser notification if enabled
-    if (notificationPreferences.pushEnabled && 'Notification' in window) {
-        new Notification(title, { body: message, icon: '/favicon.ico' });
-    }
-}
+        function createNotification(title, message, type = 'info', action = null) {
+            const notification = {
+                id: generateId(),
+                title,
+                message, 
+                type,
+                action,
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            notifications.unshift(notification);
+            localStorage.setItem('dukaan_notifications', JSON.stringify(notifications));
+            updateNotificationBadge();
+            
+            // Show browser notification if enabled
+            if (notificationPreferences.pushEnabled && 'Notification' in window) {
+                new Notification(title, { body: message, icon: '/favicon.ico' });
+            }
+        }
+
         function renderNotificationsList() {
-    const list = document.getElementById('notificationsList');
-    const empty = document.getElementById('noNotifications');
-    
-    if (notifications.length === 0) {
-        list.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-    }
-    
-    empty.style.display = 'none';
-    list.innerHTML = notifications.map(notif => `
-        <div class="notification-item ${notif.read ? '' : 'notification-unread'}" 
-             onclick="markNotificationRead('${notif.id}')">
-            <div style="flex: 1;">
-                <strong>${notif.title}</strong>
-                <p style="margin: 5px 0; color: var(--text-light);">${notif.message}</p>
-                <small>${new Date(notif.timestamp).toLocaleString()}</small>
-            </div>
-        </div>
-    `).join('');
-}
+            const list = document.getElementById('notificationsList');
+            const empty = document.getElementById('noNotifications');
+            
+            if (notifications.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            
+            empty.style.display = 'none';
+            list.innerHTML = notifications.map(notif => `
+                <div class="notification-item ${notif.read ? '' : 'notification-unread'}" 
+                     onclick="markNotificationRead('${notif.id}')">
+                    <div style="flex: 1;">
+                        <strong>${notif.title}</strong>
+                        <p style="margin: 5px 0; color: var(--text-light);">${notif.message}</p>
+                        <small>${new Date(notif.timestamp).toLocaleString()}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-function updateNotificationBadge() {
-    const badge = document.getElementById('notificationCount');
-    const unreadCount = notifications.filter(n => !n.read).length;
-    
-    if (unreadCount > 0) {
-        badge.textContent = unreadCount;
-        badge.style.display = 'block';
-    } else {
-        badge.style.display = 'none';
-    }
-}
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationCount');
+            const unreadCount = notifications.filter(n => !n.read).length;
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
         function updateNotificationPreference(key, value) {
-    notificationPreferences[key] = value;
-    localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
-}
+            notificationPreferences[key] = value;
+            localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
+        }
 
-function togglePushNotifications() {
-    if (!('Notification' in window)) {
-        showToast('Browser does not support notifications');
-        document.getElementById('pushNotificationsToggle').checked = false;
-        return;
-    }
-    
-    if (Notification.permission === 'granted') {
-        notificationPreferences.pushEnabled = !notificationPreferences.pushEnabled;
-    } else {
-        Notification.requestPermission().then(permission => {
-            notificationPreferences.pushEnabled = permission === 'granted';
-            document.getElementById('pushNotificationsToggle').checked = permission === 'granted';
-        });
-    }
-    
-    localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
-}
+        function togglePushNotifications() {
+            if (!('Notification' in window)) {
+                showToast('Browser does not support notifications');
+                document.getElementById('pushNotificationsToggle').checked = false;
+                return;
+            }
+            
+            if (Notification.permission === 'granted') {
+                notificationPreferences.pushEnabled = !notificationPreferences.pushEnabled;
+            } else {
+                Notification.requestPermission().then(permission => {
+                    notificationPreferences.pushEnabled = permission === 'granted';
+                    document.getElementById('pushNotificationsToggle').checked = permission === 'granted';
+                });
+            }
+            
+            localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
+        }
 
-function updateNotificationPreferencesUI() {
-    document.getElementById('orderUpdatesToggle').checked = notificationPreferences.orderUpdates;
-    document.getElementById('priceAlertsToggle').checked = notificationPreferences.priceAlerts;
-    document.getElementById('promotionsToggle').checked = notificationPreferences.promotions;
-    document.getElementById('pushNotificationsToggle').checked = notificationPreferences.pushEnabled;
-}
+        function updateNotificationPreferencesUI() {
+            document.getElementById('orderUpdatesToggle').checked = notificationPreferences.orderUpdates;
+            document.getElementById('priceAlertsToggle').checked = notificationPreferences.priceAlerts;
+            document.getElementById('promotionsToggle').checked = notificationPreferences.promotions;
+            document.getElementById('pushNotificationsToggle').checked = notificationPreferences.pushEnabled;
+        }
+
+        // Social Sharing Features - PHASE 5.2
+        function showComingSoon(featureName) {
+            showToast(`${featureName} - Coming Soon! 🚀`);
+        }
+
+        // Share Product Functionality
+        function shareProduct(productId) {
+            const product = PRODUCTS.find(p => p.id === productId);
+            if (!product) return;
+            
+            const shareText = `Check out ${product.name} on Dukaan - ${product.price} (${Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF)!`;
+            const shareUrl = window.location.href.split('?')[0] + `?product=${productId}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: product.name,
+                    text: shareText,
+                    url: shareUrl
+                }).then(() => {
+                    showToast('Product shared successfully!');
+                }).catch(() => {
+                    fallbackShareProduct(shareText, shareUrl);
+                });
+            } else {
+                fallbackShareProduct(shareText, shareUrl);
+            }
+        }
+
+        function fallbackShareProduct(text, url) {
+            const shareData = `${text}\n\n${url}`;
+            navigator.clipboard.writeText(shareData).then(() => {
+                showToast('Product link copied to clipboard!');
+            }).catch(() => {
+                alert(`Share this product:\n\n${shareData}`);
+            });
+        }
+
+        // Hamburger Menu Functions
         function openHamburgerMenu() {
-    document.getElementById('hamburgerMenu').classList.add('open');
-}
+            document.getElementById('hamburgerMenu').classList.add('open');
+        }
 
-function closeHamburgerMenu() {
-    document.getElementById('hamburgerMenu').classList.remove('open');
-}
+        function closeHamburgerMenu() {
+            document.getElementById('hamburgerMenu').classList.remove('open');
+        }
+
         // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
