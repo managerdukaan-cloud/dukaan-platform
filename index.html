@@ -3058,33 +3058,30 @@ switch(page) {
                 const isInWishlist = wishlist.includes(product.id);
                 
                 const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-                    
-                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')"
-</button>
-<i class="fas fa-heart"></i>
-                    </button>
-<!-- ADD SHARE BUTTON HERE -->
-<button class="product-share-btn" onclick="shareProduct('${product.id}')">
-    <i class="fas fa-share-alt"></i>
-</button>
-                    <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
-                    <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
-                    <p class="product-category">${product.category} • ${shop.deliveryTime}</p>
-                    <div class="product-price">
-                        <span class="current-price">₹${product.price}</span>
-                        <span class="original-price">₹${product.mrp}</span>
-                        <span class="discount">${discount}% OFF</span>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                    </div>
-                `;
-                productGrid.appendChild(productCard);
+productCard.className = 'product-card';
+productCard.innerHTML = `
+    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+    <button class="product-share-btn" onclick="shareProduct('${product.id}')" style="left: 12px; right: auto;">
+        <i class="fas fa-share-alt"></i>
+    </button>
+    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')" style="right: 12px;">
+        <i class="fas fa-heart"></i>
+    </button>
+    <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
+    <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
+    <p class="product-category">${product.category} • ${shop.deliveryTime}</p>
+    <div class="product-price">
+        <span class="current-price">₹${product.price}</span>
+        <span class="original-price">₹${product.mrp}</span>
+        <span class="discount">${discount}% OFF</span>
+    </div>
+    <div class="card-actions">
+        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
+            <i class="fas fa-shopping-cart"></i> Add to Cart
+        </button>
+    </div>
+`;
+productGrid.appendChild(productCard);
             });
         }
 
