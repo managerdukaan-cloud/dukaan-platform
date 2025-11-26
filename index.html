@@ -2919,10 +2919,10 @@ function selectDeliveryMethod(method) {
         addressesContainer.style.display = 'block';
     }
 }
-            // QR payment
+                        // QR payment
             confirmQrPayment.addEventListener('click', confirmQRPayment);
             utrNumber.addEventListener('input', validateUTR);
-}
+
             // Auto-fill checkout name when user is logged in
             auth.onAuthStateChanged((user) => {
                 if (user) {
