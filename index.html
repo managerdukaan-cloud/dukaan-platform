@@ -2302,38 +2302,85 @@
 // REPLACE YOUR ENTIRE PRODUCTS ARRAY WITH THIS:
 
 const PRODUCTS = [
-    // 🥛 FreshMart - Dairy & Groceries
-    { id: 'fm1', name: 'Fresh Cow Milk 1L', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=1', badge: 'Fresh' },
-    { id: 'fm2', name: 'Buffalo Milk 1L', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=2', badge: 'Premium' },
-    { id: 'fm3', name: 'Curd 500g', price: 50, mrp: 60, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=3', badge: 'Homemade' },
-    { id: 'fm4', name: 'Paneer 250g', price: 90, mrp: 110, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=4', badge: 'Fresh' },
-    { id: 'fm5', name: 'Butter 100g', price: 55, mrp: 65, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=5', badge: 'Amul' },
-    { id: 'fm6', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'bakery', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=6', badge: 'Fresh' },
-    { id: 'fm7', name: 'Brown Eggs (6 pcs)', price: 45, mrp: 55, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=7', badge: 'Farm Fresh' },
-    { id: 'fm8', name: 'White Eggs (12 pcs)', price: 80, mrp: 95, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=8', badge: 'Fresh' },
-    { id: 'fm9', name: 'Cheese Slice 200g', price: 120, mrp: 140, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=9', badge: 'Britannia' },
-    { id: 'fm10', name: 'Yogurt 1kg', price: 85, mrp: 100, category: 'dairy', shop: 'freshmart', image: 'https://picsum.photos/400/300?random=10', badge: 'Fresh' },
+    // 🥛 FreshMart - Dairy & Groceries (20 products)
+    { id: 'fm1', name: 'Fresh Cow Milk 1L', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm2', name: 'Buffalo Milk 1L', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1550583722-45984c6c6588?w=400&h=300&fit=crop', badge: 'Premium' },
+    { id: 'fm3', name: 'Curd 500g', price: 50, mrp: 60, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1594489573857-5c57a964434f?w=400&h=300&fit=crop', badge: 'Homemade' },
+    { id: 'fm4', name: 'Paneer 250g', price: 90, mrp: 110, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1559561727-4b70d3e5d0da?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm5', name: 'Butter 100g', price: 55, mrp: 65, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1589985270824-347b6d52d47c?w=400&h=300&fit=crop', badge: 'Amul' },
+    { id: 'fm6', name: 'Whole Wheat Bread', price: 35, mrp: 40, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm7', name: 'Brown Eggs (6 pcs)', price: 45, mrp: 55, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&h=300&fit=crop', badge: 'Farm Fresh' },
+    { id: 'fm8', name: 'White Eggs (12 pcs)', price: 80, mrp: 95, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm9', name: 'Cheese Slice 200g', price: 120, mrp: 140, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1552767057-3f9d61d75e5d?w=400&h=300&fit=crop', badge: 'Britannia' },
+    { id: 'fm10', name: 'Yogurt 1kg', price: 85, mrp: 100, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1570194065650-2c0b625fe30c?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm11', name: 'Ghee 500ml', price: 350, mrp: 400, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1589985270824-347b6d52d47c?w=400&h=300&fit=crop', badge: 'Premium' },
+    { id: 'fm12', name: 'Multigrain Bread', price: 45, mrp: 55, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop', badge: 'Healthy' },
+    { id: 'fm13', name: 'Croissants (4 pcs)', price: 120, mrp: 150, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1555507038-44d54ac6b4ec?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm14', name: 'Donuts (6 pcs)', price: 180, mrp: 220, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop', badge: 'Sweet' },
+    { id: 'fm15', name: 'Chocolate Cake 500g', price: 450, mrp: 550, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm16', name: 'Muffins (4 pcs)', price: 160, mrp: 200, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'fm17', name: 'Cookies 200g', price: 80, mrp: 100, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=300&fit=crop', badge: 'Crispy' },
+    { id: 'fm18', name: 'Brownies (4 pcs)', price: 200, mrp: 250, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400&h=300&fit=crop', badge: 'Chocolate' },
+    { id: 'fm19', name: 'Pasta 500g', price: 75, mrp: 90, category: 'groceries', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&h=300&fit=crop', badge: 'Italian' },
+    { id: 'fm20', name: 'Pizza Base (2 pcs)', price: 60, mrp: 75, category: 'bakery', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop', badge: 'Fresh' },
 
-    // 💄 CosmeticStore - Beauty Products
-    { id: 'cs1', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://picsum.photos/400/300?random=11', badge: 'New' },
-    { id: 'cs2', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://picsum.photos/400/300?random=12', badge: 'Bestseller' },
-    { id: 'cs3', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://picsum.photos/400/300?random=13', badge: 'Popular' },
-    { id: 'cs4', name: 'Sunscreen Lotion', price: 249, mrp: 299, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://picsum.photos/400/300?random=14', badge: 'SPF 50' },
-    { id: 'cs5', name: 'Shampoo 400ml', price: 180, mrp: 220, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://picsum.photos/400/300?random=15', badge: 'Anti-Dandruff' },
+    // 💄 CosmeticStore - Beauty Products (20 products)
+    { id: 'cs1', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop', badge: 'New' },
+    { id: 'cs2', name: 'Lipstick Set', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=300&fit=crop', badge: 'Bestseller' },
+    { id: 'cs3', name: 'Face Wash', price: 149, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=300&fit=crop', badge: 'Popular' },
+    { id: 'cs4', name: 'Sunscreen Lotion', price: 249, mrp: 299, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1556228579-15cdc5ddf5f0?w=400&h=300&fit=crop', badge: 'SPF 50' },
+    { id: 'cs5', name: 'Shampoo 400ml', price: 180, mrp: 220, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=400&h=300&fit=crop', badge: 'Anti-Dandruff' },
+    { id: 'cs6', name: 'Conditioner 400ml', price: 170, mrp: 210, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop', badge: 'Smooth' },
+    { id: 'cs7', name: 'Body Lotion', price: 220, mrp: 280, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1556228578-6dde4cf43c4d?w=400&h=300&fit=crop', badge: 'Moisturizing' },
+    { id: 'cs8', name: 'Face Mask', price: 99, mrp: 129, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1570194065650-2c0b625fe30c?w=400&h=300&fit=crop', badge: 'Clay' },
+    { id: 'cs9', name: 'Perfume 100ml', price: 599, mrp: 799, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=300&fit=crop', badge: 'Luxury' },
+    { id: 'cs10', name: 'Makeup Kit', price: 1299, mrp: 1699, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=300&fit=crop', badge: 'Complete' },
+    { id: 'cs11', name: 'Nail Polish Set', price: 349, mrp: 449, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1608248549165-8536a8fb6ecb?w=400&h=300&fit=crop', badge: '6 Colors' },
+    { id: 'cs12', name: 'Hair Oil 200ml', price: 120, mrp: 150, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop', badge: 'Ayurvedic' },
+    { id: 'cs13', name: 'Face Serum', price: 399, mrp: 499, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop', badge: 'Vitamin C' },
+    { id: 'cs14', name: 'Eye Cream', price: 299, mrp: 399, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1570194065650-2c0b625fe30c?w=400&h=300&fit=crop', badge: 'Anti-Aging' },
+    { id: 'cs15', name: 'Body Wash', price: 159, mrp: 199, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1556228578-6dde4cf43c4d?w=400&h=300&fit=crop', badge: 'Refreshing' },
+    { id: 'cs16', name: 'Hair Gel', price: 129, mrp: 169, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop', badge: 'Strong Hold' },
+    { id: 'cs17', name: 'Lip Balm', price: 79, mrp: 99, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=300&fit=crop', badge: 'Moisturizing' },
+    { id: 'cs18', name: 'Face Toner', price: 189, mrp: 239, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=300&fit=crop', badge: 'Rose Water' },
+    { id: 'cs19', name: 'Body Scrub', price: 279, mrp: 349, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1570194065650-2c0b625fe30c?w=400&h=300&fit=crop', badge: 'Exfoliating' },
+    { id: 'cs20', name: 'Hair Spray', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=300&fit=crop', badge: 'Long Lasting' },
 
-    // 👕 FashionHub - Clothing
-    { id: 'fh1', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: 'https://picsum.photos/400/300?random=16', badge: 'Trending' },
-    { id: 'fh2', name: 'Jeans', price: 899, mrp: 1199, category: 'clothing', shop: 'fashionhub', image: 'https://picsum.photos/400/300?random=17', badge: 'Fashion' },
-    { id: 'fh3', name: 'Casual Shirt', price: 599, mrp: 799, category: 'clothing', shop: 'fashionhub', image: 'https://picsum.photos/400/300?random=18', badge: 'Casual' },
+    // 👕 FashionHub - Clothing (FIRST 10 products for testing)
+    { id: 'fh1', name: 'Cotton T-Shirt', price: 399, mrp: 499, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop', badge: 'Trending' },
+    { id: 'fh2', name: 'Jeans', price: 899, mrp: 1199, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=300&fit=crop', badge: 'Fashion' },
+    { id: 'fh3', name: 'Casual Shirt', price: 599, mrp: 799, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=300&fit=crop', badge: 'Casual' },
+    { id: 'fh4', name: 'Formal Trousers', price: 799, mrp: 999, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=300&fit=crop', badge: 'Office Wear' },
+    { id: 'fh5', name: 'Sweatshirt', price: 699, mrp: 899, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=300&fit=crop', badge: 'Comfort' },
+    { id: 'fh6', name: 'Winter Jacket', price: 1599, mrp: 1999, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=300&fit=crop', badge: 'Warm' },
+    { id: 'fh7', name: 'Sports Shoes', price: 1299, mrp: 1699, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop', badge: 'Running' },
+    { id: 'fh8', name: 'Casual Shoes', price: 999, mrp: 1299, category: 'clothing', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1560769624-7d5e5f34d0f5?w=400&h=300&fit=crop', badge: 'Comfort' },
+    { id: 'fh9', name: 'Sunglasses', price: 499, mrp: 699, category: 'accessories', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=300&fit=crop', badge: 'UV Protection' },
+    { id: 'fh10', name: 'Wrist Watch', price: 1499, mrp: 1999, category: 'accessories', shop: 'fashionhub', image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400&h=300&fit=crop', badge: 'Luxury' },
 
-    // 🥦 VeggieKing - Vegetables
-    { id: 'vk1', name: 'Fresh Tomatoes 1kg', price: 30, mrp: 40, category: 'vegetables', shop: 'veggieking', image: 'https://picsum.photos/400/300?random=19', badge: 'Fresh' },
-    { id: 'vk2', name: 'Potatoes 1kg', price: 25, mrp: 35, category: 'vegetables', shop: 'veggieking', image: 'https://picsum.photos/400/300?random=20', badge: 'Fresh' },
+    // 🥦 VeggieKing - Vegetables (FIRST 10 products for testing)
+    { id: 'vk1', name: 'Fresh Tomatoes 1kg', price: 30, mrp: 40, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1546470427-e212b7d3106a?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk2', name: 'Potatoes 1kg', price: 25, mrp: 35, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk3', name: 'Onions 1kg', price: 40, mrp: 50, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1587049633312-d628ae50a8ae?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk4', name: 'Carrots 500g', price: 35, mrp: 45, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1445282768818-728615cc910a?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk5', name: 'Cabbage 1pc', price: 20, mrp: 30, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1571772996211-2f02c9727629?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk6', name: 'Cauliflower 1pc', price: 30, mrp: 40, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1594282382301-46515eac24f7?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk7', name: 'Broccoli 1pc', price: 60, mrp: 80, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk8', name: 'Spinach 200g', price: 25, mrp: 35, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk9', name: 'Capsicum 500g', price: 50, mrp: 65, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1525607551107-68e20c75b1a9?w=400&h=300&fit=crop', badge: 'Fresh' },
+    { id: 'vk10', name: 'Lemon 250g', price: 20, mrp: 30, category: 'vegetables', shop: 'veggieking', image: 'https://images.unsplash.com/photo-1587496679742-bad502958fbf?w=400&h=300&fit=crop', badge: 'Fresh' },
 
-    // 📱 GadgetZone - Electronics
-    { id: 'gz1', name: 'Wireless Earbuds', price: 1999, mrp: 2499, category: 'electronics', shop: 'gadgetzone', image: 'https://picsum.photos/400/300?random=21', badge: 'Wireless' },
-    { id: 'gz2', name: 'Smart Watch', price: 2999, mrp: 3999, category: 'electronics', shop: 'gadgetzone', image: 'https://picsum.photos/400/300?random=22', badge: 'Fitness' },
-    { id: 'gz3', name: 'Power Bank 10000mAh', price: 1299, mrp: 1699, category: 'electronics', shop: 'gadgetzone', image: 'https://picsum.photos/400/300?random=23', badge: 'Fast Charging' }
+    // 📱 GadgetZone - Electronics (FIRST 10 products for testing)
+    { id: 'gz1', name: 'Wireless Earbuds', price: 1999, mrp: 2499, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&h=300&fit=crop', badge: 'Wireless' },
+    { id: 'gz2', name: 'Smart Watch', price: 2999, mrp: 3999, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop', badge: 'Fitness' },
+    { id: 'gz3', name: 'Power Bank 10000mAh', price: 1299, mrp: 1699, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1609592810793-abeb6c64b5c6?w=400&h=300&fit=crop', badge: 'Fast Charging' },
+    { id: 'gz4', name: 'Bluetooth Speaker', price: 1499, mrp: 1999, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop', badge: 'Portable' },
+    { id: 'gz5', name: 'Phone Case', price: 299, mrp: 499, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400&h=300&fit=crop', badge: 'Protective' },
+    { id: 'gz6', name: 'USB Cable', price: 199, mrp: 299, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=300&fit=crop', badge: 'Fast Charging' },
+    { id: 'gz7', name: 'Wireless Mouse', price: 599, mrp: 799, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400&h=300&fit=crop', badge: 'Wireless' },
+    { id: 'gz8', name: 'Keyboard', price: 899, mrp: 1199, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&h=300&fit=crop', badge: 'Mechanical' },
+    { id: 'gz9', name: 'Laptop Stand', price: 799, mrp: 999, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop', badge: 'Adjustable' },
+    { id: 'gz10', name: 'Webcam', price: 1599, mrp: 1999, category: 'electronics', shop: 'gadgetzone', image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop', badge: 'HD' }
 ];
         const AVAILABLE_COUPONS = [
             { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
