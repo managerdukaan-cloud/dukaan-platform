@@ -1185,6 +1185,30 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
+        .delivery-options {
+    margin: 10px 0;
+}
+
+.delivery-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delivery-option.selected {
+    border-color: var(--accent);
+    background: rgba(58, 142, 246, 0.05);
+}
+
+.delivery-option:hover {
+    border-color: var(--accent);
+}
         /* MOBILE LAYOUT FIXES */
 @media (max-width: 768px) {
     /* Fix: 2 products per row in mobile */
