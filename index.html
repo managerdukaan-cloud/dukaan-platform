@@ -3333,7 +3333,8 @@ switch(page) {
             closeProductDetail();
         }
 
-        function updateCartUI() {
+        // ADD THIS TO updateCartUI FUNCTION
+function updateCartUI() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     bottomCartCount.textContent = totalItems;
     
@@ -3344,7 +3345,20 @@ switch(page) {
         bottomCartCount.style.display = 'block';
     }
     
-    // Update order summary in bottom sheet
+    // FORCE BADGE POSITION
+    bottomCartCount.style.position = 'absolute';
+    bottomCartCount.style.top = '-5px';
+    bottomCartCount.style.right = '50px';
+    bottomCartCount.style.background = '#3A8EF6';
+    bottomCartCount.style.color = 'white';
+    bottomCartCount.style.padding = '2px 6px';
+    bottomCartCount.style.borderRadius = '10px';
+    bottomCartCount.style.fontSize = '10px';
+    bottomCartCount.style.fontWeight = '700';
+    bottomCartCount.style.minWidth = '18px';
+    bottomCartCount.style.textAlign = 'center';
+    bottomCartCount.style.zIndex = '1001';
+    
     updateOrderSummary();
 }
 
