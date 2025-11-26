@@ -1177,146 +1177,6 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
-
-            /* Referral & Social Sharing Styles */
-.referral-card {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    padding: 25px;
-    border-radius: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-.referral-locked {
-    background: linear-gradient(135deg, #6B7280, #4B5563);
-    opacity: 0.8;
-}
-.referral-code {
-    background: rgba(255,255,255,0.2);
-    padding: 15px;
-    border-radius: 10px;
-    font-family: monospace;
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 2px;
-    margin: 15px 0;
-}
-.upcoming-badge {
-    background: var(--warning);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    display: inline-block;
-}
-.share-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin: 15px 0;
-}
-.share-btn {
-    flex: 1;
-    min-width: 120px;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-.share-whatsapp { background: #25D366; color: white; }
-.share-facebook { background: #1877F2; color: white; }
-.share-twitter { background: #1DA1F2; color: white; }
-.share-copy { background: var(--accent); color: white; }
-.product-share-btn {
-    position: absolute;
-    top: 12px;
-    right: 95px;
-    background: rgba(255,255,255,0.9);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: var(--text-light);
-}
-.product-share-btn:hover {
-    background: white;
-    transform: scale(1.1);
-    color: var(--accent);
-}
-            @media (max-width: 768px) {
-    .product-share-btn {
-        top: 45px;
-        right: 12px;
-        width: 30px;
-        height: 30px;
-    }
-    .wishlist-btn {
-        top: 45px;
-        right: 50px;
-        width: 30px;
-        height: 30px;
-    }
-    .shop-badge {
-        top: 12px;
-        right: 12px;
-        font-size: 8px;
-        padding: 3px 6px;
-    }
-    .product-badge {
-        top: 12px;
-        left: 12px;
-        font-size: 10px;
-        padding: 3px 8px;
-    }
-                @media (max-width: 768px) {
-    .product-grid { 
-        grid-template-columns: 1fr 1fr; 
-        gap: 10px; 
-    }
-    .product-card {
-        padding: 10px;
-    }
-    .product-badge {
-        top: 5px;
-        left: 5px;
-        font-size: 8px;
-        padding: 2px 6px;
-    }
-    .product-share-btn {
-        top: 5px;
-        left: 5px;
-        right: auto;
-        width: 25px;
-        height: 25px;
-        font-size: 10px;
-    }
-    .wishlist-btn {
-        top: 5px;
-        right: 5px;
-        width: 25px;
-        height: 25px;
-        font-size: 10px;
-    }
-    .product-image {
-        height: 100px;
-    }
-    .product-title {
-        font-size: 14px;
-    }
-                }
-
 @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
@@ -1326,12 +1186,14 @@
         flex: 1;
         min-width: 80px;
     }
-        
-@media (max-width: 768px) {
+}
+        }
+        @media (max-width: 768px) {
             .header-container { flex-direction: column; gap: 12px; }
             .search-container { margin: 0; width: 100%; }
             .hero-content { max-width: 100%; }
-            .hero-title { font-size: 1.8rem; }.product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .hero-title { font-size: 1.8rem; }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
             .product-image { height: 120px; }
             .auth-card { padding: 30px 25px; }
             .form-row { grid-template-columns: 1fr; }
@@ -1964,67 +1826,6 @@
         </div>
     </div>
 </div>
-        <!-- Referral Program Page -->
-<div id="referralPage" class="profile-page" style="display: none;">
-    <div class="profile-header">
-        <h2 class="profile-name">
-            <i class="fas fa-user-friends"></i>
-            Refer & Earn
-        </h2>
-        <p class="profile-email">Invite friends and earn rewards together</p>
-    </div>
-
-    <div class="referral-card referral-locked">
-        <div class="upcoming-badge">
-            <i class="fas fa-clock"></i> Coming Soon
-        </div>
-        <h3>Invite Friends, Earn Rewards! 🎁</h3>
-        <p>Share your code and both get ₹100 off</p>
-        
-        <div class="referral-code">
-            DUKAAN-COMING-SOON
-        </div>
-        <p class="text-small">Referral program launching soon</p>
-
-        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-            <h4>How it works:</h4>
-            <div style="text-align: left; margin-top: 10px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
-                    <div style="background: white; color: var(--primary); width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
-                    <span>Share your referral code with friends</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
-                    <div style="background: white; color: var(--primary); width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
-                    <span>Friend signs up using your code</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
-                    <div style="background: white; color: var(--primary); width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
-                    <span>Both get ₹100 off on first order</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Share App Buttons -->
-    <div class="profile-section">
-        <h3 class="section-title">Share Dukaan App</h3>
-        <p style="color: var(--text-light); margin-bottom: 15px;">Invite friends to join Dukaan</p>
-        <div class="share-buttons">
-            <button class="share-btn share-whatsapp" onclick="shareAppViaWhatsApp()">
-                <i class="fab fa-whatsapp"></i> WhatsApp
-            </button>
-            <button class="share-btn share-facebook" onclick="shareAppViaFacebook()">
-                <i class="fab fa-facebook"></i> Facebook
-            </button>
-            <button class="share-btn share-twitter" onclick="shareAppViaTwitter()">
-                <i class="fab fa-twitter"></i> Twitter
-            </button>
-            <button class="share-btn share-copy" onclick="copyAppLink()">
-                <i class="fas fa-link"></i> Copy Link
-            </button>
-        </div>
-    </div>
-</div>
         <!-- Hamburger Menu -->
 <div id="hamburgerMenu" class="bottom-sheet">
     <span class="sheet-handle"></span>
@@ -2067,15 +1868,6 @@
         </div>
     </div>
 </div>
-        <div class="profile-menu-item" onclick="navigateToPage('referral'); closeHamburgerMenu();">
-    <div class="menu-item-content">
-        <div class="menu-item-icon"><i class="fas fa-user-friends"></i></div>
-        <div class="menu-item-text">
-            <div class="menu-item-title">Refer & Earn</div>
-            <div class="menu-item-desc">Invite friends, get rewards</div>
-        </div>
-    </div>
-        </div>
                 <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="home">
                 <i class="fas fa-home nav-icon"></i>
@@ -3092,30 +2884,28 @@ switch(page) {
                 const isInWishlist = wishlist.includes(product.id);
                 
                 const productCard = document.createElement('div');
-productCard.className = 'product-card';
-productCard.innerHTML = `
-    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-    <button class="product-share-btn" onclick="shareProduct('${product.id}')" style="left: 12px; right: auto;">
-        <i class="fas fa-share-alt"></i>
-    </button>
-    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')" style="right: 12px;">
-        <i class="fas fa-heart"></i>
-    </button>
-    <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
-    <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
-    <p class="product-category">${product.category} • ${shop.deliveryTime}</p>
-    <div class="product-price">
-        <span class="current-price">₹${product.price}</span>
-        <span class="original-price">₹${product.mrp}</span>
-        <span class="discount">${discount}% OFF</span>
-    </div>
-    <div class="card-actions">
-        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-        </button>
-    </div>
-`;
-productGrid.appendChild(productCard);
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+                    <div class="shop-badge">${shop.name}</div>
+                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
+                    <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
+                    <p class="product-category">${product.category} • ${shop.deliveryTime}</p>
+                    <div class="product-price">
+                        <span class="current-price">₹${product.price}</span>
+                        <span class="original-price">₹${product.mrp}</span>
+                        <span class="discount">${discount}% OFF</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
             });
         }
 
@@ -4913,46 +4703,6 @@ function closeHamburgerMenu() {
                 toast.remove();
             }, 3000);
         }
-
-        // Social Sharing Functions
-function shareProduct(productId) {
-    const product = PRODUCTS.find(p => p.id === productId);
-    if (!product) return;
-    
-    const message = `Check out ${product.name} on Dukaan - Only ₹${product.price}! ${window.location.href}`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: product.name,
-            text: `Check out ${product.name} - ₹${product.price}`,
-            url: window.location.href
-        });
-    } else {
-        navigator.clipboard.writeText(message).then(() => {
-            showToast('Product link copied to clipboard!');
-        });
-    }
-}
-
-function shareAppViaWhatsApp() {
-    const message = `Discover amazing local products on Dukaan! Fast delivery, best prices. Download now: ${window.location.href}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-}
-
-function shareAppViaFacebook() {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
-}
-
-function shareAppViaTwitter() {
-    const text = `Discover amazing local products on Dukaan! Fast delivery, best prices.`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
-}
-
-function copyAppLink() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-        showToast('App link copied to clipboard!');
-    });
-}
 
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
