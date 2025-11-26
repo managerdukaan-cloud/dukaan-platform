@@ -2496,29 +2496,6 @@
             // Auto-fill demo credentials
             document.getElementById('loginEmail').value = 'demo@dukaan.com';
             document.getElementById('loginPassword').value = 'demo123';
-            
-            const demoBtn = document.createElement('button');
-            demoBtn.type = 'button';
-            demoBtn.className = 'btn-outline w-100 mt-3';
-            demoBtn.innerHTML = '<i class="fas fa-rocket"></i> Try Demo Account';
-            demoBtn.onclick = async () => {
-                try {
-                    await auth.signInWithEmailAndPassword('demo@dukaan.com', 'demo123');
-                } catch (error) {
-                    if (error.code === 'auth/invalid-login-credentials') {
-                        try {
-                            await auth.createUserWithEmailAndPassword('demo@dukaan.com', 'demo123');
-                            showToast('Demo account created! Welcome to Dukaan!');
-                        } catch (signupError) {
-                            showToast('Please use Sign Up to create your account');
-                        }
-                    } else {
-                        showToast('Login error: ' + error.message);
-                    }
-                }
-            };
-            
-            document.getElementById('loginForm').appendChild(demoBtn);
         }
 
         async function loadUserData() {
@@ -2624,11 +2601,12 @@
                 }
             }
         }
+        
         function demoLogin() {
-    document.getElementById('loginEmail').value = 'demo@dukaan.com';
-    document.getElementById('loginPassword').value = 'demo123';
-    showToast('Demo credentials filled! Click Sign In');
-}
+            document.getElementById('loginEmail').value = 'demo@dukaan.com';
+            document.getElementById('loginPassword').value = 'demo123';
+            showToast('Demo credentials filled! Click Sign In');
+        }
 
         // Add missing authentication form toggle functions
         function showLoginForm() {
@@ -2643,175 +2621,6 @@
             document.getElementById('signupForm').style.display = 'block';
             document.getElementById('loginFooter').style.display = 'none';
             document.getElementById('signupFooter').style.display = 'block';
-        }
-
-        // User Profile Functions - PHASE 1
-        function loadUserProfile() {
-            if (!currentUser) return;
-            
-            // Update profile information
-            document.getElementById('profileUserName').textContent = currentUser.name;
-            document.getElementById('profileUserEmail').textContent = currentUser.email;
-            document.getElementById('avatarText').textContent = currentUser.name.charAt(0).toUpperCase();
-            
-            // Load user preferences
-            loadUserPreferences();
-            loadLoginHistory();
-        }
-
-        function loadUserPreferences() {
-            const preferences = JSON.parse(localStorage.getItem('dukaan_preferences')) || {
-                pushNotifications: true,
-                emailNotifications: true,
-                smsNotifications: false,
-                language: 'english'
-            };
-            
-            document.getElementById('pushNotifications').checked = preferences.pushNotifications;
-            document.getElementById('emailNotifications').checked = preferences.emailNotifications;
-            document.getElementById('smsNotifications').checked = preferences.smsNotifications;
-        }
-
-        function loadLoginHistory() {
-            const loginHistory = JSON.parse(localStorage.getItem('dukaan_login_history')) || [];
-            const historyList = document.getElementById('loginHistoryList');
-            
-            if (loginHistory.length === 0) {
-                // Add current session as first history
-                const currentSession = {
-                    device: 'Current Device',
-                    location: 'Current Location',
-                    time: new Date().toISOString(),
-                    active: true
-                };
-                loginHistory.unshift(currentSession);
-                localStorage.setItem('dukaan_login_history', JSON.stringify(loginHistory));
-            }
-            
-            renderLoginHistory(loginHistory);
-        }
-
-        function renderLoginHistory(history) {
-            const historyList = document.getElementById('loginHistoryList');
-            historyList.innerHTML = '';
-            
-            history.forEach((session, index) => {
-                const sessionElement = document.createElement('div');
-                sessionElement.className = `login-session ${session.active ? 'session-active' : 'session-inactive'}`;
-                sessionElement.innerHTML = `
-                    <div style="display: flex; justify-content: between; align-items: start;">
-                        <div style="flex: 1;">
-                            <strong>${session.device}</strong>
-                            <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 4px;">
-                                ${session.location}
-                            </div>
-                            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 2px;">
-                                ${new Date(session.time).toLocaleString()}
-                            </div>
-                        </div>
-                        ${session.active ? '<div class="security-badge">Active</div>' : ''}
-                    </div>
-                `;
-                historyList.appendChild(sessionElement);
-            });
-        }
-
-        function editPersonalDetails() {
-            showConfirmationModal(
-                'Edit Personal Details',
-                'This feature will allow you to update your name, email, and phone number. Coming in the next update!',
-                () => {
-                    showToast('Edit profile feature coming soon!');
-                }
-            );
-        }
-
-        function changeProfilePicture() {
-            document.getElementById('avatarUpload').click();
-        }
-
-        function changePassword() {
-            showConfirmationModal(
-                'Change Password',
-                'You will be able to update your password securely. This feature is coming in the next update!',
-                () => {
-                    showToast('Password change feature coming soon!');
-                }
-            );
-        }
-
-        function showLoginHistory() {
-            document.getElementById('loginHistorySection').style.display = 'block';
-            // Scroll to login history section
-            setTimeout(() => {
-                document.getElementById('loginHistorySection').scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
-
-        function changeLanguage() {
-            showConfirmationModal(
-                'Change Language',
-                'You will be able to select your preferred language. This feature is coming in the next update!',
-                () => {
-                    showToast('Language selection feature coming soon!');
-                }
-            );
-        }
-
-        // Handle profile picture upload
-        document.getElementById('avatarUpload').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const avatar = document.getElementById('profileAvatar');
-                    const avatarText = document.getElementById('avatarText');
-                    
-                    avatarText.style.display = 'none';
-                    avatar.style.backgroundImage = `url(${e.target.result})`;
-                    avatar.style.backgroundSize = 'cover';
-                    avatar.style.backgroundPosition = 'center';
-                    
-                    // Save to localStorage
-                    localStorage.setItem('dukaan_profile_picture', e.target.result);
-                    showToast('Profile picture updated successfully!');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Handle preference changes
-        document.getElementById('pushNotifications').addEventListener('change', function() {
-            savePreference('pushNotifications', this.checked);
-        });
-
-        document.getElementById('emailNotifications').addEventListener('change', function() {
-            savePreference('emailNotifications', this.checked);
-        });
-
-        document.getElementById('smsNotifications').addEventListener('change', function() {
-            savePreference('smsNotifications', this.checked);
-        });
-
-        function savePreference(key, value) {
-            const preferences = JSON.parse(localStorage.getItem('dukaan_preferences')) || {};
-            preferences[key] = value;
-            localStorage.setItem('dukaan_preferences', JSON.stringify(preferences));
-            showToast('Preferences updated!');
-        }
-
-        // Load saved profile picture on app start
-        function loadProfilePicture() {
-            const savedPicture = localStorage.getItem('dukaan_profile_picture');
-            if (savedPicture) {
-                const avatar = document.getElementById('profileAvatar');
-                const avatarText = document.getElementById('avatarText');
-                
-                avatarText.style.display = 'none';
-                avatar.style.backgroundImage = `url(${savedPicture})`;
-                avatar.style.backgroundSize = 'cover';
-                avatar.style.backgroundPosition = 'center';
-            }
         }
 
         // Setup Event Listeners
@@ -2863,126 +2672,65 @@
             checkoutPhone.addEventListener('input', validatePhone);
             addrPhone.addEventListener('input', validateAddrPhone);
             saveAddr.addEventListener('click', saveNewAddress);
-      }
             
-        // ADD THIS TO BOTTOM SHEET CHECKOUT - After addresses section
-function renderDeliveryOptions() {
-    const deliverySection = document.createElement('div');
-    deliverySection.className = 'mb-4';
-    deliverySection.innerHTML = `
-        <label class="section-label">Delivery Method</label>
-        <div class="delivery-options">
-            ${getAvailableDeliveryOptions().map(option => `
-                <div class="delivery-option" data-method="${option}">
-                    <div class="payment-icon">
-                        <i class="fas ${option === 'delivery' ? 'fa-motorcycle' : 'fa-store'}"></i>
-                    </div>
-                    <div class="payment-info">
-                        <div class="payment-title">${option === 'delivery' ? 'Home Delivery' : 'Pickup from Store'}</div>
-                        <div class="payment-desc">${option === 'delivery' ? 'Get it delivered to your doorstep' : 'Collect from the store'}</div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-    
-    // Insert after addresses section
-    const addressesContainer = document.getElementById('addresses');
-    addressesContainer.parentNode.insertBefore(deliverySection, addressesContainer.nextSibling);
-    
-    // Add event listeners
-    document.querySelectorAll('.delivery-option').forEach(option => {
-        option.addEventListener('click', function() {
-            selectDeliveryMethod(this.getAttribute('data-method'));
-        });
-    });
-}
-
-function getAvailableDeliveryOptions() {
-    // Get unique shops from cart
-    const shopsInCart = [...new Set(cart.map(item => item.shop))];
-    
-    // Find common delivery options across all shops
-    let commonOptions = SHOPS[shopsInCart[0]].deliveryOptions;
-    
-    shopsInCart.forEach(shopId => {
-        const shopOptions = SHOPS[shopId].deliveryOptions;
-        commonOptions = commonOptions.filter(option => shopOptions.includes(option));
-    });
-    
-    return commonOptions.length > 0 ? commonOptions : ['delivery']; // Default to delivery
-}
-
-function selectDeliveryMethod(method) {
-    selectedDeliveryMethod = method;
-    document.querySelectorAll('.delivery-option').forEach(option => {
-        option.classList.toggle('selected', option.getAttribute('data-method') === method);
-    });
-    
-    // Show/hide address section based on selection
-    const addressesContainer = document.getElementById('addresses');
-    if (method === 'pickup') {
-        addressesContainer.style.display = 'none';
-    } else {
-        addressesContainer.style.display = 'block';
-    }
-}
-                        // QR payment
+            // QR payment
             confirmQrPayment.addEventListener('click', confirmQRPayment);
             utrNumber.addEventListener('input', validateUTR);
-}
+            
             // Auto-fill checkout name when user is logged in
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     document.getElementById('checkoutName').value = user.displayName || '';
                 }
             });
-        
+        }
+
         // Navigation
         function navigateToPage(page) {
             // Hide all pages
-homePage.style.display = 'none';
-ordersPage.style.display = 'none';
-wishlistPage.style.display = 'none';
-productDetailPage.style.display = 'none';
-profilePage.style.display = 'none';
-notificationsPage.style.display = 'none';
+            homePage.style.display = 'none';
+            ordersPage.style.display = 'none';
+            wishlistPage.style.display = 'none';
+            productDetailPage.style.display = 'none';
+            profilePage.style.display = 'none';
+            notificationsPage.style.display = 'none';
 
-// Update nav items
-navItems.forEach(item => {
-    item.classList.remove('active');
-    if (item.getAttribute('data-page') === page) {
-        item.classList.add('active');
-    }
-});
+            // Update nav items
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-page') === page) {
+                    item.classList.add('active');
+                }
+            });
 
-// Show selected page
-switch(page) {
-    case 'home':
-        homePage.style.display = 'block';
-        break;
-    case 'orders':
-        ordersPage.style.display = 'block';
-        renderOrders();
-        break;
-    case 'wishlist':
-        wishlistPage.style.display = 'block';
-        renderWishlistItems();
-        break;
-    case 'account':
-        profilePage.style.display = 'block';
-        loadUserProfile();
-        break;
-    case 'notifications':
-        notificationsPage.style.display = 'block';
-        loadNotificationsPage();
-        break;
-    case 'cart':
-        openBottomSheet();
-        break;
-    default:
-        homePage.style.display = 'block';
-}
+            // Show selected page
+            switch(page) {
+                case 'home':
+                    homePage.style.display = 'block';
+                    break;
+                case 'orders':
+                    ordersPage.style.display = 'block';
+                    renderOrders();
+                    break;
+                case 'wishlist':
+                    wishlistPage.style.display = 'block';
+                    renderWishlistItems();
+                    break;
+                case 'account':
+                    profilePage.style.display = 'block';
+                    loadUserProfile();
+                    break;
+                case 'notifications':
+                    notificationsPage.style.display = 'block';
+                    loadNotificationsPage();
+                    break;
+                case 'cart':
+                    openBottomSheet();
+                    break;
+                default:
+                    homePage.style.display = 'block';
+            }
+        }
 
         // Product Rendering
         function renderProducts(products) {
@@ -3451,84 +3199,86 @@ switch(page) {
             // Update order summary in bottom sheet
             updateOrderSummary();
         }
-// ADD THIS NEW FUNCTION FOR QUANTITY UPDATES
-            function updateCartQuantity(index, change) {
-    if (cart[index]) {
-        cart[index].quantity += change;
-        
-        // Remove item if quantity becomes 0
-        if (cart[index].quantity <= 0) {
-            cart.splice(index, 1);
-            showToast('Item removed from cart');
-        } else if (cart[index].quantity > 10) {
-            cart[index].quantity = 10;
-            showToast('Maximum 10 items allowed');
-        } else {
-            showToast('Quantity updated');
+
+        // ADD THIS NEW FUNCTION FOR QUANTITY UPDATES
+        function updateCartQuantity(index, change) {
+            if (cart[index]) {
+                cart[index].quantity += change;
+                
+                // Remove item if quantity becomes 0
+                if (cart[index].quantity <= 0) {
+                    cart.splice(index, 1);
+                    showToast('Item removed from cart');
+                } else if (cart[index].quantity > 10) {
+                    cart[index].quantity = 10;
+                    showToast('Maximum 10 items allowed');
+                } else {
+                    showToast('Quantity updated');
+                }
+                
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
+                updateOrderSummary();
+            }
         }
-        
-        localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-        updateCartUI();
-        updateOrderSummary();
-    }
-}
+
         function updateOrderSummary() {
-    if (!orderList) return;
-    
-    orderList.innerHTML = '';
-    let subtotal = 0;
-    
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        subtotal += itemTotal;
-        
-        const orderItem = document.createElement('div');
-        orderItem.className = 'order-item-summary';
-        orderItem.innerHTML = `
-            <div style="flex: 1;">
-                <strong>${item.name}</strong>
-                <div class="text-muted">₹${item.price} each</div>
-                <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
-                    <button class="btn-quantity-minus" onclick="updateCartQuantity(${index}, -1)" 
-                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">-</button>
-                    <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
-                    <button class="btn-quantity-plus" onclick="updateCartQuantity(${index}, 1)" 
-                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">+</button>
-                </div>
-            </div>
-            <div>₹${itemTotal}</div>
-        `;
-        orderList.appendChild(orderItem);
-    });
-    
-    // Apply coupon discount if any
-    let discount = 0;
-    if (appliedCoupon) {
-        if (appliedCoupon.type === 'percentage') {
-            discount = (subtotal * appliedCoupon.value) / 100;
-        } else {
-            discount = appliedCoupon.value;
+            if (!orderList) return;
+            
+            orderList.innerHTML = '';
+            let subtotal = 0;
+            
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item-summary';
+                orderItem.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong>${item.name}</strong>
+                        <div class="text-muted">₹${item.price} each</div>
+                        <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                            <button class="btn-quantity-minus" onclick="updateCartQuantity(${index}, -1)" 
+                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">-</button>
+                            <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
+                            <button class="btn-quantity-plus" onclick="updateCartQuantity(${index}, 1)" 
+                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">+</button>
+                        </div>
+                    </div>
+                    <div>₹${itemTotal}</div>
+                `;
+                orderList.appendChild(orderItem);
+            });
+            
+            // Apply coupon discount if any
+            let discount = 0;
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percentage') {
+                    discount = (subtotal * appliedCoupon.value) / 100;
+                } else {
+                    discount = appliedCoupon.value;
+                }
+                // Ensure discount doesn't exceed subtotal
+                discount = Math.min(discount, subtotal);
+            }
+            
+            const total = subtotal - discount;
+            
+            orderTotal.textContent = `₹${total}`;
+            qrAmount.textContent = `₹${total}`;
+            
+            // Update discount section
+            const discountSection = document.getElementById('discountSection');
+            const discountAmount = document.getElementById('discountAmount');
+            
+            if (discount > 0) {
+                discountSection.style.display = 'block';
+                discountAmount.textContent = `-₹${discount}`;
+            } else {
+                discountSection.style.display = 'none';
+            }
         }
-        // Ensure discount doesn't exceed subtotal
-        discount = Math.min(discount, subtotal);
-    }
-    
-    const total = subtotal - discount;
-    
-    orderTotal.textContent = `₹${total}`;
-    qrAmount.textContent = `₹${total}`;
-    
-    // Update discount section
-    const discountSection = document.getElementById('discountSection');
-    const discountAmount = document.getElementById('discountAmount');
-    
-    if (discount > 0) {
-        discountSection.style.display = 'block';
-        discountAmount.textContent = `-₹${discount}`;
-    } else {
-        discountSection.style.display = 'none';
-    }
-}
 
         // Wishlist Functionality
         function toggleWishlist(productId) {
@@ -3895,34 +3645,7 @@ switch(page) {
             selectedPaymentMethod = null;
             paymentOptions.forEach(option => option.classList.remove('selected'));
         }
-        // UPDATE SHOPS CONFIGURATION
-const SHOPS = {
-    freshmart: { 
-        id: 'freshmart', 
-        name: 'FreshMart', 
-        category: 'groceries', 
-        rating: 4.5, 
-        deliveryTime: '30 min',
-        deliveryOptions: ['delivery', 'pickup'] // BOTH options
-    },
-    cosmeticstore: { 
-        id: 'cosmeticstore', 
-        name: 'CosmeticStore', 
-        category: 'cosmetics', 
-        rating: 4.3, 
-        deliveryTime: '45 min',
-        deliveryOptions: ['delivery'] // DELIVERY ONLY
-    },
-    fashionhub: { 
-        id: 'fashionhub', 
-        name: 'FashionHub', 
-        category: 'clothing', 
-        rating: 4.7, 
-        deliveryTime: '2 days',
-        deliveryOptions: ['pickup'] // PICKUP ONLY
-    },
-    // ... other shops with deliveryOptions
-};
+
         // Address Management
         function renderAddresses() {
             if (!addressesContainer) return;
@@ -4400,48 +4123,48 @@ This action cannot be undone.`,
         }
 
          function showOrderTracking(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    currentTrackingOrder = order;
-    
-    // Update tracking timeline
-    updateTrackingTimeline(order);
-    
-    // Update order details
-    const trackingDetails = document.getElementById('trackingOrderDetails');
-    trackingDetails.innerHTML = `
-        <div class="order-tracking-details">
-            <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
-            <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
-            <p><strong>Total Amount:</strong> ₹${order.total}</p>
-            <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
-            <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
-            ${order.status !== 'delivered' && order.status !== 'cancelled' ? `
-                <div class="eta-section mt-3 p-3 bg-light rounded">
-                    <h6><i class="fas fa-clock"></i> Estimated Delivery</h6>
-                    <div id="etaCountdown" class="fw-bold text-primary"></div>
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            currentTrackingOrder = order;
+            
+            // Update tracking timeline
+            updateTrackingTimeline(order);
+            
+            // Update order details
+            const trackingDetails = document.getElementById('trackingOrderDetails');
+            trackingDetails.innerHTML = `
+                <div class="order-tracking-details">
+                    <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
+                    <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
+                    <p><strong>Total Amount:</strong> ₹${order.total}</p>
+                    <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
+                    <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
+                    ${order.status !== 'delivered' && order.status !== 'cancelled' ? `
+                        <div class="eta-section mt-3 p-3 bg-light rounded">
+                            <h6><i class="fas fa-clock"></i> Estimated Delivery</h6>
+                            <div id="etaCountdown" class="fw-bold text-primary"></div>
+                        </div>
+                    ` : ''}
                 </div>
-            ` : ''}
-        </div>
-    `;
-    
-    // 🛑 FIX: Show cancel button ONLY for 'confirmed' status, NOT for 'preparing'
-    const cancelBtn = document.getElementById('cancelOrderBtn');
-    if (order.status === 'confirmed') {
-        cancelBtn.style.display = 'block';
-        cancelBtn.setAttribute('onclick', `cancelOrder('${order.id}')`);
-    } else {
-        cancelBtn.style.display = 'none';
-    }
-    
-    // Start real-time tracking simulation for active orders
-    if (order.status !== 'delivered' && order.status !== 'cancelled') {
-        startOrderTrackingSimulation(order);
-        updateETACountdown(order);
-    }
-    
-    orderTracking.classList.add('open');
+            `;
+            
+            // 🛑 FIX: Show cancel button ONLY for 'confirmed' status, NOT for 'preparing'
+            const cancelBtn = document.getElementById('cancelOrderBtn');
+            if (order.status === 'confirmed') {
+                cancelBtn.style.display = 'block';
+                cancelBtn.setAttribute('onclick', `cancelOrder('${order.id}')`);
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+            
+            // Start real-time tracking simulation for active orders
+            if (order.status !== 'delivered' && order.status !== 'cancelled') {
+                startOrderTrackingSimulation(order);
+                updateETACountdown(order);
+            }
+            
+            orderTracking.classList.add('open');
          }
         
         function updateTrackingTimeline(order) {
@@ -4489,54 +4212,54 @@ This action cannot be undone.`,
         }
 
         function cancelOrder(orderId) {
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    showConfirmationModal(
-        'Cancel Order',
-        `Are you sure you want to cancel order #${orderId.slice(-6)}? 
-        
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            showConfirmationModal(
+                'Cancel Order',
+                `Are you sure you want to cancel order #${orderId.slice(-6)}? 
+                
 This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be processed within 3-5 business days.' : ''}`,
-        () => {
-            // Update order status to cancelled
-            const orderIndex = orders.findIndex(o => o.id === orderId);
-            if (orderIndex !== -1) {
-                orders[orderIndex].status = 'cancelled';
-                orders[orderIndex].cancelledAt = new Date().toISOString();
-                
-                // STOP TRACKING SIMULATION FOR CANCELLED ORDERS
-                if (orderTrackingInterval) {
-                    clearInterval(orderTrackingInterval);
-                }
-                
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                
-                // Update Firebase if user is logged in
-                if (currentUser) {
-                    db.collection('users').doc(currentUser.uid).collection('orders')
-                        .where('id', '==', orderId)
-                        .get()
-                        .then(snapshot => {
-                            snapshot.forEach(doc => {
-                                doc.ref.update({
-                                    status: 'cancelled',
-                                    cancelledAt: orders[orderIndex].cancelledAt
+                () => {
+                    // Update order status to cancelled
+                    const orderIndex = orders.findIndex(o => o.id === orderId);
+                    if (orderIndex !== -1) {
+                        orders[orderIndex].status = 'cancelled';
+                        orders[orderIndex].cancelledAt = new Date().toISOString();
+                        
+                        // STOP TRACKING SIMULATION FOR CANCELLED ORDERS
+                        if (orderTrackingInterval) {
+                            clearInterval(orderTrackingInterval);
+                        }
+                        
+                        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                        
+                        // Update Firebase if user is logged in
+                        if (currentUser) {
+                            db.collection('users').doc(currentUser.uid).collection('orders')
+                                .where('id', '==', orderId)
+                                .get()
+                                .then(snapshot => {
+                                    snapshot.forEach(doc => {
+                                        doc.ref.update({
+                                            status: 'cancelled',
+                                            cancelledAt: orders[orderIndex].cancelledAt
+                                        });
+                                    });
                                 });
-                            });
-                        });
+                        }
+                        
+                        // Close tracking modal
+                        closeOrderTracking();
+                        
+                        // Show success message
+                        showToast('Order cancelled successfully!');
+                        
+                        // Update orders list
+                        renderOrders();
+                    }
                 }
-                
-                // Close tracking modal
-                closeOrderTracking();
-                
-                // Show success message
-                showToast('Order cancelled successfully!');
-                
-                // Update orders list
-                renderOrders();
-            }
-        }
-    );
+            );
         }
 
         function startOrderTrackingSimulation(order) {
@@ -4767,6 +4490,176 @@ Track your order: ${window.location.href}
                 }
             );
         }
+
+        // User Profile Functions - PHASE 1
+        function loadUserProfile() {
+            if (!currentUser) return;
+            
+            // Update profile information
+            document.getElementById('profileUserName').textContent = currentUser.name;
+            document.getElementById('profileUserEmail').textContent = currentUser.email;
+            document.getElementById('avatarText').textContent = currentUser.name.charAt(0).toUpperCase();
+            
+            // Load user preferences
+            loadUserPreferences();
+            loadLoginHistory();
+        }
+
+        function loadUserPreferences() {
+            const preferences = JSON.parse(localStorage.getItem('dukaan_preferences')) || {
+                pushNotifications: true,
+                emailNotifications: true,
+                smsNotifications: false,
+                language: 'english'
+            };
+            
+            document.getElementById('pushNotifications').checked = preferences.pushNotifications;
+            document.getElementById('emailNotifications').checked = preferences.emailNotifications;
+            document.getElementById('smsNotifications').checked = preferences.smsNotifications;
+        }
+
+        function loadLoginHistory() {
+            const loginHistory = JSON.parse(localStorage.getItem('dukaan_login_history')) || [];
+            const historyList = document.getElementById('loginHistoryList');
+            
+            if (loginHistory.length === 0) {
+                // Add current session as first history
+                const currentSession = {
+                    device: 'Current Device',
+                    location: 'Current Location',
+                    time: new Date().toISOString(),
+                    active: true
+                };
+                loginHistory.unshift(currentSession);
+                localStorage.setItem('dukaan_login_history', JSON.stringify(loginHistory));
+            }
+            
+            renderLoginHistory(loginHistory);
+        }
+
+        function renderLoginHistory(history) {
+            const historyList = document.getElementById('loginHistoryList');
+            historyList.innerHTML = '';
+            
+            history.forEach((session, index) => {
+                const sessionElement = document.createElement('div');
+                sessionElement.className = `login-session ${session.active ? 'session-active' : 'session-inactive'}`;
+                sessionElement.innerHTML = `
+                    <div style="display: flex; justify-content: between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>${session.device}</strong>
+                            <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 4px;">
+                                ${session.location}
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 2px;">
+                                ${new Date(session.time).toLocaleString()}
+                            </div>
+                        </div>
+                        ${session.active ? '<div class="security-badge">Active</div>' : ''}
+                    </div>
+                `;
+                historyList.appendChild(sessionElement);
+            });
+        }
+
+        function editPersonalDetails() {
+            showConfirmationModal(
+                'Edit Personal Details',
+                'This feature will allow you to update your name, email, and phone number. Coming in the next update!',
+                () => {
+                    showToast('Edit profile feature coming soon!');
+                }
+            );
+        }
+
+        function changeProfilePicture() {
+            document.getElementById('avatarUpload').click();
+        }
+
+        function changePassword() {
+            showConfirmationModal(
+                'Change Password',
+                'You will be able to update your password securely. This feature is coming in the next update!',
+                () => {
+                    showToast('Password change feature coming soon!');
+                }
+            );
+        }
+
+        function showLoginHistory() {
+            document.getElementById('loginHistorySection').style.display = 'block';
+            // Scroll to login history section
+            setTimeout(() => {
+                document.getElementById('loginHistorySection').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        function changeLanguage() {
+            showConfirmationModal(
+                'Change Language',
+                'You will be able to select your preferred language. This feature is coming in the next update!',
+                () => {
+                    showToast('Language selection feature coming soon!');
+                }
+            );
+        }
+
+        // Handle profile picture upload
+        document.getElementById('avatarUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatar = document.getElementById('profileAvatar');
+                    const avatarText = document.getElementById('avatarText');
+                    
+                    avatarText.style.display = 'none';
+                    avatar.style.backgroundImage = `url(${e.target.result})`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                    
+                    // Save to localStorage
+                    localStorage.setItem('dukaan_profile_picture', e.target.result);
+                    showToast('Profile picture updated successfully!');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle preference changes
+        document.getElementById('pushNotifications').addEventListener('change', function() {
+            savePreference('pushNotifications', this.checked);
+        });
+
+        document.getElementById('emailNotifications').addEventListener('change', function() {
+            savePreference('emailNotifications', this.checked);
+        });
+
+        document.getElementById('smsNotifications').addEventListener('change', function() {
+            savePreference('smsNotifications', this.checked);
+        });
+
+        function savePreference(key, value) {
+            const preferences = JSON.parse(localStorage.getItem('dukaan_preferences')) || {};
+            preferences[key] = value;
+            localStorage.setItem('dukaan_preferences', JSON.stringify(preferences));
+            showToast('Preferences updated!');
+        }
+
+        // Load saved profile picture on app start
+        function loadProfilePicture() {
+            const savedPicture = localStorage.getItem('dukaan_profile_picture');
+            if (savedPicture) {
+                const avatar = document.getElementById('profileAvatar');
+                const avatarText = document.getElementById('avatarText');
+                
+                avatarText.style.display = 'none';
+                avatar.style.backgroundImage = `url(${savedPicture})`;
+                avatar.style.backgroundSize = 'cover';
+                avatar.style.backgroundPosition = 'center';
+            }
+        }
+
         // Notification Core Functions
         function loadNotificationsPage() {
             renderNotificationsList();
@@ -4906,7 +4799,7 @@ Track your order: ${window.location.href}
             document.getElementById('hamburgerMenu').classList.remove('open');
         }
 
-                        // Utility Functions
+        // Utility Functions
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
@@ -4933,11 +4826,8 @@ Track your order: ${window.location.href}
             }, 3000);
         }
 
-        } // ADD THIS MISSING CLOSING BRACE
-
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
-            
     </script>
 </body>
 </html>
