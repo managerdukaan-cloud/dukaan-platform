@@ -1103,21 +1103,6 @@
 #hamburgerMenu .nav-badge {
     display: none !important;
 }
-/* FIX CART BADGE POSITION - FINAL SOLUTION */
-.bottom-nav .nav-item[data-page="cart"] .nav-badge {
-    position: absolute !important;
-    top: -5px !important;
-    left: 55% !important;
-    background: var(--accent) !important;
-    color: white !important;
-    padding: 2px 6px !important;
-    border-radius: 10px !important;
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    min-width: 18px !important;
-    text-align: center !important;
-    transform: none !important;
-}
             /* FINAL QUANTITY FIX */
 .product-detail-actions {
     display: flex;
@@ -1168,11 +1153,11 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
-/* FIX CART BADGE - FINAL SOLUTION */
+/* REMOVE ALL PREVIOUS CART BADGE CSS AND USE ONLY THIS */
 .nav-item[data-page="cart"] .nav-badge {
     position: absolute !important;
-    top: -2px !important;
-    left: 55% !important;
+    top: -5px !important;
+    left: 60% !important;
     background: #3A8EF6 !important;
     color: white !important;
     padding: 2px 6px !important;
