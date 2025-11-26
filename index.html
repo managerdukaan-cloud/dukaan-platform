@@ -2832,6 +2832,69 @@
             addrPhone.addEventListener('input', validateAddrPhone);
             saveAddr.addEventListener('click', saveNewAddress);
 
+            // ADD THIS TO BOTTOM SHEET CHECKOUT - After addresses section
+function renderDeliveryOptions() {
+    const deliverySection = document.createElement('div');
+    deliverySection.className = 'mb-4';
+    deliverySection.innerHTML = `
+        <label class="section-label">Delivery Method</label>
+        <div class="delivery-options">
+            ${getAvailableDeliveryOptions().map(option => `
+                <div class="delivery-option" data-method="${option}">
+                    <div class="payment-icon">
+                        <i class="fas ${option === 'delivery' ? 'fa-motorcycle' : 'fa-store'}"></i>
+                    </div>
+                    <div class="payment-info">
+                        <div class="payment-title">${option === 'delivery' ? 'Home Delivery' : 'Pickup from Store'}</div>
+                        <div class="payment-desc">${option === 'delivery' ? 'Get it delivered to your doorstep' : 'Collect from the store'}</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    // Insert after addresses section
+    const addressesContainer = document.getElementById('addresses');
+    addressesContainer.parentNode.insertBefore(deliverySection, addressesContainer.nextSibling);
+    
+    // Add event listeners
+    document.querySelectorAll('.delivery-option').forEach(option => {
+        option.addEventListener('click', function() {
+            selectDeliveryMethod(this.getAttribute('data-method'));
+        });
+    });
+}
+
+function getAvailableDeliveryOptions() {
+    // Get unique shops from cart
+    const shopsInCart = [...new Set(cart.map(item => item.shop))];
+    
+    // Find common delivery options across all shops
+    let commonOptions = SHOPS[shopsInCart[0]].deliveryOptions;
+    
+    shopsInCart.forEach(shopId => {
+        const shopOptions = SHOPS[shopId].deliveryOptions;
+        commonOptions = commonOptions.filter(option => shopOptions.includes(option));
+    });
+    
+    return commonOptions.length > 0 ? commonOptions : ['delivery']; // Default to delivery
+}
+
+function selectDeliveryMethod(method) {
+    selectedDeliveryMethod = method;
+    document.querySelectorAll('.delivery-option').forEach(option => {
+        option.classList.toggle('selected', option.getAttribute('data-method') === method);
+    });
+    
+    // Show/hide address section based on selection
+    const addressesContainer = document.getElementById('addresses');
+    if (method === 'pickup') {
+        addressesContainer.style.display = 'none';
+    } else {
+        addressesContainer.style.display = 'block';
+    }
+}
+
             // QR payment
             confirmQrPayment.addEventListener('click', confirmQRPayment);
             utrNumber.addEventListener('input', validateUTR);
