@@ -1185,6 +1185,42 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
+        /* MOBILE LAYOUT FIXES */
+@media (max-width: 768px) {
+    /* Fix: 2 products per row in mobile */
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    
+    .product-image {
+        height: 140px !important;
+    }
+    
+    /* Fix: Filters horizontal layout in mobile */
+    .filter-section > div {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    .filter-section .d-flex {
+        margin-bottom: 0 !important;
+        flex: 1 !important;
+    }
+    
+    .sorting-options {
+        width: auto !important;
+        justify-content: flex-end !important;
+    }
+}
+
+/* Desktop remains unchanged */
+@media (min-width: 769px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+    }
+}
 @media (max-width: 768px) {
     .order-actions {
         justify-content: center;
