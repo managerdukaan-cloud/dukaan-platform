@@ -1209,6 +1209,48 @@
 .delivery-option:hover {
     border-color: var(--accent);
 }
+
+/* SOCIAL SHARE STYLES */
+.btn-outline:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.share-options-modal {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: var(--shadow-lg);
+    max-width: 300px;
+    margin: 20px auto;
+}
+
+.share-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-share {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-share.whatsapp {
+    background: #25D366;
+    color: white;
+}
+
+.btn-share.copy {
+    background: var(--accent);
+    color: white;
+}
+        
         /* MOBILE LAYOUT FIXES */
 @media (max-width: 768px) {
     /* Fix: 2 products per row in mobile */
@@ -4828,6 +4870,92 @@ Track your order: ${window.location.href}
                 toast.remove();
             }, 3000);
         }
+
+        // SOCIAL SHARE FUNCTIONALITY - PHASE 5.2
+function shareProduct(productId) {
+    if (!currentProductDetail) {
+        showToast('Please open a product to share');
+        return;
+    }
+    
+    const product = currentProductDetail;
+    const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+    
+    const shareText = `Check out ${product.name} on Dukaan - ₹${product.price} (${discount}% OFF)! 🛍️`;
+    const shareUrl = window.location.href.split('?')[0] + `?product=${productId}`;
+    
+    // Check if Web Share API is supported
+    if (navigator.share) {
+        navigator.share({
+            title: product.name + ' - Dukaan',
+            text: shareText,
+            url: shareUrl
+        }).then(() => {
+            showToast('Product shared successfully! 📤');
+        }).catch((error) => {
+            console.log('Share failed:', error);
+            fallbackShareProduct(shareText, shareUrl);
+        });
+    } else {
+        fallbackShareProduct(shareText, shareUrl);
+    }
+}
+
+// Fallback for browsers that don't support Web Share API
+function fallbackShareProduct(text, url) {
+    const shareData = `${text}\n\n${url}`;
+    
+    // Try to copy to clipboard first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareData).then(() => {
+            showToast('Product link copied to clipboard! 📋');
+        }).catch(() => {
+            // If clipboard fails, show share options
+            showShareOptions(text, url);
+        });
+    } else {
+        showShareOptions(text, url);
+    }
+}
+
+// Show custom share options modal
+function showShareOptions(text, url) {
+    const shareModal = `
+        <div class="share-options-modal">
+            <h4>Share Product</h4>
+            <p>${text}</p>
+            <div class="share-buttons">
+                <button onclick="shareToWhatsApp('${text}', '${url}')" class="btn-share whatsapp">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button onclick="copyToClipboard('${text} ${url}')" class="btn-share copy">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // You can implement a proper modal here
+    // For now, just copy to clipboard
+    copyToClipboard(text + ' ' + url);
+}
+
+// Share to WhatsApp
+function shareToWhatsApp(text, url) {
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+// Copy to clipboard utility
+function copyToClipboard(text) {
+    const tempInput = document.createElement('input');
+    tempInput.value = text;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    showToast('Link copied to clipboard! 📋');
+}
 
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
