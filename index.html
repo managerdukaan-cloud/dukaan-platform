@@ -2934,49 +2934,48 @@ function selectDeliveryMethod(method) {
         // Navigation
         function navigateToPage(page) {
             // Hide all pages
-            homePage.style.display = 'none';
-            ordersPage.style.display = 'none';
-            wishlistPage.style.display = 'none';
-            productDetailPage.style.display = 'none';
-            profilePage.style.display = 'none';
-            notificationsPage.style.display = 'none';
+homePage.style.display = 'none';
+ordersPage.style.display = 'none';
+wishlistPage.style.display = 'none';
+productDetailPage.style.display = 'none';
+profilePage.style.display = 'none';
+notificationsPage.style.display = 'none';
 
-            // Update nav items
-            navItems.forEach(item => {
-                item.classList.remove('active');
-                if (item.getAttribute('data-page') === page) {
-                    item.classList.add('active');
-                }
-            });
+// Update nav items
+navItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('data-page') === page) {
+        item.classList.add('active');
+    }
+});
 
-            // Show selected page
-            switch(page) {
-                case 'home':
-                    homePage.style.display = 'block';
-                    break;
-                case 'orders':
-                    ordersPage.style.display = 'block';
-                    renderOrders();
-                    break;
-                case 'wishlist':
-                    wishlistPage.style.display = 'block';
-                    renderWishlistItems();
-                    break;
-                case 'account':
-                    profilePage.style.display = 'block';
-                    loadUserProfile();
-                    break;
-                case 'notifications':
-                    notificationsPage.style.display = 'block';
-                    loadNotificationsPage();
-                    break;
-                case 'cart':
-                    openBottomSheet();
-                    break;
-                default:
-                    homePage.style.display = 'block';
-            }
-        }
+// Show selected page
+switch(page) {
+    case 'home':
+        homePage.style.display = 'block';
+        break;
+    case 'orders':
+        ordersPage.style.display = 'block';
+        renderOrders();
+        break;
+    case 'wishlist':
+        wishlistPage.style.display = 'block';
+        renderWishlistItems();
+        break;
+    case 'account':
+        profilePage.style.display = 'block';
+        loadUserProfile();
+        break;
+    case 'notifications':
+        notificationsPage.style.display = 'block';
+        loadNotificationsPage();
+        break;
+    case 'cart':
+        openBottomSheet();
+        break;
+    default:
+        homePage.style.display = 'block';
+}
 
         // Product Rendering
         function renderProducts(products) {
