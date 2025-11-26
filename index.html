@@ -1103,19 +1103,19 @@
 #hamburgerMenu .nav-badge {
     display: none !important;
 }
-/* FIX CART BADGE POSITION */
-.bottom-nav .nav-badge {
-    position: absolute;
-    top: -5px;
-    left: 55%;
-    background: var(--accent);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 700;
-    min-width: 18px;
-    text-align: center;
+/* FIX CART BADGE POSITION - FINAL SOLUTION */
+.bottom-nav .nav-item[data-page="cart"] .nav-badge {
+    position: absolute !important;
+    top: -5px !important;
+    left: 55% !important;
+    background: var(--accent) !important;
+    color: white !important;
+    padding: 2px 6px !important;
+    border-radius: 10px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    min-width: 18px !important;
+    text-align: center !important;
     transform: none !important;
 }
 /* Specifically for cart badge */
