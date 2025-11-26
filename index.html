@@ -3061,9 +3061,8 @@ switch(page) {
                 productCard.className = 'product-card';
                 productCard.innerHTML = `
                     ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-                    <div class="shop-badge">${shop.name}</div>
-                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
-    <i class="fas fa-heart"></i>
+                    
+                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')"
 </button>
 <!-- ADD SHARE BUTTON HERE -->
 <button class="product-share-btn" onclick="shareProduct('${product.id}')">
