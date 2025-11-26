@@ -3802,7 +3802,34 @@
             selectedPaymentMethod = null;
             paymentOptions.forEach(option => option.classList.remove('selected'));
         }
-
+        // UPDATE SHOPS CONFIGURATION
+const SHOPS = {
+    freshmart: { 
+        id: 'freshmart', 
+        name: 'FreshMart', 
+        category: 'groceries', 
+        rating: 4.5, 
+        deliveryTime: '30 min',
+        deliveryOptions: ['delivery', 'pickup'] // BOTH options
+    },
+    cosmeticstore: { 
+        id: 'cosmeticstore', 
+        name: 'CosmeticStore', 
+        category: 'cosmetics', 
+        rating: 4.3, 
+        deliveryTime: '45 min',
+        deliveryOptions: ['delivery'] // DELIVERY ONLY
+    },
+    fashionhub: { 
+        id: 'fashionhub', 
+        name: 'FashionHub', 
+        category: 'clothing', 
+        rating: 4.7, 
+        deliveryTime: '2 days',
+        deliveryOptions: ['pickup'] // PICKUP ONLY
+    },
+    // ... other shops with deliveryOptions
+};
         // Address Management
         function renderAddresses() {
             if (!addressesContainer) return;
