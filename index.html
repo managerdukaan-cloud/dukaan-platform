@@ -4859,6 +4859,46 @@ function closeHamburgerMenu() {
             }, 3000);
         }
 
+        // Social Sharing Functions
+function shareProduct(productId) {
+    const product = PRODUCTS.find(p => p.id === productId);
+    if (!product) return;
+    
+    const message = `Check out ${product.name} on Dukaan - Only ₹${product.price}! ${window.location.href}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: product.name,
+            text: `Check out ${product.name} - ₹${product.price}`,
+            url: window.location.href
+        });
+    } else {
+        navigator.clipboard.writeText(message).then(() => {
+            showToast('Product link copied to clipboard!');
+        });
+    }
+}
+
+function shareAppViaWhatsApp() {
+    const message = `Discover amazing local products on Dukaan! Fast delivery, best prices. Download now: ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+}
+
+function shareAppViaFacebook() {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+}
+
+function shareAppViaTwitter() {
+    const text = `Discover amazing local products on Dukaan! Fast delivery, best prices.`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`, '_blank');
+}
+
+function copyAppLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast('App link copied to clipboard!');
+    });
+}
+
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
