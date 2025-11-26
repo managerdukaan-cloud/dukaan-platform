@@ -4340,7 +4340,7 @@ This action cannot be undone.`,
                             <button class="btn-reorder" onclick="reorder('${order.id}')">
                                 <i class="fas fa-redo"></i> Reorder
                             </button>
-                            <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
+                                                        <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
                                 <i class="fas fa-map-marker-alt"></i> Track
                             </button>
                             ${order.status === 'confirmed' || order.status === 'preparing' ? `
