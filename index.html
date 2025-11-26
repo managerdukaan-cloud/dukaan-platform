@@ -3064,12 +3064,12 @@ switch(page) {
                     
                     <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')"
 </button>
+<i class="fas fa-heart"></i>
+                    </button>
 <!-- ADD SHARE BUTTON HERE -->
 <button class="product-share-btn" onclick="shareProduct('${product.id}')">
     <i class="fas fa-share-alt"></i>
 </button>
-                        <i class="fas fa-heart"></i>
-                    </button>
                     <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
                     <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
                     <p class="product-category">${product.category} • ${shop.deliveryTime}</p>
