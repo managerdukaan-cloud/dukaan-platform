@@ -1118,10 +1118,6 @@
     text-align: center !important;
     transform: none !important;
 }
-/* Specifically for cart badge */
-#bottomCartCount {
-    left: 55% !important;
-}
             /* FINAL QUANTITY FIX */
 .product-detail-actions {
     display: flex;
@@ -1138,10 +1134,6 @@
             #hamburgerWishlistCount {
     display: none !important;
 }
-            /* DEBUG - COLOR CODE BADGES */
-#bottomCartCount { background: red !important; }
-#hamburgerWishlistCount { background: blue !important; }
-
             /* HIDE WISHLIST BADGE IN HAMBURGER MENU */
 #hamburgerWishlistCount {
     display: none !important;
@@ -1176,10 +1168,11 @@
 .nav-item[data-page] .nav-badge {
     display: block; /* This keeps badges for Home, Orders, Account, Cart */
 }
-            #bottomCartCount {
+/* FIX CART BADGE POSITION - FINAL */
+#bottomNavCart .nav-badge {
     position: absolute !important;
-    top: -5px !important;
-    left: 55% !important;
+    top: 0px !important;
+    left: 60% !important;
     background: var(--accent) !important;
     color: white !important;
     padding: 2px 6px !important;
