@@ -2919,7 +2919,6 @@ function selectDeliveryMethod(method) {
         addressesContainer.style.display = 'block';
     }
 }
-
             // QR payment
             confirmQrPayment.addEventListener('click', confirmQRPayment);
             utrNumber.addEventListener('input', validateUTR);
@@ -2931,7 +2930,7 @@ function selectDeliveryMethod(method) {
                 }
             });
         }
-
+        
         // Navigation
         function navigateToPage(page) {
             // Hide all pages
@@ -4761,7 +4760,6 @@ Track your order: ${window.location.href}
                 }
             );
         }
-
         // Notification Core Functions
         function loadNotificationsPage() {
             renderNotificationsList();
@@ -4905,7 +4903,7 @@ Track your order: ${window.location.href}
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
-
+ }
         function showToast(message) {
             // Create toast element
             const toast = document.createElement('div');
