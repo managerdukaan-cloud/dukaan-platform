@@ -1103,17 +1103,12 @@
 #hamburgerMenu .nav-badge {
     display: none !important;
 }
-            /* Bottom nav badge proper position fix */
-.bottom-nav .nav-item {
-    position: relative;
-}
-
+/* FIX CART BADGE POSITION */
 .bottom-nav .nav-badge {
     position: absolute;
     top: -6px;
-    left: 50%;
-    right: auto;
-    transform: translateX(4px);
+    left: 60%;
+    transform: translateX(-50%);
     background: var(--accent);
     color: white;
     padding: 2px 6px;
@@ -1122,6 +1117,11 @@
     font-weight: 700;
     min-width: 18px;
     text-align: center;
+}
+
+/* Specifically for cart badge */
+#bottomCartCount {
+    left: 55% !important;
 }
             /* FINAL QUANTITY FIX */
 .product-detail-actions {
