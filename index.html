@@ -1602,18 +1602,21 @@
 <div class="product-detail-actions">
     <div class="quantity-cart-container">
         <div class="btn-quantity">
+            <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+            <span id="quantityValue" class="quantity-value">1</span>
+            <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+        </div>
+        <button class="btn-primary btn-add-cart-detail" onclick="addToCartFromDetail()">
+            <i class="fas fa-shopping-cart"></i> Add to Cart
+        </button>
     </div>
     
     <!-- SHARE BUTTON -->
-    <button class="btn-outline" onclick="shareProduct('${currentProductDetail.id}')" 
-            style="padding: 10px 15px; border-radius: 10px;">
+    <button class="btn-outline" onclick="shareProduct(currentProductDetail.id)" 
+            style="padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 8px;">
         <i class="fas fa-share-alt"></i> Share
     </button>
     
-    <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
-        <i class="fas fa-heart"></i>
-    </button>
-</div>
     <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
         <i class="fas fa-heart"></i>
     </button>
