@@ -1251,32 +1251,272 @@
     color: white;
 }
         
-        /* MOBILE LAYOUT FIXES */
+/* 🎯 MOBILE LAYOUT FIXES - REPLACE FROM HERE */
 @media (max-width: 768px) {
-    /* Fix: 2 products per row in mobile */
+    /* Better product grid - 2 products with proper spacing */
     .product-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 12px !important;
+        padding: 0 8px !important;
     }
     
+    /* Better product card proportions */
+    .product-card {
+        padding: 12px !important;
+        border-radius: 12px !important;
+        min-height: 280px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Optimized product image */
     .product-image {
-        height: 140px !important;
+        height: 120px !important;
+        border-radius: 8px !important;
+        margin-bottom: 8px !important;
     }
     
-    /* Fix: Filters horizontal layout in mobile */
+    /* Better text sizing */
+    .product-title {
+        font-size: 14px !important;
+        line-height: 1.3 !important;
+        margin-bottom: 4px !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    
+    .product-category {
+        font-size: 11px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    /* Better price layout */
+    .product-price {
+        margin-top: auto !important;
+        padding-top: 8px !important;
+    }
+    
+    .current-price {
+        font-size: 16px !important;
+    }
+    
+    .original-price {
+        font-size: 12px !important;
+    }
+    
+    .discount {
+        font-size: 11px !important;
+    }
+    
+    /* Better button sizing */
+    .btn-add-cart {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Badge optimization */
+    .product-badge {
+        font-size: 10px !important;
+        padding: 3px 8px !important;
+        top: 8px !important;
+        left: 8px !important;
+    }
+    
+    .shop-badge {
+        font-size: 9px !important;
+        padding: 2px 6px !important;
+        top: 8px !important;
+        right: 8px !important;
+    }
+    
+    .wishlist-btn {
+        width: 28px !important;
+        height: 28px !important;
+        top: 8px !important;
+        right: 40px !important;
+    }
+    
+    /* Header optimization */
+    .header-container { 
+        flex-direction: column; 
+        gap: 12px; 
+    }
+    
+    .search-container { 
+        margin: 0; 
+        width: 100%; 
+    }
+    
+    /* Container optimization */
+    .container-main {
+        margin: 16px auto !important;
+        padding: 0 8px !important;
+    }
+    
+    /* Hero section optimization */
+    .hero-banner {
+        padding: 20px 16px !important;
+        margin-bottom: 20px !important;
+        border-radius: 16px !important;
+    }
+    
+    .hero-content { 
+        max-width: 100%; 
+    }
+    
+    .hero-title { 
+        font-size: 1.5rem !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .hero-subtitle {
+        font-size: 0.9rem !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Filter section optimization */
     .filter-section > div {
-        flex-direction: row !important;
-        align-items: center !important;
+        flex-direction: column !important;
+        gap: 12px !important;
     }
     
     .filter-section .d-flex {
-        margin-bottom: 0 !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .category-filter {
         flex: 1 !important;
+        margin: 0 4px !important;
     }
     
     .sorting-options {
-        width: auto !important;
-        justify-content: flex-end !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+    
+    .sort-select {
+        min-width: 140px !important;
+    }
+    
+    /* Auth optimization */
+    .auth-card { 
+        padding: 30px 25px; 
+    }
+    
+    .form-row { 
+        grid-template-columns: 1fr; 
+    }
+    
+    /* Wishlist optimization */
+    .wishlist-card { 
+        flex-direction: column; 
+        text-align: center; 
+    }
+    
+    .wishlist-actions { 
+        justify-content: center; 
+    }
+    
+    /* Reviews optimization */
+    .rating-summary { 
+        flex-direction: column; 
+        gap: 20px; 
+        text-align: center; 
+    }
+    
+    /* Product detail optimization */
+    .product-detail-actions { 
+        flex-direction: column; 
+    }
+    
+    .product-detail-image { 
+        height: 300px; 
+    }
+    
+    /* Order actions */
+    .order-actions {
+        justify-content: center;
+    }
+    
+    .order-actions button {
+        flex: 1;
+        min-width: 80px;
+    }
+    
+    /* Enhanced Search Mobile Styles */
+    .search-modal-body {
+        max-height: 70vh;
+    }
+    
+    .popular-searches {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-filters {
+        grid-template-columns: 1fr;
+    }
+    
+    .recent-searches {
+        flex-direction: column;
+    }
+    
+    .recent-search-item {
+        text-align: center;
+    }
+}
+
+/* 🎯 EXTRA SMALL DEVICES */
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        padding: 0 4px !important;
+    }
+    
+    .product-card {
+        padding: 10px !important;
+        min-height: 260px !important;
+    }
+    
+    .product-image {
+        height: 110px !important;
+    }
+    
+    .product-title {
+        font-size: 13px !important;
+    }
+    
+    .current-price {
+        font-size: 15px !important;
+    }
+    
+    .container-main { 
+        padding: 0 12px; 
+    }
+    
+    .hero-banner { 
+        padding: 20px; 
+    }
+    
+    .product-detail-content { 
+        padding: 20px; 
+    }
+    
+    .reviews-section { 
+        padding: 20px; 
+    }
+}
+
+/* 🎯 TABLET OPTIMIZATION */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 16px !important;
     }
 }
 
@@ -1287,89 +1527,8 @@
         gap: 20px;
     }
 }
-@media (max-width: 768px) {
-    .order-actions {
-        justify-content: center;
-    }
-    
-    .order-actions button {
-        flex: 1;
-        min-width: 80px;
-    }
-}
-        }
-        @media (max-width: 768px) {
-            .header-container { flex-direction: column; gap: 12px; }
-            .search-container { margin: 0; width: 100%; }
-            .hero-content { max-width: 100%; }
-            .hero-title { font-size: 1.8rem; }
-            .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-            .product-image { height: 120px; }
-            .auth-card { padding: 30px 25px; }
-            .form-row { grid-template-columns: 1fr; }
-            .wishlist-card { flex-direction: column; text-align: center; }
-            .wishlist-actions { justify-content: center; }
-            .rating-summary { flex-direction: column; gap: 20px; text-align: center; }
-            .product-detail-actions { flex-direction: column; }
-            .product-detail-image { height: 300px; }
-                        /* Enhanced Search Mobile Styles */
-            .search-modal-body {
-                max-height: 70vh;
-            }
-                    @media (max-width: 768px) {
-            .header-container { flex-direction: column; gap: 12px; }
-            .search-container { margin: 0; width: 100%; }
-            
-            /* 🎯 YAHAN ADD KARO - Filter Section Mobile Fix */
-            .filter-section > div {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-section .d-flex {
-                margin-bottom: 15px;
-            }
-            .filter-section .category-filter {
-                flex: 1;
-            }
-            .sorting-options {
-                width: 100%;
-                justify-content: center;
-            }
-                        @media (max-width: 768px) {
-    .filter-section > div {
-        flex-direction: column;
-    }
-    .filter-section .d-flex {
-        width: 100%;
-        justify-content: center;
-    }
-    .sorting-options {
-        width: 100%;
-        justify-content: center;
-    }
-                            @media (max-width: 768px) {
-    .sorting-options {
-        justify-content: flex-end !important;
-    }
-            .popular-searches {
-                grid-template-columns: 1fr;
-            }
-            .shop-filters {
-                grid-template-columns: 1fr;
-            }
-            .recent-searches {
-                flex-direction: column;
-            }
-            .recent-search-item {
-                text-align: center;
-            }
-        }
-        @media (max-width: 480px) {
-            .container-main { padding: 0 12px; }
-            .hero-banner { padding: 20px; }
-            .product-detail-content { padding: 20px; }
-            .reviews-section { padding: 20px; }
-        }
+/* REPLACE UP TO HERE */
+
     </style>
 </head>
 <body>
