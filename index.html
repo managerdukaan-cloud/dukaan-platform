@@ -2730,6 +2730,24 @@ const PRODUCTS = [
             setupSorting();
         }
 
+        /* 🛡️ ADD THIS PRIVATE DEMO LOGIN CODE BELOW */
+// Private demo login system
+function privateDemoLogin() {
+    document.getElementById('loginEmail').value = 'demo@dukaan.com';
+    document.getElementById('loginPassword').value = 'demo123';
+    showToast('🛡️ Private Demo Activated - Click Sign In');
+}
+
+// Check for secret URL parameter
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('demo') === 'dukaan_admin_2024') {
+    // Show demo button and auto-fill
+    const demoBtn = document.querySelector('.btn-demo-login');
+    if (demoBtn) demoBtn.style.display = 'flex';
+    showToast('Admin access granted - Demo button enabled');
+}
+/* 🛡️ ADD THIS PRIVATE DEMO LOGIN CODE ABOVE */
+
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
