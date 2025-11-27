@@ -2718,35 +2718,70 @@ const PRODUCTS = [
         const orderTracking = document.getElementById('orderTracking');
 
         // Initialize App
-        function initApp() {
-            setupEventListeners();
-            setupFirebaseAuth();
-            setupDemoLogin();
-            renderProducts(PRODUCTS);
-            updateCartUI();
-            updateWishlistUI();
-            renderOrders();
-            renderAddresses();
-            setupSorting();
-        }
+function initApp() {
+    setupEventListeners();
+    setupFirebaseAuth();
+    setupDemoLogin();
+    renderProducts(PRODUCTS);
+    updateCartUI();
+    updateWishlistUI();
+    renderOrders();
+    renderAddresses();
+    setupSorting();
+    
+    /* 🛡️ ADD THIS HIDDEN LONG PRESS CODE BELOW */
+    // Hidden long press on logo for demo
+    setupHiddenDemoAccess();
+    /* 🛡️ ADD THIS HIDDEN LONG PRESS CODE ABOVE */
+}
 
-        /* 🛡️ ADD THIS PRIVATE DEMO LOGIN CODE BELOW */
-// Private demo login system
+/* 🛡️ REPLACE THE PREVIOUS CODE WITH THIS BELOW */
+// Hidden long press demo system for MOBILE APP
+function setupHiddenDemoAccess() {
+    let pressTimer;
+    const logo = document.querySelector('.brand-logo');
+    
+    if (!logo) return;
+    
+    logo.addEventListener('touchstart', function(e) {
+        pressTimer = setTimeout(() => {
+            showHiddenDemoButton();
+        }, 2000); // 2 second long press
+    });
+    
+    logo.addEventListener('touchend', function(e) {
+        clearTimeout(pressTimer);
+    });
+    
+    // Mouse long press for testing
+    logo.addEventListener('mousedown', function(e) {
+        pressTimer = setTimeout(() => {
+            showHiddenDemoButton();
+        }, 2000);
+    });
+    
+    logo.addEventListener('mouseup', function(e) {
+        clearTimeout(pressTimer);
+    });
+    logo.addEventListener('mouseleave', function(e) {
+        clearTimeout(pressTimer);
+    });
+}
+
+function showHiddenDemoButton() {
+    const demoBtn = document.querySelector('.btn-demo-login');
+    if (demoBtn) {
+        demoBtn.style.display = 'flex';
+        showToast('🎯 Hidden Demo Activated!');
+    }
+}
+
 function privateDemoLogin() {
     document.getElementById('loginEmail').value = 'demo@dukaan.com';
     document.getElementById('loginPassword').value = 'demo123';
-    showToast('🛡️ Private Demo Activated - Click Sign In');
+    showToast('🛡️ Private Demo - Click Sign In');
 }
-
-// Check for secret URL parameter
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('demo') === 'dukaan_admin_2024') {
-    // Show demo button and auto-fill
-    const demoBtn = document.querySelector('.btn-demo-login');
-    if (demoBtn) demoBtn.style.display = 'flex';
-    showToast('Admin access granted - Demo button enabled');
-}
-/* 🛡️ ADD THIS PRIVATE DEMO LOGIN CODE ABOVE */
+/* 🛡️ REPLACE THE PREVIOUS CODE WITH THIS ABOVE */ 
 
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
