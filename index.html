@@ -2729,60 +2729,6 @@ function initApp() {
     renderAddresses();
     setupSorting();
     
-    /* 🛡️ ADD THIS HIDDEN LONG PRESS CODE BELOW */
-    // Hidden long press on logo for demo
-    setupHiddenDemoAccess();
-    /* 🛡️ ADD THIS HIDDEN LONG PRESS CODE ABOVE */
-}
-
-/* 🛡️ REPLACE THE PREVIOUS CODE WITH THIS BELOW */
-// Hidden long press demo system for MOBILE APP
-function setupHiddenDemoAccess() {
-    let pressTimer;
-    const logo = document.querySelector('.brand-logo');
-    
-    if (!logo) return;
-    
-    logo.addEventListener('touchstart', function(e) {
-        pressTimer = setTimeout(() => {
-            showHiddenDemoButton();
-        }, 2000); // 2 second long press
-    });
-    
-    logo.addEventListener('touchend', function(e) {
-        clearTimeout(pressTimer);
-    });
-    
-    // Mouse long press for testing
-    logo.addEventListener('mousedown', function(e) {
-        pressTimer = setTimeout(() => {
-            showHiddenDemoButton();
-        }, 2000);
-    });
-    
-    logo.addEventListener('mouseup', function(e) {
-        clearTimeout(pressTimer);
-    });
-    logo.addEventListener('mouseleave', function(e) {
-        clearTimeout(pressTimer);
-    });
-}
-
-function showHiddenDemoButton() {
-    const demoBtn = document.querySelector('.btn-demo-login');
-    if (demoBtn) {
-        demoBtn.style.display = 'flex';
-        showToast('🎯 Hidden Demo Activated!');
-    }
-}
-
-function privateDemoLogin() {
-    document.getElementById('loginEmail').value = 'demo@dukaan.com';
-    document.getElementById('loginPassword').value = 'demo123';
-    showToast('🛡️ Private Demo - Click Sign In');
-}
-/* 🛡️ REPLACE THE PREVIOUS CODE WITH THIS ABOVE */ 
-
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
@@ -2803,20 +2749,6 @@ function privateDemoLogin() {
                 }
             });
         }
-
-        /* 🛡️ ADD THIS URL PARAMETER CHECK BELOW */
-// Check for secret demo parameter in URL
-function checkUrlDemoAccess() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('demo') === 'dukaan_admin_2024') {
-        const demoBtn = document.querySelector('.btn-demo-login');
-        if (demoBtn) {
-            demoBtn.style.display = 'flex';
-            showToast('🛡️ Admin Demo Access Granted');
-        }
-    }
-}
-/* 🛡️ ADD THIS URL PARAMETER CHECK ABOVE */
 
         function setupDemoLogin() {
             // Auto-fill demo credentials
