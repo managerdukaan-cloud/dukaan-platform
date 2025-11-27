@@ -2804,6 +2804,20 @@ function privateDemoLogin() {
             });
         }
 
+        /* 🛡️ ADD THIS URL PARAMETER CHECK BELOW */
+// Check for secret demo parameter in URL
+function checkUrlDemoAccess() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('demo') === 'dukaan_admin_2024') {
+        const demoBtn = document.querySelector('.btn-demo-login');
+        if (demoBtn) {
+            demoBtn.style.display = 'flex';
+            showToast('🛡️ Admin Demo Access Granted');
+        }
+    }
+}
+/* 🛡️ ADD THIS URL PARAMETER CHECK ABOVE */
+
         function setupDemoLogin() {
             // Auto-fill demo credentials
             document.getElementById('loginEmail').value = 'demo@dukaan.com';
