@@ -3082,7 +3082,8 @@ function closeSavedAddressesModal() {
 }
 
 function addNewAddress() {
-    // ★★★ FIX: Close any existing address modal first ★★★
+    // Close ALL modals first
+    closeSavedAddressesModal();
     closeAddAddressModal();
     
     const modalHTML = `
@@ -3139,53 +3140,46 @@ function closeAddAddressModal() {
 }
 
 function saveNewAddress() {
-    const name = document.getElementById('addressName').value;
-    const phone = document.getElementById('addressPhone').value;
-    const pincode = document.getElementById('addressPincode').value;
-    const address = document.getElementById('addressLine1').value;
-    const city = document.getElementById('addressCity').value;
+    console.log("=== SAVE NEW ADDRESS CALLED ===");
     
-    // DEBUG: Show all values in alert
-    alert(`DEBUG VALUES:\nName: "${name}"\nPhone: "${phone}"\nPincode: "${pincode}"\nAddress: "${address}"\nCity: "${city}"`);
-    
-    // Check each field individually
-    if (!name || name.trim() === "") {
-        alert("Name is empty");
-        showToast("Please enter full name", 'error');
-        return;
-    }
-    
-    if (!phone || phone.trim() === "") {
-        alert("Phone is empty");
-        showToast("Please enter phone number", 'error');
-        return;
-    }
-    
-    if (!pincode || pincode.trim() === "") {
-        alert("Pincode is empty");
-        showToast("Please enter pincode", 'error');
-        return;
-    }
-    
-    if (!address || address.trim() === "") {
-        alert("Address is empty");
-        showToast("Please enter address", 'error');
-        return;
-    }
-    
-    if (!city || city.trim() === "") {
-        alert("City is empty");
-        showToast("Please enter city", 'error');
-        return;
-    }
-    
-    showToast("Address saved successfully!", 'success');
-    closeAddAddressModal();
-    
-    // Reopen saved addresses to show the new address
+    // Wait a tiny bit to ensure DOM is ready
     setTimeout(() => {
-        savedAddresses();
-    }, 1000);
+        const nameEl = document.getElementById('addressName');
+        const phoneEl = document.getElementById('addressPhone');
+        const pincodeEl = document.getElementById('addressPincode');
+        const addressEl = document.getElementById('addressLine1');
+        const cityEl = document.getElementById('addressCity');
+        
+        console.log("Elements found:", {
+            name: nameEl?.value,
+            phone: phoneEl?.value,
+            pincode: pincodeEl?.value,
+            address: addressEl?.value,
+            city: cityEl?.value
+        });
+        
+        if (!nameEl || !phoneEl || !pincodeEl || !addressEl || !cityEl) {
+            console.log("❌ Some elements missing");
+            showToast("Form error. Please try again.", 'error');
+            return;
+        }
+        
+        const name = nameEl.value.trim();
+        const phone = phoneEl.value.trim();
+        const pincode = pincodeEl.value.trim();
+        const address = addressEl.value.trim();
+        const city = cityEl.value.trim();
+        
+        // SIMPLE VALIDATION - REMOVE ALL COMPLEX CHECKS
+        if (name && phone && pincode && address && city) {
+            console.log("✅ All fields filled");
+            showToast("Address saved successfully!", 'success');
+            closeAddAddressModal();
+        } else {
+            console.log("❌ Some fields empty");
+            showToast("Please fill all required fields", 'error');
+        }
+    }, 100);
 }
         
 // ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
