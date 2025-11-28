@@ -3082,6 +3082,9 @@ function closeSavedAddressesModal() {
 }
 
 function addNewAddress() {
+    // ★★★ FIX: Close any existing address modal first ★★★
+    closeAddAddressModal();
+    
     const modalHTML = `
     <div class="modal-overlay active" id="addAddressModal">
         <div class="modal-content">
@@ -3129,7 +3132,7 @@ function addNewAddress() {
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
-
+        
 function closeAddAddressModal() {
     const modal = document.getElementById('addAddressModal');
     if (modal) modal.remove();
