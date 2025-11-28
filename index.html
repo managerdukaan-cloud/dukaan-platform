@@ -5008,7 +5008,7 @@ Track your order: ${window.location.href}
                 
                 // Re-authenticate user first
                 const credential = firebase.auth.EmailAuthProvider.credential(email, currentPassword);
-                await user.reauthenticateWithCredential(credential);
+                await user.reauthenticateWithCredential(credential();
                 
                 // Now update password
                 await user.updatePassword(newPassword);
