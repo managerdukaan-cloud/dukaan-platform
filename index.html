@@ -2890,6 +2890,53 @@ loadProductsFromFirebase();
             showToast('Demo credentials filled! Click Sign In');
         }
 
+                // Update UI for logged-in state
+        updateUIForAuthState(true);
+    } catch (error) {
+        console.error('Login error:', error);
+        // ... error handling code ...
+    }
+}
+
+// ★★★ ADD LOGOUT FUNCTION HERE ★★★
+function logout() {
+    // Check if user is logged in with Firebase
+    if (firebase.auth().currentUser) {
+        firebase.auth().signOut().then(() => {
+            showToast("Logged out successfully!", 'success');
+            // Switch to auth screen
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'block';
+            // Hide logout button
+            if (document.getElementById('logoutBtn')) {
+                document.getElementById('logoutBtn').style.display = 'none';
+            }
+            // Reset forms
+            document.getElementById('loginForm').reset();
+            document.getElementById('signupForm').reset();
+            // Show login form by default
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginFooter').style.display = 'block';
+            document.getElementById('signupFooter').style.display = 'none';
+        }).catch((error) => {
+            console.error("Logout error:", error);
+            showToast("Error logging out: " + error.message, 'error');
+        });
+    } else {
+        // Fallback for any logged in state
+        document.getElementById('appScreen').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'block';
+        if (document.getElementById('logoutBtn')) {
+            document.getElementById('logoutBtn').style.display = 'none';
+        }
+        showToast("Logged out successfully!");
+    }
+}
+// ★★★ LOGOUT FUNCTION ADDED ★★★
+
+// Next functions will be here...
+
         // Add missing authentication form toggle functions
         function showLoginForm() {
             document.getElementById('loginForm').style.display = 'block';
