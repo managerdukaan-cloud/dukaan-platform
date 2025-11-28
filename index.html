@@ -1372,15 +1372,44 @@
 }
     
     /* Header optimization */
-    .header-container { 
-        flex-direction: column; 
-        gap: 12px; 
+.header-container { 
+    flex-direction: column; 
+    gap: 12px; 
+    position: relative;
+}
+
+.search-container { 
+    margin: 0 auto; 
+    width: 100%; 
+    max-width: 500px;
+}
+
+/* Center search bar on desktop */
+@media (min-width: 769px) {
+    .header-container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
     }
     
-    .search-container { 
-        margin: 0; 
-        width: 100%; 
+    .search-container {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        min-width: 400px;
     }
+    
+    .header-actions {
+        margin-left: auto;
+    }
+}
+
+/* Container optimization */
+.container-main {
+    margin: 16px auto !important;
+    padding: 0 8px !important;
+}
     
     /* Container optimization */
     .container-main {
@@ -1583,9 +1612,6 @@
                         <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
                     </div>
                     <button type="submit" class="btn-primary w-100" style="padding: 12px;">Sign In</button>
-                    <button type="button" class="btn-outline w-100 mt-3" onclick="demoLogin()">
-                        <i class="fas fa-rocket"></i> Try Demo Account
-                    </button>
                 </form>
                 <form id="signupForm" style="display: none;">
                     <div class="form-group">
@@ -1613,18 +1639,23 @@
     <!-- Main App Screen -->
     <div id="appScreen" style="display: none;">
         <header class="app-header">
-            <div class="header-container">
-                <a href="#" class="brand">
-                    <div class="brand-logo">D</div>
-                    <span>Dukaan</span>
-                </a>
-                <div class="search-container">
-                    <input type="text" id="search" class="search-bar" placeholder="Search for products, categories...">
-                    <div class="search-icon"><i class="fas fa-search"></i></div>
-                    <div class="search-results" id="searchResults"></div>
-                </div>
-            </div>
-        </header>
+    <div class="header-container">
+        <a href="#" class="brand">
+            <div class="brand-logo">D</div>
+            <span>Dukaan</span>
+        </a>
+        <div class="search-container">
+            <input type="text" id="search" class="search-bar" placeholder="Search for products, categories...">
+            <div class="search-icon"><i class="fas fa-search"></i></div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-logout" onclick="logout()" id="logoutBtn" style="display: none;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+</header>
 
         <div class="container-main">
             <div id="homePage">
@@ -4814,28 +4845,69 @@ Track your order: ${window.location.href}
         }
 
         function editPersonalDetails() {
-            showConfirmationModal(
-                'Edit Personal Details',
-                'This feature will allow you to update your name, email, and phone number. Coming in the next update!',
-                () => {
-                    showToast('Edit profile feature coming soon!');
-                }
-            );
-        }
-
+    const user = firebase.auth().currentUser;
+    const currentName = user.displayName || "";
+    
+    // Create a simple form for editing details
+    const newName = prompt("Enter your full name:", currentName);
+    
+    if (newName === null) return; // User cancelled
+    
+    if (newName.trim() === "") {
+        showToast("Name cannot be empty", 'error');
+        return;
+    }
+    
+    // Update profile in Firebase
+    user.updateProfile({
+        displayName: newName.trim()
+    }).then(() => {
+        showToast("Personal details updated successfully!", 'success');
+        
+        // Update UI wherever user name is displayed
+        const userNameElements = document.querySelectorAll('.user-name, #userName, .profile-name');
+        userNameElements.forEach(element => {
+            element.textContent = newName.trim();
+        });
+        
+    }).catch(error => {
+        console.error("Profile update error:", error);
+        showToast("Error updating details: " + error.message, 'error');
+    });
+}
         function changeProfilePicture() {
             document.getElementById('avatarUpload').click();
         }
 
         function changePassword() {
-            showConfirmationModal(
-                'Change Password',
-                'You will be able to update your password securely. This feature is coming in the next update!',
-                () => {
-                    showToast('Password change feature coming soon!');
+    const newPassword = prompt("Enter your new password (minimum 6 characters):");
+    
+    if (newPassword === null) return; // User cancelled
+    
+    if (newPassword.length < 6) {
+        showToast("Password must be at least 6 characters long", 'error');
+        return;
+    }
+    
+    const user = firebase.auth().currentUser;
+    
+    if (user) {
+        user.updatePassword(newPassword)
+            .then(() => {
+                showToast("Password updated successfully!", 'success');
+            })
+            .catch(error => {
+                console.error("Password update error:", error);
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast("Please sign in again to change your password", 'error');
+                } else {
+                    showToast("Error updating password: " + error.message, 'error');
                 }
-            );
-        }
+            });
+    } else {
+        showToast("Please sign in to change password", 'error');
+    }
+}
 
         function showLoginHistory() {
             document.getElementById('loginHistorySection').style.display = 'block';
