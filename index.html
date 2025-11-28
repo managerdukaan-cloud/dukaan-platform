@@ -4989,50 +4989,69 @@ Track your order: ${window.location.href}
     const currentName = user.displayName || "";
     const currentEmail = user.email || "";
     
-    showConfirmationModal(
-        'Edit Profile',
-        `
-        <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="editUserName" value="${currentName}" placeholder="Enter your full name">
+    const modalHTML = `
+    <div class="modal-overlay active" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Profile</h3>
+                <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="editUserName" value="${currentName}" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="editUserEmail" value="${currentEmail}" readonly style="background: #f8f9fa;">
+                    <small class="text-muted">Email cannot be changed</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="editUserPhone" placeholder="Enter phone number">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeEditProfileModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="processProfileUpdate()">Save Changes</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="editUserEmail" value="${currentEmail}" readonly style="background: #f8f9fa;">
-            <small class="text-muted">Email cannot be changed</small>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <input type="tel" class="form-control" id="editUserPhone" placeholder="Enter phone number">
-        </div>
-        `,
-        () => {
-            const newName = document.getElementById('editUserName').value.trim();
-            
-            if (!newName) {
-                showToast("Name cannot be empty", 'error');
-                return;
-            }
-            
-            user.updateProfile({
-                displayName: newName
-            }).then(() => {
-                showToast("Profile updated successfully!", 'success');
-                
-                // Update UI
-                const userNameElements = document.querySelectorAll('.user-name, #userName');
-                userNameElements.forEach(element => {
-                    element.textContent = newName;
-                });
-                
-                closeModal();
-            }).catch(error => {
-                console.error("Profile update error:", error);
-                showToast("Error updating profile: " + error.message, 'error');
-            });
-        },
-        'Save Changes'
-    );
+    </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeEditProfileModal() {
+    const modal = document.getElementById('editProfileModal');
+    if (modal) modal.remove();
+}
+
+function processProfileUpdate() {
+    const newName = document.getElementById('editUserName').value.trim();
+    
+    if (!newName) {
+        showToast("Name cannot be empty", 'error');
+        return;
+    }
+    
+    const user = firebase.auth().currentUser;
+    user.updateProfile({
+        displayName: newName
+    }).then(() => {
+        showToast("Profile updated successfully!", 'success');
+        
+        // Update UI
+        const userNameElements = document.querySelectorAll('.user-name, #userName');
+        userNameElements.forEach(element => {
+            element.textContent = newName;
+        });
+        
+        closeEditProfileModal();
+    }).catch(error => {
+        console.error("Profile update error:", error);
+        showToast("Error updating profile: " + error.message, 'error');
+    });
 }
         function changeProfilePicture() {
             document.getElementById('avatarUpload').click();
