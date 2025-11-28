@@ -4960,24 +4960,33 @@ Track your order: ${window.location.href}
         `
         <div class="form-group">
             <label class="form-label">Current Password</label>
-            <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password">
+            <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
         </div>
         <div class="form-group">
             <label class="form-label">New Password</label>
-            <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min. 6 characters)">
+            <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min. 6 characters)" required>
         </div>
         <div class="form-group">
             <label class="form-label">Confirm New Password</label>
-            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
+            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password" required>
+        </div>
+        <div class="alert alert-info">
+            <small><i class="fas fa-info-circle"></i> You'll need to re-enter your current password for security</small>
         </div>
         `,
-        () => {
+        async () => {
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
+            // Validation
+            if (!currentPassword) {
+                showToast("Please enter your current password", 'error');
+                return;
+            }
+            
             if (!newPassword || newPassword.length < 6) {
-                showToast("Password must be at least 6 characters", 'error');
+                showToast("New password must be at least 6 characters", 'error');
                 return;
             }
             
@@ -4986,24 +4995,42 @@ Track your order: ${window.location.href}
                 return;
             }
             
+            if (currentPassword === newPassword) {
+                showToast("New password cannot be same as current password", 'error');
+                return;
+            }
+            
             const user = firebase.auth().currentUser;
-            if (user) {
-                user.updatePassword(newPassword)
-                    .then(() => {
-                        showToast("Password updated successfully!", 'success');
-                        closeModal();
-                    })
-                    .catch(error => {
-                        console.error("Password update error:", error);
-                        if (error.code === 'auth/requires-recent-login') {
-                            showToast("Please sign in again to change password", 'error');
-                        } else {
-                            showToast("Error: " + error.message, 'error');
-                        }
-                    });
+            const email = user.email;
+            
+            try {
+                // Show loading
+                showToast("Verifying your current password...", 'info');
+                
+                // Re-authenticate user first
+                const credential = firebase.auth.EmailAuthProvider.credential(email, currentPassword);
+                await user.reauthenticateWithCredential(credential);
+                
+                // Now update password
+                await user.updatePassword(newPassword);
+                
+                showToast("Password updated successfully!", 'success');
+                closeModal();
+                
+            } catch (error) {
+                console.error("Password change error:", error);
+                
+                if (error.code === 'auth/wrong-password') {
+                    showToast("Current password is incorrect", 'error');
+                } else if (error.code === 'auth/requires-recent-login') {
+                    showToast("Session expired. Please sign in again", 'error');
+                } else {
+                    showToast("Error: " + error.message, 'error');
+                }
             }
         },
-        'Update Password'
+        'Update Password',
+        true
     );
 }
 
