@@ -2488,7 +2488,7 @@
             bakerycorner: { id: 'bakerycorner', name: 'Bakery Corner', category: 'bakery', rating: 4.8, deliveryTime: '25 min' }
         };
 
-const PRODUCTS = [
+let PRODUCTS = [
     // 🥛 FreshMart - Dairy & Groceries (20 products)
     { id: 'fm1', name: 'Fresh Cow Milk', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop', badge: 'Fresh', size: '1 Litre', brand: 'Amul', description: 'Fresh pasteurized cow milk rich in calcium and protein.', features: ['Pasteurized', 'Rich in Calcium', 'No Preservatives'], specifications: { type: 'Cow Milk', fat: '3.5%', shelfLife: '7 days' }, returnPolicy: 'No returns. Contact shopkeeper for any issues.' },
     { id: 'fm2', name: 'Buffalo Milk', price: 80, mrp: 90, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1550583722-45984c6c6588?w=400&h=300&fit=crop', badge: 'Premium', size: '1 Litre', brand: 'Mother Dairy', description: 'Premium buffalo milk with higher fat content.', features: ['High Fat Content', 'Creamy Texture', 'Rich Taste'], specifications: { type: 'Buffalo Milk', fat: '6.0%', shelfLife: '5 days' }, returnPolicy: 'No returns. Contact shopkeeper for any issues.' },
@@ -2694,7 +2694,34 @@ const PRODUCTS = [
             renderAddresses();
             setupSorting();
         }
+// Firebase se products load karo
+function loadProductsFromFirebase() {
+    if (db) {
+        db.collection('products').onSnapshot((snapshot) => {
+            PRODUCTS = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                PRODUCTS.push({ 
+                    id: doc.id, 
+                    name: data.name,
+                    price: data.price,
+                    mrp: data.mrp,
+                    category: data.category,
+                    shop: 'freshmart',
+                    image: data.image,
+                    stock: data.stock,
+                    description: data.description
+                });
+            });
+            renderProducts(PRODUCTS);
+            showToast('Products loaded from Firebase!');
+        });
+    }
+}
 
+// Yeh line ADD karo - app start hone par call hoga
+loadProductsFromFirebase();
+        
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
