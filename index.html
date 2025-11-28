@@ -3139,14 +3139,36 @@ function closeAddAddressModal() {
 }
 
 function saveNewAddress() {
-    const name = document.getElementById('addressName').value;
-    const phone = document.getElementById('addressPhone').value;
-    const pincode = document.getElementById('addressPincode').value;
-    const address = document.getElementById('addressLine1').value;
-    const city = document.getElementById('addressCity').value;
+    const name = document.getElementById('addressName').value.trim();
+    const phone = document.getElementById('addressPhone').value.trim();
+    const pincode = document.getElementById('addressPincode').value.trim();
+    const address = document.getElementById('addressLine1').value.trim();
+    const city = document.getElementById('addressCity').value.trim();
     
-    if (!name || !phone || !pincode || !address || !city) {
-        showToast("Please fill all required fields", 'error');
+    console.log("Form values:", { name, phone, pincode, address, city }); // Debug
+    
+    if (!name || name === "") {
+        showToast("Please enter full name", 'error');
+        return;
+    }
+    
+    if (!phone || phone === "" || phone.length < 10) {
+        showToast("Please enter valid phone number", 'error');
+        return;
+    }
+    
+    if (!pincode || pincode === "" || pincode.length < 6) {
+        showToast("Please enter valid pincode", 'error');
+        return;
+    }
+    
+    if (!address || address === "") {
+        showToast("Please enter address", 'error');
+        return;
+    }
+    
+    if (!city || city === "") {
+        showToast("Please enter city", 'error');
         return;
     }
     
