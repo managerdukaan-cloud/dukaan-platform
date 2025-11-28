@@ -3044,77 +3044,118 @@ function logout() {
 
         // ★★★ LOGOUT FUNCTION ADDED ★★★
 
-// ★★★ ADD SAVED ADDRESSES FUNCTIONS HERE ★★★
+// ★★★ SAVED ADDRESSES FUNCTIONS ★★★
 function savedAddresses() {
-    showConfirmationModal(
-        'Saved Addresses',
-        `
-        <div class="addresses-list">
-            <div class="text-center py-4">
-                <i class="fas fa-map-marker-alt" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
-                <h4 style="color: var(--text-light);">No Saved Addresses</h4>
-                <p style="color: var(--text-light);">You haven't saved any addresses yet</p>
-                <button class="btn-primary mt-2" onclick="addNewAddress()">
-                    <i class="fas fa-plus"></i> Add New Address
-                </button>
+    const modalHTML = `
+    <div class="modal-overlay active" id="savedAddressesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Saved Addresses</h3>
+                <button class="modal-close" onclick="closeSavedAddressesModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="addresses-list">
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
+                        <h4 style="color: var(--text-light);">No Saved Addresses</h4>
+                        <p style="color: var(--text-light);">You haven't saved any addresses yet</p>
+                        <button class="btn-primary mt-2" onclick="addNewAddress()">
+                            <i class="fas fa-plus"></i> Add New Address
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeSavedAddressesModal()">Close</button>
             </div>
         </div>
-        `,
-        null,
-        'Close'
-    );
+    </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeSavedAddressesModal() {
+    const modal = document.getElementById('savedAddressesModal');
+    if (modal) modal.remove();
 }
 
 function addNewAddress() {
-    showConfirmationModal(
-        'Add New Address',
-        `
-        <div class="form-group">
-            <label class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="addressName" placeholder="Enter full name">
+    // Close any existing modals first
+    closeSavedAddressesModal();
+    
+    const modalHTML = `
+    <div class="modal-overlay active" id="addAddressModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Address</h3>
+                <button class="modal-close" onclick="closeAddAddressModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="addressName" placeholder="Enter full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pincode</label>
+                    <input type="text" class="form-control" id="addressPincode" placeholder="Enter pincode">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <textarea class="form-control" id="addressLine1" placeholder="House no., Building, Street" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Landmark (Optional)</label>
+                    <input type="text" class="form-control" id="addressLandmark" placeholder="Nearby landmark">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input type="text" class="form-control" id="addressCity" placeholder="Enter city">
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="defaultAddress">
+                    <label class="form-check-label" for="defaultAddress">Set as default address</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeAddAddressModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveNewAddress()">Save Address</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label class="form-label">Phone Number</label>
-            <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Pincode</label>
-            <input type="text" class="form-control" id="addressPincode" placeholder="Enter pincode">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Address</label>
-            <textarea class="form-control" id="addressLine1" placeholder="House no., Building, Street" rows="2"></textarea>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Landmark (Optional)</label>
-            <input type="text" class="form-control" id="addressLandmark" placeholder="Nearby landmark">
-        </div>
-        <div class="form-group">
-            <label class="form-label">City</label>
-            <input type="text" class="form-control" id="addressCity" placeholder="Enter city">
-        </div>
-        <div class="form-group form-check">
-            <input type="checkbox" class="form-check-input" id="defaultAddress">
-            <label class="form-check-label" for="defaultAddress">Set as default address</label>
-        </div>
-        `,
-        () => {
-            const name = document.getElementById('addressName').value;
-            const phone = document.getElementById('addressPhone').value;
-            const pincode = document.getElementById('addressPincode').value;
-            const address = document.getElementById('addressLine1').value;
-            const city = document.getElementById('addressCity').value;
-            
-            if (!name || !phone || !pincode || !address || !city) {
-                showToast("Please fill all required fields", 'error');
-                return;
-            }
-            
-            showToast("Address saved successfully!", 'success');
-            closeModal();
-        },
-        'Save Address'
-    );
+    </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeAddAddressModal() {
+    const modal = document.getElementById('addAddressModal');
+    if (modal) modal.remove();
+}
+
+function saveNewAddress() {
+    const name = document.getElementById('addressName').value;
+    const phone = document.getElementById('addressPhone').value;
+    const pincode = document.getElementById('addressPincode').value;
+    const address = document.getElementById('addressLine1').value;
+    const city = document.getElementById('addressCity').value;
+    
+    if (!name || !phone || !pincode || !address || !city) {
+        showToast("Please fill all required fields", 'error');
+        return;
+    }
+    
+    showToast("Address saved successfully!", 'success');
+    closeAddAddressModal();
+    
+    // Reopen saved addresses to show the new address
+    setTimeout(() => {
+        savedAddresses();
+    }, 1000);
 }
 // ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
 
