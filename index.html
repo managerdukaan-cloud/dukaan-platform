@@ -4984,36 +4984,55 @@ Track your order: ${window.location.href}
             });
         }
 
-        function editPersonalDetails() {
+        function editProfile() {
     const user = firebase.auth().currentUser;
     const currentName = user.displayName || "";
+    const currentEmail = user.email || "";
     
-    // Create a simple form for editing details
-    const newName = prompt("Enter your full name:", currentName);
-    
-    if (newName === null) return; // User cancelled
-    
-    if (newName.trim() === "") {
-        showToast("Name cannot be empty", 'error');
-        return;
-    }
-    
-    // Update profile in Firebase
-    user.updateProfile({
-        displayName: newName.trim()
-    }).then(() => {
-        showToast("Personal details updated successfully!", 'success');
-        
-        // Update UI wherever user name is displayed
-        const userNameElements = document.querySelectorAll('.user-name, #userName, .profile-name');
-        userNameElements.forEach(element => {
-            element.textContent = newName.trim();
-        });
-        
-    }).catch(error => {
-        console.error("Profile update error:", error);
-        showToast("Error updating details: " + error.message, 'error');
-    });
+    showConfirmationModal(
+        'Edit Profile',
+        `
+        <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="editUserName" value="${currentName}" placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="editUserEmail" value="${currentEmail}" readonly style="background: #f8f9fa;">
+            <small class="text-muted">Email cannot be changed</small>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" class="form-control" id="editUserPhone" placeholder="Enter phone number">
+        </div>
+        `,
+        () => {
+            const newName = document.getElementById('editUserName').value.trim();
+            
+            if (!newName) {
+                showToast("Name cannot be empty", 'error');
+                return;
+            }
+            
+            user.updateProfile({
+                displayName: newName
+            }).then(() => {
+                showToast("Profile updated successfully!", 'success');
+                
+                // Update UI
+                const userNameElements = document.querySelectorAll('.user-name, #userName');
+                userNameElements.forEach(element => {
+                    element.textContent = newName;
+                });
+                
+                closeModal();
+            }).catch(error => {
+                console.error("Profile update error:", error);
+                showToast("Error updating profile: " + error.message, 'error');
+            });
+        },
+        'Save Changes'
+    );
 }
         function changeProfilePicture() {
             document.getElementById('avatarUpload').click();
