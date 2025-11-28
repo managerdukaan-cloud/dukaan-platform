@@ -5008,7 +5008,7 @@ Track your order: ${window.location.href}
                 
                 // Re-authenticate user first
                 const credential = firebase.auth.EmailAuthProvider.credential(email, currentPassword);
-                await user.reauthenticateWithCredential(credential();
+                await user.reauthenticateWithCredential(credential);
                 
                 // Now update password
                 await user.updatePassword(newPassword);
@@ -5025,11 +5025,20 @@ Track your order: ${window.location.href}
                     showToast("Session expired. Please sign in again", 'error');
                 } else {
                     showToast("Error: " + error.message, 'error');
+                }
             }
         },
         'Update Password',
         true
     );
+}
+
+function showLoginHistory() {
+    document.getElementById('loginHistorySection').style.display = 'block';
+    // Scroll to login history section
+    setTimeout(() => {
+        document.getElementById('loginHistorySection').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
 }
 
         function showLoginHistory() {
