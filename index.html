@@ -3139,35 +3139,42 @@ function closeAddAddressModal() {
 }
 
 function saveNewAddress() {
-    const name = document.getElementById('addressName').value.trim();
-    const phone = document.getElementById('addressPhone').value.trim();
-    const pincode = document.getElementById('addressPincode').value.trim();
-    const address = document.getElementById('addressLine1').value.trim();
-    const city = document.getElementById('addressCity').value.trim();
+    const name = document.getElementById('addressName').value;
+    const phone = document.getElementById('addressPhone').value;
+    const pincode = document.getElementById('addressPincode').value;
+    const address = document.getElementById('addressLine1').value;
+    const city = document.getElementById('addressCity').value;
     
-    console.log("Form values:", { name, phone, pincode, address, city }); // Debug
+    // DEBUG: Show all values in alert
+    alert(`DEBUG VALUES:\nName: "${name}"\nPhone: "${phone}"\nPincode: "${pincode}"\nAddress: "${address}"\nCity: "${city}"`);
     
-    if (!name || name === "") {
+    // Check each field individually
+    if (!name || name.trim() === "") {
+        alert("Name is empty");
         showToast("Please enter full name", 'error');
         return;
     }
     
-    if (!phone || phone === "" || phone.length < 10) {
-        showToast("Please enter valid phone number", 'error');
+    if (!phone || phone.trim() === "") {
+        alert("Phone is empty");
+        showToast("Please enter phone number", 'error');
         return;
     }
     
-    if (!pincode || pincode === "" || pincode.length < 6) {
-        showToast("Please enter valid pincode", 'error');
+    if (!pincode || pincode.trim() === "") {
+        alert("Pincode is empty");
+        showToast("Please enter pincode", 'error');
         return;
     }
     
-    if (!address || address === "") {
+    if (!address || address.trim() === "") {
+        alert("Address is empty");
         showToast("Please enter address", 'error');
         return;
     }
     
-    if (!city || city === "") {
+    if (!city || city.trim() === "") {
+        alert("City is empty");
         showToast("Please enter city", 'error');
         return;
     }
@@ -3180,6 +3187,7 @@ function saveNewAddress() {
         savedAddresses();
     }, 1000);
 }
+        
 // ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
 
 // Next functions will be here...
