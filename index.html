@@ -4954,83 +4954,103 @@ Track your order: ${window.location.href}
         }
 
         function changePassword() {
-    showConfirmationModal(
-        'Change Password',
-        `
-        <div class="form-group">
-            <label class="form-label">Current Password</label>
-            <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
+    // Create a custom modal for password change
+    const modalHTML = `
+    <div class="modal-overlay active" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Change Password</h3>
+                <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min. 6 characters)" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password" required>
+                </div>
+                <div class="alert alert-info">
+                    <small><i class="fas fa-info-circle"></i> You'll need to re-enter your current password for security</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closePasswordModal()">Cancel</button>
+                <button type="button" class="btn-primary" onclick="processPasswordChange()">Update Password</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label class="form-label">New Password</label>
-            <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min. 6 characters)" required>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Confirm New Password</label>
-            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password" required>
-        </div>
-        <div class="alert alert-info">
-            <small><i class="fas fa-info-circle"></i> You'll need to re-enter your current password for security</small>
-        </div>
-        `,
-        async () => {
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            // Validation
-            if (!currentPassword) {
-                showToast("Please enter your current password", 'error');
-                return;
-            }
-            
-            if (!newPassword || newPassword.length < 6) {
-                showToast("New password must be at least 6 characters", 'error');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                showToast("New passwords don't match", 'error');
-                return;
-            }
-            
-            if (currentPassword === newPassword) {
-                showToast("New password cannot be same as current password", 'error');
-                return;
-            }
-            
-            const user = firebase.auth().currentUser;
-            const email = user.email;
-            
-            try {
-                // Show loading
-                showToast("Verifying your current password...", 'info');
-                
-                // Re-authenticate user first
-                const credential = firebase.auth.EmailAuthProvider.credential(email, currentPassword);
-                await user.reauthenticateWithCredential(credential);
-                
-                // Now update password
-                await user.updatePassword(newPassword);
-                
-                showToast("Password updated successfully!", 'success');
-                closeModal();
-                
-            } catch (error) {
-                console.error("Password change error:", error);
-                
-                if (error.code === 'auth/wrong-password') {
-                    showToast("Current password is incorrect", 'error');
-                } else if (error.code === 'auth/requires-recent-login') {
-                    showToast("Session expired. Please sign in again", 'error');
-                } else {
-                    showToast("Error: " + error.message, 'error');
-                }
-            }
-        },
-        'Update Password',
-        true
-    );
+    </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closePasswordModal() {
+    const modal = document.getElementById('passwordModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function processPasswordChange() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    // Validation
+    if (!currentPassword) {
+        showToast("Please enter your current password", 'error');
+        return;
+    }
+    
+    if (!newPassword || newPassword.length < 6) {
+        showToast("New password must be at least 6 characters", 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showToast("New passwords don't match", 'error');
+        return;
+    }
+    
+    if (currentPassword === newPassword) {
+        showToast("New password cannot be same as current password", 'error');
+        return;
+    }
+    
+    const user = firebase.auth().currentUser;
+    const email = user.email;
+    
+    try {
+        showToast("Verifying your current password...", 'info');
+        
+        // Re-authenticate user first
+        const credential = firebase.auth.EmailAuthProvider.credential(email, currentPassword);
+        await user.reauthenticateWithCredential(credential);
+        
+        // Now update password
+        await user.updatePassword(newPassword);
+        
+        showToast("Password updated successfully!", 'success');
+        closePasswordModal();
+        
+    } catch (error) {
+        console.error("Password change error:", error);
+        
+        if (error.code === 'auth/wrong-password') {
+            showToast("Current password is incorrect", 'error');
+        } else if (error.code === 'auth/requires-recent-login') {
+            showToast("Session expired. Please sign in again", 'error');
+        } else {
+            showToast("Error: " + error.message, 'error');
+        }
+    }
 }
 
 function showLoginHistory() {
