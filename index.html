@@ -3083,44 +3083,50 @@ function closeAddAddressModal() {
 function saveNewAddress() {
     console.log("=== SAVE NEW ADDRESS CALLED ===");
     
-    // Wait a tiny bit to ensure DOM is ready
-    setTimeout(() => {
-        const nameEl = document.getElementById('addressName');
-        const phoneEl = document.getElementById('addressPhone');
-        const pincodeEl = document.getElementById('addressPincode');
-        const addressEl = document.getElementById('addressLine1');
-        const cityEl = document.getElementById('addressCity');
-        
-        console.log("Elements found:", {
-            name: nameEl?.value,
-            phone: phoneEl?.value,
-            pincode: pincodeEl?.value,
-            address: addressEl?.value,
-            city: cityEl?.value
-        });
-        
-        if (!nameEl || !phoneEl || !pincodeEl || !addressEl || !cityEl) {
-            console.log("❌ Some elements missing");
-            showToast("Form error. Please try again.", 'error');
-            return;
-        }
-        
-        const name = nameEl.value.trim();
-        const phone = phoneEl.value.trim();
-        const pincode = pincodeEl.value.trim();
-        const address = addressEl.value.trim();
-        const city = cityEl.value.trim();
-        
-        // SIMPLE VALIDATION - REMOVE ALL COMPLEX CHECKS
-        if (name && phone && pincode && address && city) {
-            console.log("✅ All fields filled");
-            showToast("Address saved successfully!", 'success');
-            closeAddAddressModal();
-        } else {
-            console.log("❌ Some fields empty");
-            showToast("Please fill all required fields", 'error');
-        }
-    }, 100);
+    const name = document.getElementById('addressName').value.trim();
+    const phone = document.getElementById('addressPhone').value.trim();
+    const pincode = document.getElementById('addressPincode').value.trim();
+    const address = document.getElementById('addressText').value.trim();
+    const city = document.getElementById('addressCity').value.trim();
+    const state = document.getElementById('addressState').value.trim();
+    const landmark = document.getElementById('addressLandmark').value.trim();
+    const type = document.getElementById('addressType').value;
+
+    // Validation
+    if (!name || !phone || !pincode || !address || !city || !state) {
+        alert('Please fill all required fields');
+        return;
+    }
+
+    if (!/^\d{10}$/.test(phone)) {
+        alert('Please enter a valid 10-digit phone number');
+        return;
+    }
+
+    if (!/^\d{6}$/.test(pincode)) {
+        alert('Please enter a valid 6-digit pincode');
+        return;
+    }
+
+    const newAddress = {
+        id: 'addr_' + Date.now(),
+        name: name,
+        phone: phone,
+        pincode: pincode,
+        address: address,
+        city: city,
+        state: state,
+        landmark: landmark,
+        type: type,
+        isDefault: addresses.length === 0
+    };
+
+    addresses.push(newAddress);
+    localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
+    
+    closeAddAddressModal();
+    renderAddresses();
+    showToast('Address saved successfully!');
 }
         
 // ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
