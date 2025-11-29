@@ -1715,11 +1715,15 @@
             <div class="search-icon"><i class="fas fa-search"></i></div>
             <div class="search-results" id="searchResults"></div>
         </div>
-        <div class="header-actions">
-            <button class="btn-logout" onclick="logout()" id="logoutBtn" style="display: none;">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
-        </div>
+        <!-- Customer App Navigation Links -->
+            <div class="nav-links">
+                <a href="#" class="nav-link active" data-page="home">Home</a>
+                <a href="#" class="nav-link" data-page="orders">My Orders</a>
+                <a href="#" class="nav-link" data-page="cart">Cart <span id="headerCartCount" class="cart-count">0</span></a>
+                <button class="btn btn-outline logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
     </div>
 </header>
 
@@ -2952,19 +2956,19 @@ loadProductsFromFirebase();
             showToast('Demo credentials filled! Click Sign In');
         }
 
-// ★★★ LOGOUT FUNCTION ★★★
+// Customer App mein logout function
 function logout() {
-    // Check if user is logged in with Firebase
     if (firebase.auth().currentUser) {
         firebase.auth().signOut().then(() => {
-            showToast("Logged out successfully!", 'success');
-            // Switch to auth screen
-            document.getElementById('appScreen').style.display = 'none';
-            document.getElementById('authScreen').style.display = 'block';
-            // Hide logout button
-            if (document.getElementById('logoutBtn')) {
-                document.getElementById('logoutBtn').style.display = 'none';
-            }
+            // Clear local data
+            localStorage.removeItem('dukaan_user_orders');
+            localStorage.removeItem('dukaan_cart');
+            
+            // Redirect to home or show login
+            window.location.reload();
+        });
+    }
+}
             // Reset forms
             document.getElementById('loginForm').reset();
             document.getElementById('signupForm').reset();
