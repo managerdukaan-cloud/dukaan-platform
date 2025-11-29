@@ -4533,6 +4533,11 @@ This action cannot be undone.`,
                     }
                 }
 
+                // Save order to local storage for history
+const userOrders = JSON.parse(localStorage.getItem('dukaan_user_orders') || '[]');
+userOrders.unshift(newOrder);
+localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
+
                 // Create main order in Firebase
                 const orderData = {
                     customerId: currentUser.uid,
