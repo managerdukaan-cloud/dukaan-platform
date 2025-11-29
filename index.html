@@ -3644,28 +3644,57 @@ function saveNewAddress() {
         }
 
         // Cart Functionality
-        function addToCart(productId) {
-            const product = PRODUCTS.find(p => p.id === productId);
-            if (!product) return;
-            
-            const existingItem = cart.find(item => item.id === productId);
-            
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    quantity: 1,
-                    shop: product.shop
-                });
+                // Cart Functionality - FIXED: Inventory sync
+        async function addToCart(productId) {
+            try {
+                // Check real-time stock from Firebase
+                const productDoc = await db.collection('products').doc(productId).get();
+                if (!productDoc.exists) {
+                    showToast('Product not available');
+                    return;
+                }
+                
+                const productData = productDoc.data();
+                const currentStock = productData.stock;
+                
+                if (currentStock === 0) {
+                    showToast('Sorry, this product is out of stock');
+                    return;
+                }
+                
+                const product = PRODUCTS.find(p => p.id === productId);
+                if (!product) return;
+                
+                const existingItem = cart.find(item => item.id === productId);
+                
+                if (existingItem) {
+                    // Check if adding more exceeds available stock
+                    if (existingItem.quantity + 1 > currentStock) {
+                        showToast(`Only ${currentStock} items available`);
+                        return;
+                    }
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image,
+                        quantity: 1,
+                        shop: product.shop,
+                        shopId: productData.shopId,
+                        shopName: productData.shopName
+                    });
+                }
+                
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
+                showToast('Product added to cart!');
+                
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                showToast('Error adding product to cart');
             }
-            
-            localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-            updateCartUI();
-            showToast('Product added to cart!');
         }
 
         function addToCartFromDetail() {
