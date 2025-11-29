@@ -2863,7 +2863,10 @@ loadProductsFromFirebase();
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 console.log('Login successful:', userCredential.user);
                 showToast('Welcome back to Dukaan!');
-                
+                                // FIXED: Update last login time for admin monitoring
+                await db.collection('users').doc(userCredential.user.uid).update({
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                });
                 // Show logout button after successful login
                 if (document.getElementById('logoutBtn')) {
                     document.getElementById('logoutBtn').style.display = 'block';
@@ -2903,7 +2906,7 @@ loadProductsFromFirebase();
             }
         }
 
-        async function handleSignup(event) {
+                async function handleSignup(event) {
             event.preventDefault();
             console.log('Signup function called');
             const name = document.getElementById('signupName').value;
@@ -2915,6 +2918,16 @@ loadProductsFromFirebase();
                 await userCredential.user.updateProfile({
                     displayName: name
                 });
+                
+                // FIXED: Save user profile to Firestore for admin monitoring
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    role: 'customer',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
                 console.log('Signup successful:', userCredential.user);
                 showToast('Account created successfully! Welcome to Dukaan!');
                 
