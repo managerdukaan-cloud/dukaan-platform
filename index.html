@@ -3073,8 +3073,6 @@ function closeAddAddressModal() {
 }
 
 function saveNewAddress() {
-    console.log("=== SAVE NEW ADDRESS CALLED ===");
-    
     const name = document.getElementById('addressName').value.trim();
     const phone = document.getElementById('addressPhone').value.trim();
     const pincode = document.getElementById('addressPincode').value.trim();
@@ -3084,19 +3082,8 @@ function saveNewAddress() {
     const landmark = document.getElementById('addressLandmark').value.trim();
     const type = document.getElementById('addressType').value;
 
-    // Validation
     if (!name || !phone || !pincode || !address || !city || !state) {
         alert('Please fill all required fields');
-        return;
-    }
-
-    if (!/^\d{10}$/.test(phone)) {
-        alert('Please enter a valid 10-digit phone number');
-        return;
-    }
-
-    if (!/^\d{6}$/.test(pincode)) {
-        alert('Please enter a valid 6-digit pincode');
         return;
     }
 
