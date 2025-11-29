@@ -4473,11 +4473,96 @@ ${selectedPaymentMethod === 'qr' ? `• UTR: ${utrNumber.value.trim()}` : ''}
 This action cannot be undone.`,
                 () => {
                     // User confirmed - proceed with actual order placement
-                    completeOrderPlacement(newOrder);
+                    completeOrderPlacementWithShopkeeper(newOrder);
                 }
             );
         }
 
+                // FIXED: Real order placement with shopkeeper integration
+        async function completeOrderPlacementWithShopkeeper(newOrder) {
+            try {
+                // First check stock availability for all items
+                for (const item of cart) {
+                    const productDoc = await db.collection('products').doc(item.id).get();
+                    const currentStock = productDoc.data().stock;
+                    if (currentStock < item.quantity) {
+                        showToast(`Sorry, ${item.name} is out of stock`);
+                        return;
+                    }
+                }
+
+                // Create main order in Firebase
+                const orderData = {
+                    customerId: currentUser.uid,
+                    customerEmail: currentUser.email,
+                    items: cart,
+                    total: newOrder.total,
+                    status: newOrder.status,
+                    address: newOrder.address,
+                    phone: newOrder.phone,
+                    paymentMethod: newOrder.paymentMethod,
+                    utrNumber: newOrder.paymentMethod === 'qr' ? utrNumber.value.trim() : null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    orderId: newOrder.id
+                };
+
+                const orderRef = await db.collection('orders').add(orderData);
+
+                // Create order items for shopkeepers
+                for (const item of cart) {
+                    // Create order item for shopkeeper
+                    await db.collection('orderItems').add({
+                        orderId: orderRef.id,
+                        productId: item.id,
+                        productName: item.name,
+                        shopId: item.shopId,
+                        shopName: item.shopName,
+                        quantity: item.quantity,
+                        price: item.price,
+                        status: 'pending',
+                        customerId: currentUser.uid,
+                        customerEmail: currentUser.email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // Update product stock
+                    await db.collection('products').doc(item.id).update({
+                        stock: firebase.firestore.FieldValue.increment(-item.quantity)
+                    });
+                }
+
+                // Save to local storage
+                orders.push(newOrder);
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                
+                // Clear cart
+                cart = [];
+                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+                updateCartUI();
+                
+                // Reset checkout state
+                appliedCoupon = null;
+                selectedAddress = null;
+                selectedPaymentMethod = null;
+                couponCodeInput.value = '';
+                couponMessage.textContent = '';
+                checkoutPhone.value = '';
+                utrNumber.value = '';
+                
+                closeBottomSheet();
+                showToast('🎉 Order placed successfully! Shopkeeper will process your order.');
+                
+                // Show order tracking
+                setTimeout(() => {
+                    showOrderTracking(newOrder.id);
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error placing order:', error);
+                showToast('Error placing order: ' + error.message);
+            }
+        }
+        
         // Separate function for actual order placement after confirmation
         function completeOrderPlacement(newOrder) {
             orders.push(newOrder);
