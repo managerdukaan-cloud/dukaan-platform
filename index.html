@@ -2956,19 +2956,10 @@ loadProductsFromFirebase();
             showToast('Demo credentials filled! Click Sign In');
         }
 
-// Customer App mein logout function
-function logout() {
-    if (firebase.auth().currentUser) {
-        firebase.auth().signOut().then(() => {
-            // Clear local data
-            localStorage.removeItem('dukaan_user_orders');
-            localStorage.removeItem('dukaan_cart');
-            
-            // Redirect to home or show login
-            window.location.reload();
-        });
-    }
-}
+// ★★★ LOGOUT FUNCTION ★★★
+function logoutUser() {
+    if (auth.currentUser) {
+        auth.signOut().then(() => {
             // Reset forms
             document.getElementById('loginForm').reset();
             document.getElementById('signupForm').reset();
@@ -2991,10 +2982,6 @@ function logout() {
         showToast("Logged out successfully!");
     }
 }
-        
-// ★★★ LOGOUT FUNCTION ADDED ★★★
-
-        // ★★★ LOGOUT FUNCTION ADDED ★★★
 
 // ★★★ SAVED ADDRESSES FUNCTIONS ★★★
 function savedAddresses() {
@@ -3029,13 +3016,16 @@ function savedAddresses() {
 
 function closeSavedAddressesModal() {
     const modal = document.getElementById('savedAddressesModal');
-    if (modal) modal.remove();
+    if (modal) {
+        modal.remove();
+    }
 }
 
 function addNewAddress() {
-    // Close ALL modals first
     closeSavedAddressesModal();
-    closeAddAddressModal();
+    // Open address form in checkout or show toast
+    showToast('Use the address form in checkout to add new addresses');
+}
     
     const modalHTML = `
     <div class="modal-overlay active" id="addAddressModal">
