@@ -2779,25 +2779,31 @@
 
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
-            auth.onAuthStateChanged((user) => {
-                console.log('Auth state changed:', user);
-                if (user) {
-                    currentUser = {
-                        uid: user.uid,
-                        email: user.email,
-                        name: user.displayName || user.email.split('@')[0]
-                    };
-                    showAppScreen();
-                    loadUserData();
-                    loadOrderHistory();
-                    updateCouponAuth();
-                    showToast('Welcome back to Dukaan!');
-                } else {
-                    currentUser = null;
-                    showAuthScreen();
-                }
-            });
+    auth.onAuthStateChanged((user) => {
+        console.log('Auth state changed:', user);
+        if (user) {
+            currentUser = {
+                uid: user.uid,
+                email: user.email,
+                name: user.displayName || user.email.split('@')[0]
+            };
+            showAppScreen();
+            loadUserData();
+            
+            // ✅ ADD DELAY - LET OTHER FUNCTIONS COMPLETE FIRST
+            setTimeout(() => {
+                console.log("🔄 Delayed loadOrderHistory call");
+                loadOrderHistory();
+            }, 1000);
+            
+            updateCouponAuth();
+            showToast('Welcome back to Dukaan!');
+        } else {
+            currentUser = null;
+            showAuthScreen();
         }
+    });
+}
 
         function setupDemoLogin() {
             // Auto-fill demo credentials
