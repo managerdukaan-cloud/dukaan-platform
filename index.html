@@ -2857,9 +2857,10 @@ async function loadOrderHistory() {
     
     try {
         console.log("🔄 Loading order history for:", currentUser.uid);
+        
+        // ✅ TEMPORARY FIX: REMOVE ORDERBY - NO INDEX NEEDED
         const snapshot = await db.collection('orders')
             .where('customerId', '==', currentUser.uid)
-            .orderBy('createdAt', 'desc')
             .get();
         
         orders = [];
@@ -2868,7 +2869,7 @@ async function loadOrderHistory() {
             
             // ✅ CONVERT FIREBASE DATA TO EXPECTED FORMAT
             const mappedOrder = {
-                id: firebaseOrder.orderId || doc.id, // Use orderId if exists, else document ID
+                id: firebaseOrder.orderId || doc.id,
                 date: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
                 items: firebaseOrder.items || [],
                 address: firebaseOrder.address || {},
@@ -2889,7 +2890,10 @@ async function loadOrderHistory() {
             orders.push(mappedOrder);
         });
         
-        console.log("✅ Mapped orders:", orders);
+        // ✅ MANUAL SORTING (NO INDEX NEEDED)
+        orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        console.log("✅ Mapped orders:", orders.length);
         
         // Also save to local storage for offline access
         localStorage.setItem('dukaan_orders', JSON.stringify(orders));
