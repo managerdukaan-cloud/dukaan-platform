@@ -4870,7 +4870,6 @@ This action cannot be undone.`,
             
             // Start real-time tracking simulation for active orders
             if (order.status !== 'delivered' && order.status !== 'cancelled') {
-                startOrderTrackingSimulation(order);
                 updateETACountdown(order);
             }
             
