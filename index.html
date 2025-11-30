@@ -2795,7 +2795,7 @@
                 console.log("🔄 Delayed loadOrderHistory call");
                 loadOrderHistory();
             }, 1000);
-            
+            setupOrderRealTimeListener();
             updateCouponAuth();
             showToast('Welcome back to Dukaan!');
         } else {
@@ -2920,6 +2920,55 @@ async function loadOrderHistory() {
             }
         }
     }
+}
+
+        // ✅ REAL-TIME ORDER UPDATES LISTENER
+function setupOrderRealTimeListener() {
+    if (!currentUser) return;
+    
+    console.log("🔔 Setting up real-time order listener for:", currentUser.uid);
+    
+    db.collection('orders')
+        .where('customerId', '==', currentUser.uid)
+        .onSnapshot((snapshot) => {
+            console.log("🔄 Real-time order update received");
+            
+            orders = [];
+            snapshot.forEach(doc => {
+                const firebaseOrder = doc.data();
+                const mappedOrder = {
+                    id: firebaseOrder.orderId || doc.id,
+                    date: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
+                    items: firebaseOrder.items || [],
+                    address: firebaseOrder.address || {},
+                    phone: firebaseOrder.phone || '',
+                    paymentMethod: firebaseOrder.paymentMethod || 'cod',
+                    status: firebaseOrder.status || 'confirmed',
+                    total: firebaseOrder.total || 0,
+                    tracking: firebaseOrder.tracking || {
+                        confirmed: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
+                        preparing: null,
+                        dispatched: null,
+                        delivered: null
+                    }
+                };
+                orders.push(mappedOrder);
+            });
+            
+            // Manual sorting
+            orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Save to local storage
+            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+            
+            // Update UI
+            if (typeof renderOrders === 'function') {
+                renderOrders();
+                console.log("✅ Orders updated in real-time");
+            }
+        }, (error) => {
+            console.error("❌ Real-time listener error:", error);
+        });
 }
 
         // Auth Functions - FIXED
