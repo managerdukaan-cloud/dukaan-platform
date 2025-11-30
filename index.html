@@ -3026,10 +3026,23 @@ async function handleSignup(event) {
             showToast('Demo credentials filled! Click Sign In');
         }
 
-// ★★★ LOGOUT FUNCTION ★★★
-function logoutUser() {
-    if (auth.currentUser) {
-        auth.signOut().then(() => {
+        function demoLogin() {
+            document.getElementById('loginEmail').value = 'demo@dukaan.com';
+            document.getElementById('loginPassword').value = 'demo123';
+            showToast('Demo credentials filled! Click Sign In');
+        }
+
+// ★★★ ADD LOGOUT FUNCTION HERE ★★★
+function logout() {
+    console.log("Logout function called");
+    
+    // Check if user is logged in with Firebase
+    if (firebase.auth().currentUser) {
+        firebase.auth().signOut().then(() => {
+            showToast("Logged out successfully!", 'success');
+            // Switch to auth screen
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'block';
             // Reset forms
             document.getElementById('loginForm').reset();
             document.getElementById('signupForm').reset();
@@ -3046,12 +3059,10 @@ function logoutUser() {
         // Fallback for any logged in state
         document.getElementById('appScreen').style.display = 'none';
         document.getElementById('authScreen').style.display = 'block';
-        if (document.getElementById('logoutBtn')) {
-            document.getElementById('logoutBtn').style.display = 'none';
-        }
         showToast("Logged out successfully!");
     }
 }
+// ★★★ LOGOUT FUNCTION ADDED ★★★
 
 // ★★★ SAVED ADDRESSES FUNCTIONS ★★★
 function savedAddresses() {
