@@ -5851,7 +5851,6 @@ function copyToClipboard(text) {
     showToast('Link copied to clipboard! 📋');
 }
 
-// ✅ ADD MISSING FUNCTION CLOSING BRACES
 function initApp() {
     setupFirebaseAuth();
     loadCart();
@@ -5863,7 +5862,7 @@ function initApp() {
     setupCoupons();
     setupNotifications();
     setupRealTimeListeners();
-}
+} // ✅ YEH CLOSING BRACE ADD KARO
 
 document.addEventListener('DOMContentLoaded', initApp);
 </script>
