@@ -3064,6 +3064,35 @@ function logout() {
 }
 // ★★★ LOGOUT FUNCTION ADDED ★★★
 
+ // ★★★ ADD MISSING MODAL FUNCTIONS ★★★
+
+// Close Login Modal
+function closeLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close Any Modal
+function closeModal() {
+    // Close all modals
+    const modals = document.querySelectorAll('.modal-overlay.active, [class*="modal"].active');
+    modals.forEach(modal => {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    });
+}
+
+// Show Modal
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+    }
+}       
+
 // ★★★ SAVED ADDRESSES FUNCTIONS ★★★
 function savedAddresses() {
     const modalHTML = `
