@@ -2856,7 +2856,7 @@ async function loadOrderHistory() {
     if (!currentUser) return;
     
     try {
-        console.log("🔄 Loading order history...");
+        console.log("🔄 Loading order history for:", currentUser.uid);
         const snapshot = await db.collection('orders')
             .where('customerId', '==', currentUser.uid)
             .orderBy('createdAt', 'desc')
@@ -2864,14 +2864,40 @@ async function loadOrderHistory() {
         
         orders = [];
         snapshot.forEach(doc => {
-            orders.push({ id: doc.id, ...doc.data() });
+            const firebaseOrder = doc.data();
+            
+            // ✅ CONVERT FIREBASE DATA TO EXPECTED FORMAT
+            const mappedOrder = {
+                id: firebaseOrder.orderId || doc.id, // Use orderId if exists, else document ID
+                date: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
+                items: firebaseOrder.items || [],
+                address: firebaseOrder.address || {},
+                phone: firebaseOrder.phone || '',
+                paymentMethod: firebaseOrder.paymentMethod || 'cod',
+                status: firebaseOrder.status || 'confirmed',
+                subtotal: firebaseOrder.subtotal || firebaseOrder.total || 0,
+                discount: firebaseOrder.discount || 0,
+                total: firebaseOrder.total || 0,
+                tracking: firebaseOrder.tracking || {
+                    confirmed: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
+                    preparing: null,
+                    dispatched: null,
+                    delivered: null
+                }
+            };
+            
+            orders.push(mappedOrder);
         });
+        
+        console.log("✅ Mapped orders:", orders);
         
         // Also save to local storage for offline access
         localStorage.setItem('dukaan_orders', JSON.stringify(orders));
         
-        renderOrders();
-        console.log("✅ Order history loaded:", orders.length, "orders");
+        // ✅ FORCE RENDER ORDERS
+        if (typeof renderOrders === 'function') {
+            renderOrders();
+        }
         
     } catch (error) {
         console.error('Error loading order history:', error);
@@ -2879,7 +2905,9 @@ async function loadOrderHistory() {
         const savedOrders = localStorage.getItem('dukaan_orders');
         if (savedOrders) {
             orders = JSON.parse(savedOrders);
-            renderOrders();
+            if (typeof renderOrders === 'function') {
+                renderOrders();
+            }
         }
     }
 }
