@@ -2865,32 +2865,41 @@
         }
 
         async function handleLogin(event) {
-            event.preventDefault();
-            console.log('Login function called');
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+    event.preventDefault();
+    
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
 
-            try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                console.log('Login successful:', userCredential.user);
-                showToast('Welcome back to Dukaan!');
-                // FIXED: Update last login time for admin monitoring
-                await db.collection('users').doc(userCredential.user.uid).update({
-                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                // Show logout button after successful login
-                if (document.getElementById('logoutBtn')) {
-                    document.getElementById('logoutBtn').style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                if (error.code === 'auth/invalid-login-credentials') {
-                    showToast('Account not found. Please sign up first.');
-                } else {
-                    showToast('Login failed: ' + error.message);
-                }
-            }
+    try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // ✅ AUTO-CREATE USER DOCUMENT IF NOT EXISTS
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) {
+            await db.collection('users').doc(user.uid).set({
+                email: user.email,
+                name: user.displayName || user.email.split('@')[0],
+                role: 'customer',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            console.log("✅ New user document created");
+        } else {
+            // Update last login time
+            await db.collection('users').doc(user.uid).update({
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
         }
+        
+        showToast('Welcome back to Dukaan!');
+        closeLoginModal();
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showToast('Login failed: ' + error.message);
+    }
+}
 
         // Forgot Password System
                function showForgotPassword() {
