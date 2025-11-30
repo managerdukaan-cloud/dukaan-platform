@@ -2889,6 +2889,22 @@
             }
         }
 
+        // Forgot Password System
+               function showForgotPassword() {
+               const email = prompt('Enter your email address to reset password:');
+               if (email && email.includes('@')) {
+        auth.sendPasswordResetEmail(email)
+            .then(() => {
+                alert('Password reset email sent! Check your inbox.');
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+    } else if (email) {
+        alert('Please enter a valid email address.');
+    }
+}
+
         // ✅ FIXED SIGNUP FUNCTION
         async function handleSignup(event) {
             event.preventDefault();
