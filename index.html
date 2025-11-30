@@ -5851,8 +5851,22 @@ function copyToClipboard(text) {
     showToast('Link copied to clipboard! 📋');
 }
 
-        // Initialize the app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', initApp);
+// ✅ ADD MISSING FUNCTION CLOSING BRACES
+function initApp() {
+    setupFirebaseAuth();
+    loadCart();
+    loadProductsFromFirebase();
+    updateCartUI();
+    setupNavigation();
+    setupSearch();
+    setupFilters();
+    setupCoupons();
+    setupNotifications();
+    setupRealTimeListeners();
+} // ✅ YEH CLOSING BRACE ADD KARO
+
+// ✅ YEH LINE PEHLE SE HAI - CHANGE MAT KARO
+document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
