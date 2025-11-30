@@ -2861,6 +2861,7 @@ loadProductsFromFirebase();
                     };
                     showAppScreen();
                     loadUserData();
+                    loadOrderHistory(); // ✅ YEH NAYI LINE ADD KARO
                     updateCouponAuth();
                     showToast('Welcome back to Dukaan!');
                 } else {
@@ -2921,6 +2922,25 @@ loadProductsFromFirebase();
                 console.error('Error loading user data:', error);
             }
         }
+
+        auth.onAuthStateChanged((user) => {
+    console.log('Auth state changed:', user);
+    if (user) {
+        currentUser = {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || user.email.split('@')[0]
+        };
+        showAppScreen();
+        loadUserData();
+        loadOrderHistory(); // ✅ YEH LINE ADD KARO
+        updateCouponAuth();
+        showToast('Welcome back to Dukaan!');
+    } else {
+        currentUser = null;
+        showAuthScreen();
+    }
+});
 
         // Auth Functions - FIXED
         function showAuthScreen() {
