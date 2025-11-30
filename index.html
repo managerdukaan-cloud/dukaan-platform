@@ -525,7 +525,7 @@
             margin-bottom: 15px;
             color: var(--border);
         }
-                /* User Profile Styles - PHASE 1 */
+        /* User Profile Styles */
         .profile-page { display: none; }
         .profile-header { 
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
@@ -608,7 +608,7 @@
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            justify-content: between;
+            justify-content: space-between;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -733,7 +733,7 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
-                /* Enhanced Search Styles - PHASE 2 */
+        /* Enhanced Search Styles */
         .search-overlay {
             position: fixed;
             top: 0;
@@ -794,7 +794,7 @@
             color: var(--text-dark);
             display: flex;
             align-items: center;
-            justify-content: between;
+            justify-content: space-between;
         }
         .clear-recent {
             background: none;
@@ -941,7 +941,7 @@
             gap: 10px;
             margin-top: 20px;
         }
-                /* Sorting Styles - PHASE 2.1 */
+        /* Sorting Styles */
         .sorting-options {
             display: flex;
             gap: 10px;
@@ -999,737 +999,669 @@
             border-color: var(--accent);
         }
         /* ORDER ENHANCEMENTS CSS */
-.order-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.order-actions button {
-    font-size: 12px;
-    padding: 6px 12px;
-}
-
-.delivery-agent-info {
-    border-left: 4px solid var(--accent);
-}
-
-.eta-section {
-    border-left: 4px solid var(--success);
-}
-
-.order-tracking-details p {
-    margin-bottom: 8px;
-}
-/* Notifications Page */
-.notifications-page { display: none; }
-.notification-item { 
-    padding: 15px; 
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 12px;
-}
-.notification-unread { background: rgba(58, 142, 246, 0.05); }
-            .quantity-cart-container {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    width: 100%;
-}
-
-.btn-add-cart-detail {
-    flex: 1;
-    min-width: 200px;
-}
-
-.product-detail-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-            /* HIDE ALL BADGES IN HAMBURGER MENU */
-#hamburgerMenu .nav-badge {
-    display: none !important;
-}
-            .quantity-cart-container {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex: 1;
-}
-
-.btn-quantity {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: var(--neutral);
-    padding: 10px 15px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-}
-
-.product-detail-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    width: 100%;
-}
-
-.btn-add-cart-detail {
-    flex: 1;
-    min-width: 160px;
-}
-            /* FINAL FIX - QUANTITY & CART LAYOUT */
-.quantity-cart-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-}
-
-.btn-quantity {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--neutral);
-    padding: 10px 15px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-}
-
-.btn-add-cart-detail {
-    flex: 1;
-}
-
-.product-detail-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-/* HIDE ALL BADGES IN HAMBURGER MENU */
-#hamburgerMenu .nav-badge {
-    display: none !important;
-}
-            /* Bottom nav badge proper position fix */
-.bottom-nav .nav-item {
-    position: relative;
-}
-
-.bottom-nav .nav-badge {
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    right: auto;
-    transform: translateX(4px);
-    background: var(--accent);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 700;
-    min-width: 18px;
-    text-align: center;
-}
-            /* FINAL QUANTITY FIX */
-.product-detail-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.quantity-cart-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex: 1;
-}
-            #hamburgerWishlistCount {
-    display: none !important;
-}
-            /* DEBUG - COLOR CODE BADGES */
-#bottomCartCount { background: red !important; }
-#hamburgerWishlistCount { background: blue !important; }
-
-            /* HIDE WISHLIST BADGE IN HAMBURGER MENU */
-#hamburgerWishlistCount {
-    display: none !important;
-}
-/* HIDE ALL BADGES IN HAMBURGER MENU */
-#hamburgerMenu .nav-badge {
-    display: none !important;
-}
-            /* FIX QUANTITY LAYOUT */
-.quantity-cart-container {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 15px !important;
-    width: 100% !important;
-}
-
-.btn-quantity {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 10px !important;
-    white-space: nowrap !important;
-}
-            /* REMOVE BADGE FROM HAMBURGER MENU ITEMS */
-#hamburgerMenu .nav-badge,
-.nav-item[onclick*="openHamburgerMenu"] .nav-badge {
-    display: none !important;
-}
-
-/* KEEP BADGES FOR OTHER NAV ITEMS */
-.nav-item[data-page] .nav-badge {
-    display: block; /* This keeps badges for Home, Orders, Account, Cart */
-}
+        .order-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .order-actions button {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+        .delivery-agent-info {
+            border-left: 4px solid var(--accent);
+        }
+        .eta-section {
+            border-left: 4px solid var(--success);
+        }
+        .order-tracking-details p {
+            margin-bottom: 8px;
+        }
+        /* Notifications Page */
+        .notifications-page { display: none; }
+        .notification-item { 
+            padding: 15px; 
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+        .notification-unread { background: rgba(58, 142, 246, 0.05); }
+        .quantity-cart-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+        }
+        .btn-add-cart-detail {
+            flex: 1;
+            min-width: 200px;
+        }
+        .product-detail-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        /* HIDE ALL BADGES IN HAMBURGER MENU */
+        #hamburgerMenu .nav-badge {
+            display: none !important;
+        }
+        .quantity-cart-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex: 1;
+        }
+        .btn-quantity {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--neutral);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .product-detail-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+        }
+        .btn-add-cart-detail {
+            flex: 1;
+            min-width: 160px;
+        }
+        /* FINAL FIX - QUANTITY & CART LAYOUT */
+        .quantity-cart-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        .btn-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--neutral);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .btn-add-cart-detail {
+            flex: 1;
+        }
+        .product-detail-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        /* HIDE ALL BADGES IN HAMBURGER MENU */
+        #hamburgerMenu .nav-badge {
+            display: none !important;
+        }
+        /* Bottom nav badge proper position fix */
+        .bottom-nav .nav-item {
+            position: relative;
+        }
+        .bottom-nav .nav-badge {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            right: auto;
+            transform: translateX(4px);
+            background: var(--accent);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            text-align: center;
+        }
+        /* FINAL QUANTITY FIX */
+        .product-detail-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .quantity-cart-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        #hamburgerWishlistCount {
+            display: none !important;
+        }
+        /* DEBUG - COLOR CODE BADGES */
+        #bottomCartCount { background: red !important; }
+        #hamburgerWishlistCount { background: blue !important; }
+        /* HIDE WISHLIST BADGE IN HAMBURGER MENU */
+        #hamburgerWishlistCount {
+            display: none !important;
+        }
+        /* HIDE ALL BADGES IN HAMBURGER MENU */
+        #hamburgerMenu .nav-badge {
+            display: none !important;
+        }
+        /* FIX QUANTITY LAYOUT */
+        .quantity-cart-container {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 15px !important;
+            width: 100% !important;
+        }
+        .btn-quantity {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 10px !important;
+            white-space: nowrap !important;
+        }
+        /* REMOVE BADGE FROM HAMBURGER MENU ITEMS */
+        #hamburgerMenu .nav-badge,
+        .nav-item[onclick*="openHamburgerMenu"] .nav-badge {
+            display: none !important;
+        }
+        /* KEEP BADGES FOR OTHER NAV ITEMS */
+        .nav-item[data-page] .nav-badge {
+            display: block; /* This keeps badges for Home, Orders, Account, Cart */
+        }
         .delivery-options {
-    margin: 10px 0;
-}
-
-.delivery-option {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px;
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.delivery-option.selected {
-    border-color: var(--accent);
-    background: rgba(58, 142, 246, 0.05);
-}
-
-.delivery-option:hover {
-    border-color: var(--accent);
-}
-
-/* SOCIAL SHARE STYLES */
-.btn-outline:hover {
-    background: var(--accent);
-    color: white;
-}
-
-.share-options-modal {
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: var(--shadow-lg);
-    max-width: 300px;
-    margin: 20px auto;
-}
-
-.share-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.btn-share {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-share.whatsapp {
-    background: #25D366;
-    color: white;
-}
-
-.btn-share.copy {
-    background: var(--accent);
-    color: white;
-}
-
+            margin: 10px 0;
+        }
+        .delivery-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .delivery-option.selected {
+            border-color: var(--accent);
+            background: rgba(58, 142, 246, 0.05);
+        }
+        .delivery-option:hover {
+            border-color: var(--accent);
+        }
+        /* SOCIAL SHARE STYLES */
+        .btn-outline:hover {
+            background: var(--accent);
+            color: white;
+        }
+        .share-options-modal {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-share {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-share.whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        .btn-share.copy {
+            background: var(--accent);
+            color: white;
+        }
         /* Modal Overlay - Fixed Position */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal-overlay.active {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-    position: relative;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border);
-}
-
-.modal-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-dark);
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: var(--text-light);
-    cursor: pointer;
-}
-
-.modal-body {
-    margin-bottom: 20px;
-}
-
-.modal-footer {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-}
-        
-/* 🎯 MOBILE LAYOUT FIXES - REPLACE FROM HERE */
-@media (max-width: 768px) {
-    /* Better product grid - 2 products with proper spacing */
-    .product-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-        padding: 0 8px !important;
-    }
-    
-    /* Better product card proportions */
-    .product-card {
-        padding: 12px !important;
-        border-radius: 12px !important;
-        min-height: 280px !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-    
-    /* Optimized product image */
-    .product-image {
-        height: 120px !important;
-        border-radius: 8px !important;
-        margin-bottom: 8px !important;
-    }
-    
-    /* Better text sizing */
-    .product-title {
-        font-size: 14px !important;
-        line-height: 1.3 !important;
-        margin-bottom: 4px !important;
-        display: -webkit-box !important;
-        -webkit-line-clamp: 2 !important;
-        -webkit-box-orient: vertical !important;
-        overflow: hidden !important;
-    }
-    
-    .product-category {
-        font-size: 11px !important;
-        margin-bottom: 8px !important;
-    }
-    
-    /* Better price layout */
-    .product-price {
-        margin-top: auto !important;
-        padding-top: 8px !important;
-    }
-    
-    .current-price {
-        font-size: 16px !important;
-    }
-    
-    .original-price {
-        font-size: 12px !important;
-    }
-    
-    .discount {
-        font-size: 11px !important;
-    }
-    
-    /* Better button sizing */
-    .btn-add-cart {
-        padding: 8px 12px !important;
-        font-size: 12px !important;
-        border-radius: 8px !important;
-    }
-    
-    /* Badge optimization */
-    .product-badge {
-        font-size: 10px !important;
-        padding: 3px 8px !important;
-        top: 8px !important;
-        left: 8px !important;
-    }
-    
-    .shop-badge {
-        font-size: 9px !important;
-        padding: 2px 6px !important;
-        top: 8px !important;
-        right: 8px !important;
-    }
-    
-    .wishlist-btn {
-    position: absolute !important;
-    bottom: 60px !important;
-    right: 12px !important;
-    top: auto !important;
-    width: 32px !important;
-    height: 32px !important;
-    background: rgba(255,255,255,0.9) !important;
-    border: none !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    color: var(--text-light) !important;
-    z-index: 3 !important;
-}
-
-.wishlist-btn:hover {
-    background: white !important;
-    transform: scale(1.1) !important;
-}
-
-.wishlist-btn.active {
-    background: var(--danger) !important;
-    color: white !important;
-}
-
-/* Mobile adjustment */
-@media (max-width: 768px) {
-    .wishlist-btn {
-        bottom: 50px !important;
-        right: 8px !important;
-        width: 28px !important;
-        height: 28px !important;
-    }
-}
-    
-    /* Header optimization */
-.header-container { 
-    flex-direction: column; 
-    gap: 12px; 
-    position: relative;
-}
-
-.search-container { 
-    margin: 0 auto; 
-    width: 100%; 
-    max-width: 500px;
-}
-
-/* Center search bar on desktop */
-@media (min-width: 769px) {
-    .header-container {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .search-container {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: auto;
-        min-width: 400px;
-    }
-    
-    .header-actions {
-        margin-left: auto;
-    }
-}
-
-/* Container optimization */
-.container-main {
-    margin: 16px auto !important;
-    padding: 0 8px !important;
-}
-    
-    /* Container optimization */
-    .container-main {
-        margin: 16px auto !important;
-        padding: 0 8px !important;
-    }
-    
-    /* Hero section optimization */
-    .hero-banner {
-        padding: 20px 16px !important;
-        margin-bottom: 20px !important;
-        border-radius: 16px !important;
-    }
-    
-    .hero-content { 
-        max-width: 100%; 
-    }
-    
-    .hero-title { 
-        font-size: 1.5rem !important;
-        margin-bottom: 10px !important;
-    }
-    
-    .hero-subtitle {
-        font-size: 0.9rem !important;
-        margin-bottom: 15px !important;
-    }
-    
-    /* Filter section optimization */
-    .filter-section > div {
-        flex-direction: column !important;
-        gap: 12px !important;
-    }
-    
-    .filter-section .d-flex {
-        width: 100% !important;
-        justify-content: space-between !important;
-        margin-bottom: 15px !important;
-    }
-    
-    .category-filter {
-        flex: 1 !important;
-        margin: 0 4px !important;
-    }
-    
-    .sorting-options {
-        width: 100% !important;
-        justify-content: space-between !important;
-    }
-    
-    .sort-select {
-        min-width: 140px !important;
-    }
-    
-    /* Auth optimization */
-    .auth-card { 
-        padding: 30px 25px; 
-    }
-    
-    .form-row { 
-        grid-template-columns: 1fr; 
-    }
-    
-    /* Wishlist optimization */
-    .wishlist-card { 
-        flex-direction: column; 
-        text-align: center; 
-    }
-    
-    .wishlist-actions { 
-        justify-content: center; 
-    }
-    
-    /* Reviews optimization */
-    .rating-summary { 
-        flex-direction: column; 
-        gap: 20px; 
-        text-align: center; 
-    }
-    
-    /* Product detail optimization */
-    .product-detail-actions { 
-        flex-direction: column; 
-    }
-    
-    .product-detail-image { 
-        height: 300px; 
-    }
-    
-    /* Order actions */
-    .order-actions {
-        justify-content: center;
-    }
-    
-    .order-actions button {
-        flex: 1;
-        min-width: 80px;
-    }
-    
-    /* Enhanced Search Mobile Styles */
-    .search-modal-body {
-        max-height: 70vh;
-    }
-    
-    .popular-searches {
-        grid-template-columns: 1fr;
-    }
-    
-    .shop-filters {
-        grid-template-columns: 1fr;
-    }
-    
-    .recent-searches {
-        flex-direction: column;
-    }
-    
-    .recent-search-item {
-        text-align: center;
-    }
-}
-
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        /* 🎯 MOBILE LAYOUT FIXES */
+        @media (max-width: 768px) {
+            /* Better product grid - 2 products with proper spacing */
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                padding: 0 8px !important;
+            }
+            
+            /* Better product card proportions */
+            .product-card {
+                padding: 12px !important;
+                border-radius: 12px !important;
+                min-height: 280px !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            
+            /* Optimized product image */
+            .product-image {
+                height: 120px !important;
+                border-radius: 8px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            /* Better text sizing */
+            .product-title {
+                font-size: 14px !important;
+                line-height: 1.3 !important;
+                margin-bottom: 4px !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important;
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
+            }
+            
+            .product-category {
+                font-size: 11px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            /* Better price layout */
+            .product-price {
+                margin-top: auto !important;
+                padding-top: 8px !important;
+            }
+            
+            .current-price {
+                font-size: 16px !important;
+            }
+            
+            .original-price {
+                font-size: 12px !important;
+            }
+            
+            .discount {
+                font-size: 11px !important;
+            }
+            
+            /* Better button sizing */
+            .btn-add-cart {
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+                border-radius: 8px !important;
+            }
+            
+            /* Badge optimization */
+            .product-badge {
+                font-size: 10px !important;
+                padding: 3px 8px !important;
+                top: 8px !important;
+                left: 8px !important;
+            }
+            
+            .shop-badge {
+                font-size: 9px !important;
+                padding: 2px 6px !important;
+                top: 8px !important;
+                right: 8px !important;
+            }
+            
+            .wishlist-btn {
+                position: absolute !important;
+                bottom: 60px !important;
+                right: 12px !important;
+                top: auto !important;
+                width: 32px !important;
+                height: 32px !important;
+                background: rgba(255,255,255,0.9) !important;
+                border: none !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+                transition: all 0.3s ease !important;
+                color: var(--text-light) !important;
+                z-index: 3 !important;
+            }
+            
+            .wishlist-btn:hover {
+                background: white !important;
+                transform: scale(1.1) !important;
+            }
+            
+            .wishlist-btn.active {
+                background: var(--danger) !important;
+                color: white !important;
+            }
+            
+            /* Mobile adjustment */
+            @media (max-width: 768px) {
+                .wishlist-btn {
+                    bottom: 50px !important;
+                    right: 8px !important;
+                    width: 28px !important;
+                    height: 28px !important;
+                }
+            }
+            
+            /* Header optimization */
+            .header-container { 
+                flex-direction: column; 
+                gap: 12px; 
+                position: relative;
+            }
+            
+            .search-container { 
+                margin: 0 auto; 
+                width: 100%; 
+                max-width: 500px;
+            }
+            
+            /* Container optimization */
+            .container-main {
+                margin: 16px auto !important;
+                padding: 0 8px !important;
+            }
+            
+            /* Container optimization */
+            .container-main {
+                margin: 16px auto !important;
+                padding: 0 8px !important;
+            }
+            
+            /* Hero section optimization */
+            .hero-banner {
+                padding: 20px 16px !important;
+                margin-bottom: 20px !important;
+                border-radius: 16px !important;
+            }
+            
+            .hero-content { 
+                max-width: 100%; 
+            }
+            
+            .hero-title { 
+                font-size: 1.5rem !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .hero-subtitle {
+                font-size: 0.9rem !important;
+                margin-bottom: 15px !important;
+            }
+            
+            /* Filter section optimization */
+            .filter-section > div {
+                flex-direction: column !important;
+                gap: 12px !important;
+            }
+            
+            .filter-section .d-flex {
+                width: 100% !important;
+                justify-content: space-between !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .category-filter {
+                flex: 1 !important;
+                margin: 0 4px !important;
+            }
+            
+            .sorting-options {
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+            
+            .sort-select {
+                min-width: 140px !important;
+            }
+            
+            /* Auth optimization */
+            .auth-card { 
+                padding: 30px 25px; 
+            }
+            
+            .form-row { 
+                grid-template-columns: 1fr; 
+            }
+            
+            /* Wishlist optimization */
+            .wishlist-card { 
+                flex-direction: column; 
+                text-align: center; 
+            }
+            
+            .wishlist-actions { 
+                justify-content: center; 
+            }
+            
+            /* Reviews optimization */
+            .rating-summary { 
+                flex-direction: column; 
+                gap: 20px; 
+                text-align: center; 
+            }
+            
+            /* Product detail optimization */
+            .product-detail-actions { 
+                flex-direction: column; 
+            }
+            
+            .product-detail-image { 
+                height: 300px; 
+            }
+            
+            /* Order actions */
+            .order-actions {
+                justify-content: center;
+            }
+            
+            .order-actions button {
+                flex: 1;
+                min-width: 80px;
+            }
+            
+            /* Enhanced Search Mobile Styles */
+            .search-modal-body {
+                max-height: 70vh;
+            }
+            
+            .popular-searches {
+                grid-template-columns: 1fr;
+            }
+            
+            .shop-filters {
+                grid-template-columns: 1fr;
+            }
+            
+            .recent-searches {
+                flex-direction: column;
+            }
+            
+            .recent-search-item {
+                text-align: center;
+            }
+        }
         /* Header Layout Fix */
-.app-header .header-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    position: relative;
-}
-
-.app-header .search-container {
-    flex: 1;
-    max-width: 500px;
-    margin: 0 auto;
-    position: relative;
-}
-
-.app-header .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-}
-
-/* Center search bar on desktop */
-@media (min-width: 769px) {
-    .app-header .header-container {
-        position: relative;
-    }
-    
-    .app-header .search-container {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 400px;
-    }
-    
-    .app-header .header-actions {
-        margin-left: auto;
-    }
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .app-header .header-container {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .app-header .search-container {
-        order: 2;
-        width: 100%;
-        max-width: none;
-    }
-    
-    .app-header .header-actions {
-        order: 3;
-        width: 100%;
-        justify-content: flex-end;
-    }
-}
-
-/* Logout option styling */
-.preference-item[style*="color: var(--danger)"] {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.preference-item[style*="color: var(--danger)"]:hover {
-    background: #FEE2E2;
-    border-radius: 8px;
-    padding: 12px;
-    margin: -12px -12px -12px -12px;
-}
-        
-/* 🎯 EXTRA SMALL DEVICES */
-@media (max-width: 480px) {
-    .product-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 8px !important;
-        padding: 0 4px !important;
-    }
-    
-    .product-card {
-        padding: 10px !important;
-        min-height: 260px !important;
-    }
-    
-    .product-image {
-        height: 110px !important;
-    }
-    
-    .product-title {
-        font-size: 13px !important;
-    }
-    
-    .current-price {
-        font-size: 15px !important;
-    }
-    
-    .container-main { 
-        padding: 0 12px; 
-    }
-    
-    .hero-banner { 
-        padding: 20px; 
-    }
-    
-    .product-detail-content { 
-        padding: 20px; 
-    }
-    
-    .reviews-section { 
-        padding: 20px; 
-    }
-}
-
-/* 🎯 TABLET OPTIMIZATION */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .product-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 16px !important;
-    }
-}
-
-/* Desktop remains unchanged */
-@media (min-width: 769px) {
-    .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 20px;
-    }
-}
-/* REPLACE UP TO HERE */
-
+        .app-header .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+        }
+        .app-header .search-container {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .app-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+        /* Center search bar on desktop */
+        @media (min-width: 769px) {
+            .app-header .header-container {
+                position: relative;
+            }
+            
+            .app-header .search-container {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 400px;
+            }
+            
+            .app-header .header-actions {
+                margin-left: auto;
+            }
+        }
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .app-header .header-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .app-header .search-container {
+                order: 2;
+                width: 100%;
+                max-width: none;
+            }
+            
+            .app-header .header-actions {
+                order: 3;
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+        /* Logout option styling */
+        .preference-item[style*="color: var(--danger)"] {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .preference-item[style*="color: var(--danger)"]:hover {
+            background: #FEE2E2;
+            border-radius: 8px;
+            padding: 12px;
+            margin: -12px -12px -12px -12px;
+        }
+        /* 🎯 EXTRA SMALL DEVICES */
+        @media (max-width: 480px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+                padding: 0 4px !important;
+            }
+            
+            .product-card {
+                padding: 10px !important;
+                min-height: 260px !important;
+            }
+            
+            .product-image {
+                height: 110px !important;
+            }
+            
+            .product-title {
+                font-size: 13px !important;
+            }
+            
+            .current-price {
+                font-size: 15px !important;
+            }
+            
+            .container-main { 
+                padding: 0 12px; 
+            }
+            
+            .hero-banner { 
+                padding: 20px; 
+            }
+            
+            .product-detail-content { 
+                padding: 20px; 
+            }
+            
+            .reviews-section { 
+                padding: 20px; 
+            }
+        }
+        /* 🎯 TABLET OPTIMIZATION */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 16px !important;
+            }
+        }
+        /* Desktop remains unchanged */
+        @media (min-width: 769px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1776,24 +1708,24 @@
         </div>
     </div>
 
-      <!-- Main App Screen -->
-<div id="appScreen" style="display: none;">
-    <header class="app-header">
-        <div class="header-container">
-            <a href="#" class="brand">
-                <div class="brand-logo">D</div>
-                <span>Dukaan</span>
-            </a>
-            <div class="search-container">
-                <input type="text" id="search" class="search-bar" placeholder="Search for products, categories...">
-                <div class="search-icon"><i class="fas fa-search"></i></div>
-                <div class="search-results" id="searchResults"></div>
+    <!-- Main App Screen -->
+    <div id="appScreen" style="display: none;">
+        <header class="app-header">
+            <div class="header-container">
+                <a href="#" class="brand">
+                    <div class="brand-logo">D</div>
+                    <span>Dukaan</span>
+                </a>
+                <div class="search-container">
+                    <input type="text" id="search" class="search-bar" placeholder="Search for products, categories...">
+                    <div class="search-icon"><i class="fas fa-search"></i></div>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+                <div class="header-actions">
+                </div>
             </div>
-            <div class="header-actions">
-            </div>
-        </div>
-    </header>
-    
+        </header>
+        
         <div class="container-main">
             <div id="homePage">
                 <div class="hero-banner">
@@ -1808,7 +1740,8 @@
                     </div>
                     <div class="hero-pattern"></div>
                 </div>
-                                <!-- Enhanced Search Modal - PHASE 2 -->
+                
+                <!-- Enhanced Search Modal -->
                 <div id="searchOverlay" class="search-overlay"></div>
                 <div id="searchModal" class="search-modal">
                     <div class="search-modal-header">
@@ -1911,7 +1844,8 @@
                         </div>
                     </div>
                 </div>
-                                                                                                <div class="filter-section mb-4">
+                
+                <div class="filter-section mb-4">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                         <!-- LEFT SIDE - Filters -->
                         <div class="d-flex gap-3 flex-wrap" style="flex: 1;">
@@ -1974,100 +1908,101 @@
             </div>
 
             <!-- Product Detail Page -->
-<div id="productDetailPage" class="product-detail-page">
-    <div class="product-detail-container">
-        <img id="productDetailImage" src="" alt="" class="product-detail-image">
-        <div class="product-detail-content">
-            <div class="product-detail-header">
-                <h1 id="productDetailTitle" class="product-detail-title"></h1>
-                <p id="productDetailCategory" class="product-detail-category"></p>
-                <div class="product-detail-price">
-                    <span id="productDetailCurrent" class="product-detail-current"></span>
-                    <span id="productDetailOriginal" class="product-detail-original"></span>
-                    <span id="productDetailDiscount" class="product-detail-discount"></span>
+            <div id="productDetailPage" class="product-detail-page">
+                <div class="product-detail-container">
+                    <img id="productDetailImage" src="" alt="" class="product-detail-image">
+                    <div class="product-detail-content">
+                        <div class="product-detail-header">
+                            <h1 id="productDetailTitle" class="product-detail-title"></h1>
+                            <p id="productDetailCategory" class="product-detail-category"></p>
+                            <div class="product-detail-price">
+                                <span id="productDetailCurrent" class="product-detail-current"></span>
+                                <span id="productDetailOriginal" class="product-detail-original"></span>
+                                <span id="productDetailDiscount" class="product-detail-discount"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- CORRECTED PRODUCT DETAIL ACTIONS - NO DUPLICATES -->
+                        <div class="product-detail-actions">
+                            <div class="quantity-cart-container">
+                                <div class="btn-quantity">
+                                    <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                                    <span id="quantityValue" class="quantity-value">1</span>
+                                    <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                                </div>
+                                <button class="btn-primary btn-add-cart-detail" onclick="addToCartFromDetail()">
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </button>
+                            </div>
+                            
+                            <!-- SHARE BUTTON -->
+                            <button class="btn-outline" onclick="shareProduct(currentProductDetail.id)" 
+                                    style="padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            
+                            <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Reviews Section -->
+                        <div class="reviews-section">
+                            <h3 class="section-title">Customer Reviews</h3>
+                            
+                            <div class="rating-summary">
+                                <div class="average-rating">
+                                    <div class="rating-stars" id="averageRatingStars"></div>
+                                    <div id="averageRatingValue" class="rating-value">0.0</div>
+                                    <div id="totalReviewsCount" class="rating-count">0 reviews</div>
+                                </div>
+                                <div class="rating-distribution">
+                                    <!-- Rating bars will be populated by JavaScript -->
+                                </div>
+                            </div>
+
+                            <div class="reviews-list" id="reviewsList">
+                                <!-- Reviews will be populated by JavaScript -->
+                            </div>
+
+                            <!-- Review Form -->
+                            <div class="review-form-section" id="reviewFormSection" style="display: none;">
+                                <h4 class="review-form-title">Write a Review</h4>
+                                <div class="review-requirements">
+                                    <div class="requirements-title">Review Requirements:</div>
+                                    <ul class="requirements-list">
+                                        <li><i class="fas fa-check"></i> Must be a registered user</li>
+                                        <li><i class="fas fa-check"></i> Must have purchased this product</li>
+                                        <li><i class="fas fa-check"></i> Order must be delivered</li>
+                                        <li><i class="fas fa-check"></i> One review per product</li>
+                                    </ul>
+                                </div>
+                                <div class="star-rating-input">
+                                    <button class="star-input" data-rating="1">★</button>
+                                    <button class="star-input" data-rating="2">★</button>
+                                    <button class="star-input" data-rating="3">★</button>
+                                    <button class="star-input" data-rating="4">★</button>
+                                    <button class="star-input" data-rating="5">★</button>
+                                </div>
+                                <textarea id="reviewText" class="review-textarea" placeholder="Share your experience with this product... (Minimum 10 characters)" minlength="10" maxlength="500"></textarea>
+                                <button id="submitReviewBtn" class="btn-primary w-100" onclick="submitReview()">
+                                    <i class="fas fa-paper-plane"></i> Submit Review
+                                </button>
+                            </div>
+
+                            <div id="noReviews" class="no-reviews">
+                                <div class="no-reviews-icon">
+                                    <i class="fas fa-comment-dots"></i>
+                                </div>
+                                <h4>No Reviews Yet</h4>
+                                <p>Be the first to review this product!</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <!-- CORRECTED PRODUCT DETAIL ACTIONS - NO DUPLICATES -->
-            <div class="product-detail-actions">
-                <div class="quantity-cart-container">
-                    <div class="btn-quantity">
-                        <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
-                        <span id="quantityValue" class="quantity-value">1</span>
-                        <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
-                    </div>
-                    <button class="btn-primary btn-add-cart-detail" onclick="addToCartFromDetail()">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </button>
-                </div>
-                
-                <!-- SHARE BUTTON -->
-                <button class="btn-outline" onclick="shareProduct(currentProductDetail.id)" 
-                        style="padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-share-alt"></i> Share
-                </button>
-                
-                <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
-                    <i class="fas fa-heart"></i>
-                </button>
-            </div>
-            
-            <!-- Reviews Section -->
-            <div class="reviews-section">
-                <h3 class="section-title">Customer Reviews</h3>
-                
-                <div class="rating-summary">
-                    <div class="average-rating">
-                        <div class="rating-stars" id="averageRatingStars"></div>
-                        <div id="averageRatingValue" class="rating-value">0.0</div>
-                        <div id="totalReviewsCount" class="rating-count">0 reviews</div>
-                    </div>
-                    <div class="rating-distribution">
-                        <!-- Rating bars will be populated by JavaScript -->
-                    </div>
-                </div>
-
-                <div class="reviews-list" id="reviewsList">
-                    <!-- Reviews will be populated by JavaScript -->
-                </div>
-
-                <!-- Review Form -->
-                <div class="review-form-section" id="reviewFormSection" style="display: none;">
-                    <h4 class="review-form-title">Write a Review</h4>
-                    <div class="review-requirements">
-                        <div class="requirements-title">Review Requirements:</div>
-                        <ul class="requirements-list">
-                            <li><i class="fas fa-check"></i> Must be a registered user</li>
-                            <li><i class="fas fa-check"></i> Must have purchased this product</li>
-                            <li><i class="fas fa-check"></i> Order must be delivered</li>
-                            <li><i class="fas fa-check"></i> One review per product</li>
-                        </ul>
-                    </div>
-                    <div class="star-rating-input">
-                        <button class="star-input" data-rating="1">★</button>
-                        <button class="star-input" data-rating="2">★</button>
-                        <button class="star-input" data-rating="3">★</button>
-                        <button class="star-input" data-rating="4">★</button>
-                        <button class="star-input" data-rating="5">★</button>
-                    </div>
-                    <textarea id="reviewText" class="review-textarea" placeholder="Share your experience with this product... (Minimum 10 characters)" minlength="10" maxlength="500"></textarea>
-                    <button id="submitReviewBtn" class="btn-primary w-100" onclick="submitReview()">
-                        <i class="fas fa-paper-plane"></i> Submit Review
-                    </button>
-                </div>
-
-                <div id="noReviews" class="no-reviews">
-                    <div class="no-reviews-icon">
-                        <i class="fas fa-comment-dots"></i>
-                    </div>
-                    <h4>No Reviews Yet</h4>
-                    <p>Be the first to review this product!</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-                    <!-- User Profile Page - PHASE 1 -->
+            <!-- User Profile Page -->
             <div id="profilePage" class="profile-page">
                 <div class="profile-header">
                     <div class="profile-avatar" id="profileAvatar">
@@ -2170,21 +2105,21 @@
                 </div>
 
                 <li class="profile-menu-item" onclick="savedAddresses()">
-    <div class="menu-item-content">
-        <div class="menu-item-icon">
-            <i class="fas fa-map-marker-alt"></i>
-        </div>
-        <div class="menu-item-text">
-            <div class="menu-item-title">Saved Addresses</div>
-            <div class="menu-item-desc">Manage your delivery addresses</div>
-        </div>
-    </div>
-    <div class="menu-item-arrow">
-        <i class="fas fa-chevron-right"></i>
-    </div>
-</li>
+                    <div class="menu-item-content">
+                        <div class="menu-item-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="menu-item-text">
+                            <div class="menu-item-title">Saved Addresses</div>
+                            <div class="menu-item-desc">Manage your delivery addresses</div>
+                        </div>
+                    </div>
+                    <div class="menu-item-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </li>
 
-                                <!-- Preferences Section -->
+                <!-- Preferences Section -->
                 <div class="profile-section">
                     <h3 class="section-title">
                         <i class="fas fa-cog"></i>
@@ -2253,139 +2188,143 @@
                     </div>
                 </div>
             </div>
-                <!-- Notifications Page - PHASE 4 -->
-<div id="notificationsPage" class="notifications-page" style="display: none;">
-    <div class="profile-header">
-        <h2 class="profile-name">
-            <i class="fas fa-bell"></i>
-            Notifications
-        </h2>
-        <p class="profile-email">Manage your alerts and preferences</p>
-    </div>
+            
+            <!-- Notifications Page -->
+            <div id="notificationsPage" class="notifications-page" style="display: none;">
+                <div class="profile-header">
+                    <h2 class="profile-name">
+                        <i class="fas fa-bell"></i>
+                        Notifications
+                    </h2>
+                    <p class="profile-email">Manage your alerts and preferences</p>
+                </div>
 
-    <!-- Notification Preferences -->
-    <div class="profile-section">
-        <h3 class="section-title">
-            <i class="fas fa-cog"></i>
-            Notification Preferences
-        </h3>
-        <div class="preference-item">
-            <div class="preference-info">
-                <div class="preference-title">Push Notifications</div>
-                <div class="preference-desc">Receive browser push notifications</div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="pushNotificationsToggle" onchange="togglePushNotifications()">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="preference-item">
-            <div class="preference-info">
-                <div class="preference-title">Order Updates</div>
-                <div class="preference-desc">Order status and delivery alerts</div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="orderUpdatesToggle" checked onchange="updateNotificationPreference('orderUpdates', this.checked)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="preference-item">
-            <div class="preference-info">
-                <div class="preference-title">Price Alerts</div>
-                <div class="preference-desc">Price drops on wishlist items</div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="priceAlertsToggle" checked onchange="updateNotificationPreference('priceAlerts', this.checked)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="preference-item">
-            <div class="preference-info">
-                <div class="preference-title">Promotions</div>
-                <div class="preference-desc">Offers, discounts and new arrivals</div>
-            </div>
-            <label class="switch">
-                <input type="checkbox" id="promotionsToggle" checked onchange="updateNotificationPreference('promotions', this.checked)">
-                <span class="slider"></span>
-            </label>
-        </div>
-    </div>
+                <!-- Notification Preferences -->
+                <div class="profile-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Notification Preferences
+                    </h3>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-title">Push Notifications</div>
+                            <div class="preference-desc">Receive browser push notifications</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="pushNotificationsToggle" onchange="togglePushNotifications()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-title">Order Updates</div>
+                            <div class="preference-desc">Order status and delivery alerts</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="orderUpdatesToggle" checked onchange="updateNotificationPreference('orderUpdates', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-title">Price Alerts</div>
+                            <div class="preference-desc">Price drops on wishlist items</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="priceAlertsToggle" checked onchange="updateNotificationPreference('priceAlerts', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <div class="preference-title">Promotions</div>
+                            <div class="preference-desc">Offers, discounts and new arrivals</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="promotionsToggle" checked onchange="updateNotificationPreference('promotions', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
 
-    <!-- Notifications List -->
-    <div class="profile-section">
-        <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
-            <span>
-                <i class="fas fa-bell"></i>
-                Recent Notifications
-            </span>
-            <button class="btn-outline btn-sm" onclick="clearAllNotifications()">
-                <i class="fas fa-trash"></i> Clear All
-            </button>
+                <!-- Notifications List -->
+                <div class="profile-section">
+                    <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>
+                            <i class="fas fa-bell"></i>
+                            Recent Notifications
+                        </span>
+                        <button class="btn-outline btn-sm" onclick="clearAllNotifications()">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                    <div id="notificationsList">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                    <div id="noNotifications" class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-bell-slash"></i></div>
+                        <h3 class="empty-text">No notifications yet</h3>
+                        <p class="text-muted">You're all caught up!</p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="notificationsList">
-            <!-- Notifications will be loaded here -->
-        </div>
-        <div id="noNotifications" class="empty-state">
-            <div class="empty-icon"><i class="fas fa-bell-slash"></i></div>
-            <h3 class="empty-text">No notifications yet</h3>
-            <p class="text-muted">You're all caught up!</p>
-        </div>
-    </div>
-</div>
+
         <!-- Hamburger Menu -->
-<div id="hamburgerMenu" class="bottom-sheet">
-    <span class="sheet-handle"></span>
-    <div class="sheet-header">
-        <strong class="sheet-title">Menu</strong>
-        <button class="sheet-close" onclick="closeHamburgerMenu()">&times;</button>
-    </div>
-    <div class="sheet-body">
-        <div class="profile-section">
-            <div class="profile-menu">
-                <div class="profile-menu-item" onclick="navigateToPage('categories'); closeHamburgerMenu();">
-                    <div class="menu-item-content">
-                        <div class="menu-item-icon"><i class="fas fa-th-large"></i></div>
-                        <div class="menu-item-text">
-                            <div class="menu-item-title">Categories</div>
-                            <div class="menu-item-desc">Browse all product categories</div>
+        <div id="hamburgerMenu" class="bottom-sheet">
+            <span class="sheet-handle"></span>
+            <div class="sheet-header">
+                <strong class="sheet-title">Menu</strong>
+                <button class="sheet-close" onclick="closeHamburgerMenu()">&times;</button>
+            </div>
+            <div class="sheet-body">
+                <div class="profile-section">
+                    <div class="profile-menu">
+                        <div class="profile-menu-item" onclick="navigateToPage('categories'); closeHamburgerMenu();">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon"><i class="fas fa-th-large"></i></div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Categories</div>
+                                    <div class="menu-item-desc">Browse all product categories</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-menu-item" onclick="navigateToPage('wishlist'); closeHamburgerMenu();">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon"><i class="fas fa-heart"></i></div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Wishlist</div>
+                                    <div class="menu-item-desc">Your saved items</div>
+                                </div>
+                            </div>
+                            <span class="nav-badge" id="hamburgerWishlistCount">0</span>
+                        </div>
+                        <div class="profile-menu-item" onclick="navigateToPage('notifications'); closeHamburgerMenu();">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon"><i class="fas fa-bell"></i></div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Notifications</div>
+                                    <div class="menu-item-desc">Alerts and updates</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Referral Program Menu Item - Coming Soon -->
+                        <div class="profile-menu-item" onclick="showComingSoon('Referral Program')">
+                            <div class="menu-item-content">
+                                <div class="menu-item-icon"><i class="fas fa-user-plus"></i></div>
+                                <div class="menu-item-text">
+                                    <div class="menu-item-title">Referral Program</div>
+                                    <div class="menu-item-desc">Invite friends & earn rewards</div>
+                                </div>
+                            </div>
+                            <div class="security-badge" style="background: var(--warning);">Soon</div>
                         </div>
                     </div>
-                </div>
-                <div class="profile-menu-item" onclick="navigateToPage('wishlist'); closeHamburgerMenu();">
-                    <div class="menu-item-content">
-                        <div class="menu-item-icon"><i class="fas fa-heart"></i></div>
-                        <div class="menu-item-text">
-                            <div class="menu-item-title">Wishlist</div>
-                            <div class="menu-item-desc">Your saved items</div>
-                        </div>
-                    </div>
-                    <span class="nav-badge" id="hamburgerWishlistCount">0</span>
-                </div>
-                <div class="profile-menu-item" onclick="navigateToPage('notifications'); closeHamburgerMenu();">
-                    <div class="menu-item-content">
-                        <div class="menu-item-icon"><i class="fas fa-bell"></i></div>
-                        <div class="menu-item-text">
-                            <div class="menu-item-title">Notifications</div>
-                            <div class="menu-item-desc">Alerts and updates</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Referral Program Menu Item - Coming Soon -->
-                <div class="profile-menu-item" onclick="showComingSoon('Referral Program')">
-                    <div class="menu-item-content">
-                        <div class="menu-item-icon"><i class="fas fa-user-plus"></i></div>
-                        <div class="menu-item-text">
-                            <div class="menu-item-title">Referral Program</div>
-                            <div class="menu-item-desc">Invite friends & earn rewards</div>
-                        </div>
-                    </div>
-                    <div class="security-badge" style="background: var(--warning);">Soon</div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-                <nav class="bottom-nav">
+        
+        <nav class="bottom-nav">
             <a href="#" class="nav-item active" data-page="home">
                 <i class="fas fa-home nav-icon"></i>
                 <span class="nav-label">Home</span>
@@ -2395,23 +2334,23 @@
                 <i class="fas fa-shopping-bag nav-icon"></i>
                 <span class="nav-label">Orders</span>
             </a>
-                        <a href="#" class="nav-item" data-page="account" id="accountNav">
+            
+            <a href="#" class="nav-item" data-page="account" id="accountNav">
                 <i class="fas fa-user nav-icon"></i>
                 <span class="nav-label">Account</span>
                 <span class="nav-badge" id="accountBadge" style="display: none;">!</span>
             </a>
-              
+            
             <a href="#" class="nav-item" data-page="cart" id="bottomNavCart">
                 <i class="fas fa-shopping-cart nav-icon"></i>
                 <span class="nav-label">Cart</span>
                 <span class="nav-badge" id="bottomCartCount">0</span>
             </a>
-                    
+            
             <a href="#" class="nav-item" onclick="openHamburgerMenu()">
                 <i class="fas fa-bars nav-icon"></i>
-            <span class="nav-label">Menu</span>
+                <span class="nav-label">Menu</span>
             </a>
-                    
         </nav>
 
         <!-- Bottom Sheet for Checkout -->
@@ -2655,13 +2594,6 @@
             appId: "1:75765851780:web:dd9567db1d39c3b09c84d1"
         };
 
-        // Cloudinary Configuration
-        const cloudinaryConfig = {
-            cloudName: "db1rbtgpe",
-            uploadPreset: "dukaan-platform", 
-            apiKey: "156538295145313"
-        };
-
         // Initialize Firebase
         try {
             firebase.initializeApp(firebaseConfig);
@@ -2682,52 +2614,44 @@
             bakerycorner: { id: 'bakerycorner', name: 'Bakery Corner', category: 'bakery', rating: 4.8, deliveryTime: '25 min' }
         };
 
-let PRODUCTS = [];
+        let PRODUCTS = [];
 
-// Firebase se real products load karne ka function
-async function loadProductsFromFirebase() {
-    try {
-        const productsSnapshot = await db.collection('products')
-            .where('status', '==', 'active')
-            .where('stock', '>', 0)
-            .get();
-        
-        PRODUCTS = [];
-        productsSnapshot.forEach(doc => {
-            PRODUCTS.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // Agar koi products display function hai toh call karo
-        if (typeof displayProducts === 'function') {
-            displayProducts();
+        // Firebase se real products load karne ka function
+        async function loadProductsFromFirebase() {
+            try {
+                const productsSnapshot = await db.collection('products')
+                    .where('status', '==', 'active')
+                    .where('stock', '>', 0)
+                    .get();
+                
+                PRODUCTS = [];
+                productsSnapshot.forEach(doc => {
+                    PRODUCTS.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Agar koi products display function hai toh call karo
+                if (typeof displayProducts === 'function') {
+                    displayProducts();
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                // Fallback: Temporary demo products
+                PRODUCTS = getDemoProducts();
+                if (typeof displayProducts === 'function') {
+                    displayProducts();
+                }
+            }
         }
-    } catch (error) {
-        console.error('Error loading products:', error);
-        // Fallback: Temporary demo products
-        PRODUCTS = getDemoProducts();
-        if (typeof displayProducts === 'function') {
-            displayProducts();
+
+        // Emergency fallback demo products
+        function getDemoProducts() {
+            return [
+                { id: 'demo1', name: 'Fresh Cow Milk', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop', badge: 'Fresh', size: '1 Litre', brand: 'Amul', description: 'Fresh pasteurized cow milk rich in calcium and protein.', features: ['Pasteurized', 'Rich in Calcium', 'No Preservatives'], specifications: { type: 'Cow Milk', fat: '3.5%', shelfLife: '7 days' }, returnPolicy: 'No returns. Contact shopkeeper for any issues.' },
+                { id: 'demo2', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop', badge: 'New', size: '50ml', brand: 'Lakme', description: 'Moisturizing face cream with SPF protection.', features: ['SPF 30', 'Moisturizing', 'Non-Greasy'], specifications: { skinType: 'All Skin Types', spf: 'SPF 30' }, returnPolicy: 'No returns. Contact shopkeeper for damaged products.' }
+            ];
         }
-    }
-}
 
-// Emergency fallback demo products
-function getDemoProducts() {
-    return [
-        { id: 'demo1', name: 'Fresh Cow Milk', price: 60, mrp: 70, category: 'dairy', shop: 'freshmart', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop', badge: 'Fresh', size: '1 Litre', brand: 'Amul', description: 'Fresh pasteurized cow milk rich in calcium and protein.', features: ['Pasteurized', 'Rich in Calcium', 'No Preservatives'], specifications: { type: 'Cow Milk', fat: '3.5%', shelfLife: '7 days' }, returnPolicy: 'No returns. Contact shopkeeper for any issues.' },
-        { id: 'demo2', name: 'Face Cream', price: 199, mrp: 249, category: 'cosmetics', shop: 'cosmeticstore', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop', badge: 'New', size: '50ml', brand: 'Lakme', description: 'Moisturizing face cream with SPF protection.', features: ['SPF 30', 'Moisturizing', 'Non-Greasy'], specifications: { skinType: 'All Skin Types', spf: 'SPF 30' }, returnPolicy: 'No returns. Contact shopkeeper for damaged products.' }
-    ];
-}
-
-// App load hone par products load karo
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof initApp === 'function') {
-        // Agar tumhara existing init function hai
-        initApp();
-    }
-    loadProductsFromFirebase();
-});
-    const AVAILABLE_COUPONS = [
+        const AVAILABLE_COUPONS = [
             { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
             { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" }
         ];
@@ -2757,11 +2681,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Notification System State
         let notifications = JSON.parse(localStorage.getItem('dukaan_notifications')) || [];
         let notificationPreferences = JSON.parse(localStorage.getItem('dukaan_notification_prefs')) || {
-        orderUpdates: true,
-        priceAlerts: true,
-        promotions: true,
-        pushEnabled: false
-    };
+            orderUpdates: true,
+            priceAlerts: true,
+            promotions: true,
+            pushEnabled: false
+        };
 
         // DOM Elements
         const authScreen = document.getElementById('authScreen');
@@ -2822,33 +2746,31 @@ document.addEventListener('DOMContentLoaded', function() {
             renderAddresses();
             setupSorting();
         }
-// Firebase se products load karo
-function loadProductsFromFirebase() {
-    if (db) {
-        db.collection('products').onSnapshot((snapshot) => {
-            PRODUCTS = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                PRODUCTS.push({ 
-                    id: doc.id, 
-                    name: data.name,
-                    price: data.price,
-                    mrp: data.mrp,
-                    category: data.category,
-                    shop: 'freshmart',
-                    image: data.image,
-                    stock: data.stock,
-                    description: data.description
-                });
-            });
-            renderProducts(PRODUCTS);
-        });
-    }
-}
 
-// Yeh line ADD karo - app start hone par call hoga
-loadProductsFromFirebase();
-        
+        // Firebase se products load karo
+        function loadProductsFromFirebase() {
+            if (db) {
+                db.collection('products').onSnapshot((snapshot) => {
+                    PRODUCTS = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        PRODUCTS.push({ 
+                            id: doc.id, 
+                            name: data.name,
+                            price: data.price,
+                            mrp: data.mrp,
+                            category: data.category,
+                            shop: 'freshmart',
+                            image: data.image,
+                            stock: data.stock,
+                            description: data.description
+                        });
+                    });
+                    renderProducts(PRODUCTS);
+                });
+            }
+        }
+
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
             auth.onAuthStateChanged((user) => {
@@ -2861,7 +2783,7 @@ loadProductsFromFirebase();
                     };
                     showAppScreen();
                     loadUserData();
-                    loadOrderHistory(); // ✅ YEH NAYI LINE ADD KARO
+                    loadOrderHistory();
                     updateCouponAuth();
                     showToast('Welcome back to Dukaan!');
                 } else {
@@ -2923,25 +2845,6 @@ loadProductsFromFirebase();
             }
         }
 
-        auth.onAuthStateChanged((user) => {
-    console.log('Auth state changed:', user);
-    if (user) {
-        currentUser = {
-            uid: user.uid,
-            email: user.email,
-            name: user.displayName || user.email.split('@')[0]
-        };
-        showAppScreen();
-        loadUserData();
-        loadOrderHistory(); // ✅ YEH LINE ADD KARO
-        updateCouponAuth();
-        showToast('Welcome back to Dukaan!');
-    } else {
-        currentUser = null;
-        showAuthScreen();
-    }
-});
-
         // Auth Functions - FIXED
         function showAuthScreen() {
             authScreen.style.display = 'block';
@@ -2955,7 +2858,7 @@ loadProductsFromFirebase();
             renderProducts(PRODUCTS); // Ensure products are rendered
         }
 
-                async function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             console.log('Login function called');
             const email = document.getElementById('loginEmail').value;
@@ -2965,7 +2868,7 @@ loadProductsFromFirebase();
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 console.log('Login successful:', userCredential.user);
                 showToast('Welcome back to Dukaan!');
-                                // FIXED: Update last login time for admin monitoring
+                // FIXED: Update last login time for admin monitoring
                 await db.collection('users').doc(userCredential.user.uid).update({
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -2983,62 +2886,37 @@ loadProductsFromFirebase();
             }
         }
 
-                // ✅ FIXED SIGNIN FUNCTION  
-async function handleLogin(event) {
-    event.preventDefault();
-    
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+        // ✅ FIXED SIGNUP FUNCTION
+        async function handleSignup(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
 
-    try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        showToast('Welcome back!');
-        closeLoginModal();
-        
-    } catch (error) {
-        console.error('Login error:', error);
-        if (error.code === 'auth/invalid-credential') {
-            showToast('Invalid email or password');
-        } else {
-            showToast('Login failed: ' + error.message);
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await userCredential.user.updateProfile({ displayName: name });
+                
+                // Save to Firestore
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email,
+                    role: 'customer',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Account created successfully!');
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showToast('Email already registered');
+                } else {
+                    showToast('Signup failed: ' + error.message);
+                }
+            }
         }
-    }
-}
-
-                // ✅ FIXED SIGNUP FUNCTION
-async function handleSignup(event) {
-    event.preventDefault();
-    
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-    const phone = document.getElementById('signupPhone').value;
-
-    try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        await userCredential.user.updateProfile({ displayName: name });
-        
-        // Save to Firestore
-        await db.collection('users').doc(userCredential.user.uid).set({
-            name: name,
-            email: email,
-            phone: phone,
-            role: 'customer',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        showToast('Account created successfully!');
-        closeSignupModal();
-        
-    } catch (error) {
-        console.error('Signup error:', error);
-        if (error.code === 'auth/email-already-in-use') {
-            showToast('Email already registered');
-        } else {
-            showToast('Signup failed: ' + error.message);
-        }
-    }
-}
         
         function demoLogin() {
             document.getElementById('loginEmail').value = 'demo@dukaan.com';
@@ -3046,249 +2924,240 @@ async function handleSignup(event) {
             showToast('Demo credentials filled! Click Sign In');
         }
 
-        function demoLogin() {
-            document.getElementById('loginEmail').value = 'demo@dukaan.com';
-            document.getElementById('loginPassword').value = 'demo123';
-            showToast('Demo credentials filled! Click Sign In');
+        // ★★★ ADD LOGOUT FUNCTION HERE ★★★
+        function logout() {
+            console.log("Logout function called");
+            
+            // Check if user is logged in with Firebase
+            if (firebase.auth().currentUser) {
+                firebase.auth().signOut().then(() => {
+                    showToast("Logged out successfully!", 'success');
+                    // Switch to auth screen
+                    document.getElementById('appScreen').style.display = 'none';
+                    document.getElementById('authScreen').style.display = 'block';
+                    // Reset forms
+                    document.getElementById('loginForm').reset();
+                    document.getElementById('signupForm').reset();
+                    // Show login form by default
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('signupForm').style.display = 'none';
+                    document.getElementById('loginFooter').style.display = 'block';
+                    document.getElementById('signupFooter').style.display = 'none';
+                }).catch((error) => {
+                    console.error("Logout error:", error);
+                    showToast("Error logging out: " + error.message, 'error');
+                });
+            } else {
+                // Fallback for any logged in state
+                document.getElementById('appScreen').style.display = 'none';
+                document.getElementById('authScreen').style.display = 'block';
+                showToast("Logged out successfully!");
+            }
         }
 
-// ★★★ ADD LOGOUT FUNCTION HERE ★★★
-function logout() {
-    console.log("Logout function called");
-    
-    // Check if user is logged in with Firebase
-    if (firebase.auth().currentUser) {
-        firebase.auth().signOut().then(() => {
-            showToast("Logged out successfully!", 'success');
-            // Switch to auth screen
-            document.getElementById('appScreen').style.display = 'none';
-            document.getElementById('authScreen').style.display = 'block';
-            // Reset forms
-            document.getElementById('loginForm').reset();
-            document.getElementById('signupForm').reset();
-            // Show login form by default
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('loginFooter').style.display = 'block';
-            document.getElementById('signupFooter').style.display = 'none';
-        }).catch((error) => {
-            console.error("Logout error:", error);
-            showToast("Error logging out: " + error.message, 'error');
-        });
-    } else {
-        // Fallback for any logged in state
-        document.getElementById('appScreen').style.display = 'none';
-        document.getElementById('authScreen').style.display = 'block';
-        showToast("Logged out successfully!");
-    }
-}
-// ★★★ LOGOUT FUNCTION ADDED ★★★
+        // ★★★ ADD MISSING MODAL FUNCTIONS ★★★
 
- // ★★★ ADD MISSING MODAL FUNCTIONS ★★★
+        // Close Login Modal
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
 
-// Close Login Modal
-function closeLoginModal() {
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
+        // Close Any Modal
+        function closeModal() {
+            // Close all modals
+            const modals = document.querySelectorAll('.modal-overlay.active, [class*="modal"].active');
+            modals.forEach(modal => {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            });
+        }
 
-// Close Any Modal
-function closeModal() {
-    // Close all modals
-    const modals = document.querySelectorAll('.modal-overlay.active, [class*="modal"].active');
-    modals.forEach(modal => {
-        modal.classList.remove('active');
-        modal.style.display = 'none';
-    });
-}
+        // Show Modal
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+            }
+        }       
 
-// Show Modal
-function showModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('active');
-        modal.style.display = 'flex';
-    }
-}       
-
-// ★★★ SAVED ADDRESSES FUNCTIONS ★★★
-function savedAddresses() {
-    const modalHTML = `
-    <div class="modal-overlay active" id="savedAddressesModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Saved Addresses</h3>
-                <button class="modal-close" onclick="closeSavedAddressesModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="addresses-list">
-                    <div class="text-center py-4">
-                        <i class="fas fa-map-marker-alt" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
-                        <h4 style="color: var(--text-light);">No Saved Addresses</h4>
-                        <p style="color: var(--text-light);">You haven't saved any addresses yet</p>
-                        <button class="btn-primary mt-2" onclick="addNewAddress()">
-                            <i class="fas fa-plus"></i> Add New Address
-                        </button>
+        // ★★★ SAVED ADDRESSES FUNCTIONS ★★★
+        function savedAddresses() {
+            const modalHTML = `
+            <div class="modal-overlay active" id="savedAddressesModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Saved Addresses</h3>
+                        <button class="modal-close" onclick="closeSavedAddressesModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="addresses-list">
+                            <div class="text-center py-4">
+                                <i class="fas fa-map-marker-alt" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
+                                <h4 style="color: var(--text-light);">No Saved Addresses</h4>
+                                <p style="color: var(--text-light);">You haven't saved any addresses yet</p>
+                                <button class="btn-primary mt-2" onclick="addNewAddress()">
+                                    <i class="fas fa-plus"></i> Add New Address
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" onclick="closeSavedAddressesModal()">Close</button>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-outline" onclick="closeSavedAddressesModal()">Close</button>
-            </div>
-        </div>
-    </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-function closeSavedAddressesModal() {
-    const modal = document.getElementById('savedAddressesModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-function addNewAddress() {
-    // Close any existing address modal first
-    closeAddAddressModal();
-    
-    const modalHTML = `
-    <div class="modal-overlay active" id="addAddressModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Add New Address</h3>
-                <button class="modal-close" onclick="closeAddAddressModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Full Name *</label>
-                    <input type="text" class="form-control" id="addressName" placeholder="Enter full name" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Phone Number *</label>
-                    <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Pincode *</label>
-                    <input type="text" class="form-control" id="addressPincode" placeholder="Enter pincode" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Address *</label>
-                    <textarea class="form-control" id="addressLine1" placeholder="House no., Building, Street" rows="2" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Landmark (Optional)</label>
-                    <input type="text" class="form-control" id="addressLandmark" placeholder="Nearby landmark">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">City *</label>
-                    <input type="text" class="form-control" id="addressCity" placeholder="Enter city" required>
-                </div>
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" id="defaultAddress">
-                    <label class="form-check-label" for="defaultAddress">Set as default address</label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-outline" onclick="closeAddAddressModal()">Cancel</button>
-                <button type="button" class="btn-primary" onclick="saveNewAddress()">Save Address</button>
-            </div>
-        </div>
-    </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-        
-function closeAddAddressModal() {
-    const modal = document.getElementById('addAddressModal');
-    if (modal) modal.remove();
-}
-
-function saveNewAddress() {
-    const name = document.getElementById('addressName').value.trim();
-    const phone = document.getElementById('addressPhone').value.trim();
-    const pincode = document.getElementById('addressPincode').value.trim();
-    const address = document.getElementById('addressLine1').value.trim();
-    const city = document.getElementById('addressCity').value.trim();
-    const landmark = document.getElementById('addressLandmark').value.trim();
-    const isDefault = document.getElementById('defaultAddress').checked;
-
-    console.log("Address form values:", { name, phone, pincode, address, city, landmark, isDefault });
-
-    // Validation
-    if (!name) {
-        showToast("Please enter full name", 'error');
-        return;
-    }
-    
-    if (!phone) {
-        showToast("Please enter phone number", 'error');
-        return;
-    }
-    
-    if (!pincode) {
-        showToast("Please enter pincode", 'error');
-        return;
-    }
-    
-    if (!address) {
-        showToast("Please enter address", 'error');
-        return;
-    }
-    
-    if (!city) {
-        showToast("Please enter city", 'error');
-        return;
-    }
-
-    try {
-        // Get existing addresses or create empty array
-        const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
-        
-        const newAddress = {
-            id: 'addr_' + Date.now(),
-            name: name,
-            phone: phone,
-            pincode: pincode,
-            address: address,
-            city: city,
-            landmark: landmark,
-            isDefault: isDefault,
-            createdAt: new Date().toISOString()
-        };
-
-        // If setting as default, remove default from others
-        if (isDefault) {
-            addresses.forEach(addr => addr.isDefault = false);
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
 
-        addresses.push(newAddress);
-        localStorage.setItem('userAddresses', JSON.stringify(addresses));
-        
-        showToast('Address saved successfully!', 'success');
-        closeAddAddressModal();
-        
-        // Refresh addresses list if open
-        setTimeout(() => {
-            if (document.getElementById('savedAddressesModal')) {
-                closeSavedAddressesModal();
-                savedAddresses(); // Reopen with updated list
+        function closeSavedAddressesModal() {
+            const modal = document.getElementById('savedAddressesModal');
+            if (modal) {
+                modal.remove();
             }
-        }, 500);
+        }
 
-    } catch (error) {
-        console.error("Error saving address:", error);
-        showToast("Error saving address: " + error.message, 'error');
-    }
-}
+        function addNewAddress() {
+            // Close any existing address modal first
+            closeAddAddressModal();
+            
+            const modalHTML = `
+            <div class="modal-overlay active" id="addAddressModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Add New Address</h3>
+                        <button class="modal-close" onclick="closeAddAddressModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="addressName" placeholder="Enter full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pincode *</label>
+                            <input type="text" class="form-control" id="addressPincode" placeholder="Enter pincode" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address *</label>
+                            <textarea class="form-control" id="addressLine1" placeholder="House no., Building, Street" rows="2" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Landmark (Optional)</label>
+                            <input type="text" class="form-control" id="addressLandmark" placeholder="Nearby landmark">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City *</label>
+                            <input type="text" class="form-control" id="addressCity" placeholder="Enter city" required>
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="defaultAddress">
+                            <label class="form-check-label" for="defaultAddress">Set as default address</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" onclick="closeAddAddressModal()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="saveNewAddress()">Save Address</button>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
         
-// ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
+        function closeAddAddressModal() {
+            const modal = document.getElementById('addAddressModal');
+            if (modal) modal.remove();
+        }
 
-// Next functions will be here...
+        function saveNewAddress() {
+            const name = document.getElementById('addressName').value.trim();
+            const phone = document.getElementById('addressPhone').value.trim();
+            const pincode = document.getElementById('addressPincode').value.trim();
+            const address = document.getElementById('addressLine1').value.trim();
+            const city = document.getElementById('addressCity').value.trim();
+            const landmark = document.getElementById('addressLandmark').value.trim();
+            const isDefault = document.getElementById('defaultAddress').checked;
+
+            console.log("Address form values:", { name, phone, pincode, address, city, landmark, isDefault });
+
+            // Validation
+            if (!name) {
+                showToast("Please enter full name", 'error');
+                return;
+            }
+            
+            if (!phone) {
+                showToast("Please enter phone number", 'error');
+                return;
+            }
+            
+            if (!pincode) {
+                showToast("Please enter pincode", 'error');
+                return;
+            }
+            
+            if (!address) {
+                showToast("Please enter address", 'error');
+                return;
+            }
+            
+            if (!city) {
+                showToast("Please enter city", 'error');
+                return;
+            }
+
+            try {
+                // Get existing addresses or create empty array
+                const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+                
+                const newAddress = {
+                    id: 'addr_' + Date.now(),
+                    name: name,
+                    phone: phone,
+                    pincode: pincode,
+                    address: address,
+                    city: city,
+                    landmark: landmark,
+                    isDefault: isDefault,
+                    createdAt: new Date().toISOString()
+                };
+
+                // If setting as default, remove default from others
+                if (isDefault) {
+                    addresses.forEach(addr => addr.isDefault = false);
+                }
+
+                addresses.push(newAddress);
+                localStorage.setItem('userAddresses', JSON.stringify(addresses));
+                
+                showToast('Address saved successfully!', 'success');
+                closeAddAddressModal();
+                
+                // Refresh addresses list if open
+                setTimeout(() => {
+                    if (document.getElementById('savedAddressesModal')) {
+                        closeSavedAddressesModal();
+                        savedAddresses(); // Reopen with updated list
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error("Error saving address:", error);
+                showToast("Error saving address: " + error.message, 'error');
+            }
+        }
+        
+        // ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
 
         // Add missing authentication form toggle functions
         function showLoginForm() {
@@ -3814,7 +3683,7 @@ function saveNewAddress() {
         }
 
         // Cart Functionality
-                // Cart Functionality - FIXED: Inventory sync
+        // Cart Functionality - FIXED: Inventory sync
         async function addToCart(productId) {
             try {
                 // Check real-time stock from Firebase
@@ -4677,7 +4546,7 @@ This action cannot be undone.`,
             );
         }
 
-                // FIXED: Real order placement with shopkeeper integration
+        // FIXED: Real order placement with shopkeeper integration
         async function completeOrderPlacementWithShopkeeper(newOrder) {
             try {
                 // First check stock availability for all items
@@ -4691,9 +4560,9 @@ This action cannot be undone.`,
                 }
 
                 // Save order to local storage for history
-const userOrders = JSON.parse(localStorage.getItem('dukaan_user_orders') || '[]');
-userOrders.unshift(newOrder);
-localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
+                const userOrders = JSON.parse(localStorage.getItem('dukaan_user_orders') || '[]');
+                userOrders.unshift(newOrder);
+                localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
 
                 // Create main order in Firebase
                 const orderData = {
@@ -4716,19 +4585,19 @@ localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
                 for (const item of cart) {
                     // Create order item for shopkeeper
                     await db.collection('orderItems').add({
-    orderId: orderRef.id,
-    productId: item.id,
-    productName: item.name,
-    shopId: item.shopId,
-    shopName: item.shopName,
-    quantity: item.quantity,
-    price: item.price,
-    status: 'pending',
-    customerId: currentUser.uid,
-    customerEmail: currentUser.email,
-    paymentMethod: newOrder.paymentMethod, // ✅ ADD THIS LINE
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-});
+                        orderId: orderRef.id,
+                        productId: item.id,
+                        productName: item.name,
+                        shopId: item.shopId,
+                        shopName: item.shopName,
+                        quantity: item.quantity,
+                        price: item.price,
+                        status: 'pending',
+                        customerId: currentUser.uid,
+                        customerEmail: currentUser.email,
+                        paymentMethod: newOrder.paymentMethod, // ✅ ADD THIS LINE
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
 
                     // Update product stock
                     await db.collection('products').doc(item.id).update({
@@ -4871,7 +4740,7 @@ localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
                             <button class="btn-reorder" onclick="reorder('${order.id}')">
                                 <i class="fas fa-redo"></i> Reorder
                             </button>
-                                                        <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
+                            <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
                                 <i class="fas fa-map-marker-alt"></i> Track
                             </button>
                             ${order.status === 'confirmed' || order.status === 'preparing' ? `
@@ -4924,7 +4793,7 @@ localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
             openBottomSheet();
         }
 
-         function showOrderTracking(orderId) {
+        function showOrderTracking(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (!order) return;
             
@@ -4967,7 +4836,7 @@ localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
             }
             
             orderTracking.classList.add('open');
-         }
+        }
         
         function updateTrackingTimeline(order) {
             const tracking = order.tracking;
@@ -5070,6 +4939,18 @@ This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be 
                 clearInterval(orderTrackingInterval);
             }
             
+            // Start new simulation
+            orderTrackingInterval = setInterval(() => {
+                if (order.status === 'confirmed') {
+                    updateOrderStatus(order.id, 'preparing');
+                } else if (order.status === 'preparing') {
+                    updateOrderStatus(order.id, 'dispatched');
+                } else if (order.status === 'dispatched') {
+                    updateOrderStatus(order.id, 'delivered');
+                    clearInterval(orderTrackingInterval);
+                }
+            }, 30000); // Update every 30 seconds for demo
+        }
 
         function updateOrderStatus(orderId, newStatus) {
             const orderIndex = orders.findIndex(o => o.id === orderId);
@@ -5328,7 +5209,7 @@ Track your order: ${window.location.href}
                 const sessionElement = document.createElement('div');
                 sessionElement.className = `login-session ${session.active ? 'session-active' : 'session-inactive'}`;
                 sessionElement.innerHTML = `
-                    <div style="display: flex; justify-content: between; align-items: start;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div style="flex: 1;">
                             <strong>${session.device}</strong>
                             <div style="font-size: 0.9rem; color: var(--text-light); margin-top: 4px;">
@@ -5346,184 +5227,178 @@ Track your order: ${window.location.href}
         }
 
         function editPersonalDetails() {
-    const user = firebase.auth().currentUser;
-    const currentName = user.displayName || "";
-    const currentEmail = user.email || "";
-    
-    const modalHTML = `
-    <div class="modal-overlay active" id="editProfileModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Edit Profile</h3>
-                <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="editUserName" value="${currentName}" placeholder="Enter your full name">
+            const user = firebase.auth().currentUser;
+            const currentName = user.displayName || "";
+            const currentEmail = user.email || "";
+            
+            const modalHTML = `
+            <div class="modal-overlay active" id="editProfileModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Edit Profile</h3>
+                        <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="editUserName" value="${currentName}" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="editUserEmail" value="${currentEmail}" readonly style="background: #f8f9fa;">
+                            <small class="text-muted">Email cannot be changed</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="editUserPhone" placeholder="Enter phone number">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="processProfileUpdate()">Save Changes</button>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="editUserEmail" value="${currentEmail}" readonly style="background: #f8f9fa;">
-                    <small class="text-muted">Email cannot be changed</small>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" id="editUserPhone" placeholder="Enter phone number">
-                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-outline" onclick="closeEditProfileModal()">Cancel</button>
-                <button type="button" class="btn-primary" onclick="processProfileUpdate()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
 
-function closeEditProfileModal() {
-    const modal = document.getElementById('editProfileModal');
-    if (modal) modal.remove();
-}
+        function closeEditProfileModal() {
+            const modal = document.getElementById('editProfileModal');
+            if (modal) modal.remove();
+        }
 
-function processProfileUpdate() {
-    const newName = document.getElementById('editUserName').value.trim();
-    
-    if (!newName) {
-        showToast("Name cannot be empty", 'error');
-        return;
-    }
-    
-    const user = firebase.auth().currentUser;
-    user.updateProfile({
-        displayName: newName
-    }).then(() => {
-        showToast("Profile updated successfully!", 'success');
-        
-        // Update UI
-        const userNameElements = document.querySelectorAll('.user-name, #userName');
-        userNameElements.forEach(element => {
-            element.textContent = newName;
-        });
-        
-        closeEditProfileModal();
-    }).catch(error => {
-        console.error("Profile update error:", error);
-        showToast("Error updating profile: " + error.message, 'error');
-    });
-}
+        function processProfileUpdate() {
+            const newName = document.getElementById('editUserName').value.trim();
+            
+            if (!newName) {
+                showToast("Name cannot be empty", 'error');
+                return;
+            }
+            
+            const user = firebase.auth().currentUser;
+            user.updateProfile({
+                displayName: newName
+            }).then(() => {
+                showToast("Profile updated successfully!", 'success');
+                
+                // Update UI
+                const userNameElements = document.querySelectorAll('.user-name, #userName');
+                userNameElements.forEach(element => {
+                    element.textContent = newName;
+                });
+                
+                closeEditProfileModal();
+            }).catch(error => {
+                console.error("Profile update error:", error);
+                showToast("Error updating profile: " + error.message, 'error');
+            });
+        }
+
         function changeProfilePicture() {
             document.getElementById('avatarUpload').click();
         }
 
         function changePassword() {
-    // Create a custom modal for password change
-    const modalHTML = `
-    <div class="modal-overlay active" id="passwordModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Change Password</h3>
-                <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+            // Create a custom modal for password change
+            const modalHTML = `
+            <div class="modal-overlay active" id="passwordModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Change Password</h3>
+                        <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min. 6 characters)" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password" required>
+                        </div>
+                        <div class="alert alert-info">
+                            <small><i class="fas fa-info-circle"></i> You'll need to re-enter your current password for security</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" onclick="closePasswordModal()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="processPasswordChange()">Update Password</button>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Current Password</label>
-                    <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">New Password</label>
-                    <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min. 6 characters)" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Confirm New Password</label>
-                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password" required>
-                </div>
-                <div class="alert alert-info">
-                    <small><i class="fas fa-info-circle"></i> You'll need to re-enter your current password for security</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-outline" onclick="closePasswordModal()">Cancel</button>
-                <button type="button" class="btn-primary" onclick="processPasswordChange()">Update Password</button>
-            </div>
-        </div>
-    </div>
-    `;
-    
-    // Add modal to page
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-function closePasswordModal() {
-    const modal = document.getElementById('passwordModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-async function processPasswordChange() {
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    // Validation
-    if (!currentPassword) {
-        showToast("Please enter your current password", 'error');
-        return;
-    }
-    
-    if (!newPassword || newPassword.length < 6) {
-        showToast("New password must be at least 6 characters", 'error');
-        return;
-    }
-    
-    if (newPassword !== confirmPassword) {
-        showToast("New passwords don't match", 'error');
-        return;
-    }
-    
-    if (currentPassword === newPassword) {
-        showToast("New password cannot be same as current password", 'error');
-        return;
-    }
-    
-    const user = firebase.auth().currentUser;
-    const email = user.email;
-    
-    try {
-        showToast("Verifying your current password...", 'info');
-        
-        // Re-authenticate user first
-        const credential = firebase.auth.EmailAuthProvider.credential(email, currentPassword);
-        await user.reauthenticateWithCredential(credential);
-        
-        // Now update password
-        await user.updatePassword(newPassword);
-        
-        showToast("Password updated successfully!", 'success');
-        closePasswordModal();
-        
-    } catch (error) {
-        console.error("Password change error:", error);
-        
-        if (error.code === 'auth/wrong-password') {
-            showToast("Current password is incorrect", 'error');
-        } else if (error.code === 'auth/requires-recent-login') {
-            showToast("Session expired. Please sign in again", 'error');
-        } else {
-            showToast("Error: " + error.message, 'error');
+            `;
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
-    }
-}
-function showLoginHistory() {
-    document.getElementById('loginHistorySection').style.display = 'block';
-    // Scroll to login history section
-    setTimeout(() => {
-        document.getElementById('loginHistorySection').scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-}
+
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function processPasswordChange() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validation
+            if (!currentPassword) {
+                showToast("Please enter your current password", 'error');
+                return;
+            }
+            
+            if (!newPassword || newPassword.length < 6) {
+                showToast("New password must be at least 6 characters", 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast("New passwords don't match", 'error');
+                return;
+            }
+            
+            if (currentPassword === newPassword) {
+                showToast("New password cannot be same as current password", 'error');
+                return;
+            }
+            
+            const user = firebase.auth().currentUser;
+            const email = user.email;
+            
+            try {
+                showToast("Verifying your current password...", 'info');
+                
+                // Re-authenticate user first
+                const credential = firebase.auth.EmailAuthProvider.credential(email, currentPassword);
+                await user.reauthenticateWithCredential(credential);
+                
+                // Now update password
+                await user.updatePassword(newPassword);
+                
+                showToast("Password updated successfully!", 'success');
+                closePasswordModal();
+                
+            } catch (error) {
+                console.error("Password change error:", error);
+                
+                if (error.code === 'auth/wrong-password') {
+                    showToast("Current password is incorrect", 'error');
+                } else if (error.code === 'auth/requires-recent-login') {
+                    showToast("Session expired. Please sign in again", 'error');
+                } else {
+                    showToast("Error: " + error.message, 'error');
+                }
+            }
+        }
 
         function showLoginHistory() {
             document.getElementById('loginHistorySection').style.display = 'block';
@@ -5766,105 +5641,96 @@ function showLoginHistory() {
         }
 
         // SOCIAL SHARE FUNCTIONALITY - PHASE 5.2
-function shareProduct(productId) {
-    if (!currentProductDetail) {
-        showToast('Please open a product to share');
-        return;
-    }
-    
-    const product = currentProductDetail;
-    const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
-    
-    const shareText = `Check out ${product.name} on Dukaan - ₹${product.price} (${discount}% OFF)! 🛍️`;
-    const shareUrl = window.location.href.split('?')[0] + `?product=${productId}`;
-    
-    // Check if Web Share API is supported
-    if (navigator.share) {
-        navigator.share({
-            title: product.name + ' - Dukaan',
-            text: shareText,
-            url: shareUrl
-        }).then(() => {
-            showToast('Product shared successfully! 📤');
-        }).catch((error) => {
-            console.log('Share failed:', error);
-            fallbackShareProduct(shareText, shareUrl);
+        function shareProduct(productId) {
+            if (!currentProductDetail) {
+                showToast('Please open a product to share');
+                return;
+            }
+            
+            const product = currentProductDetail;
+            const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+            
+            const shareText = `Check out ${product.name} on Dukaan - ₹${product.price} (${discount}% OFF)! 🛍️`;
+            const shareUrl = window.location.href.split('?')[0] + `?product=${productId}`;
+            
+            // Check if Web Share API is supported
+            if (navigator.share) {
+                navigator.share({
+                    title: product.name + ' - Dukaan',
+                    text: shareText,
+                    url: shareUrl
+                }).then(() => {
+                    showToast('Product shared successfully! 📤');
+                }).catch((error) => {
+                    console.log('Share failed:', error);
+                    fallbackShareProduct(shareText, shareUrl);
+                });
+            } else {
+                fallbackShareProduct(shareText, shareUrl);
+            }
+        }
+
+        // Fallback for browsers that don't support Web Share API
+        function fallbackShareProduct(text, url) {
+            const shareData = `${text}\n\n${url}`;
+            
+            // Try to copy to clipboard first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareData).then(() => {
+                    showToast('Product link copied to clipboard! 📋');
+                }).catch(() => {
+                    // If clipboard fails, show share options
+                    showShareOptions(text, url);
+                });
+            } else {
+                showShareOptions(text, url);
+            }
+        }
+
+        // Show custom share options modal
+        function showShareOptions(text, url) {
+            const shareModal = `
+                <div class="share-options-modal">
+                    <h4>Share Product</h4>
+                    <p>${text}</p>
+                    <div class="share-buttons">
+                        <button onclick="shareToWhatsApp('${text}', '${url}')" class="btn-share whatsapp">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                        <button onclick="copyToClipboard('${text} ${url}')" class="btn-share copy">
+                            <i class="fas fa-copy"></i> Copy Link
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // You can implement a proper modal here
+            // For now, just copy to clipboard
+            copyToClipboard(text + ' ' + url);
+        }
+
+        // Share to WhatsApp
+        function shareToWhatsApp(text, url) {
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Copy to clipboard utility
+        function copyToClipboard(text) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast('Link copied to clipboard! 📋');
+        }
+
+        // App load hone par products load karo
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            loadProductsFromFirebase();
         });
-    } else {
-        fallbackShareProduct(shareText, shareUrl);
-    }
-}
-
-// Fallback for browsers that don't support Web Share API
-function fallbackShareProduct(text, url) {
-    const shareData = `${text}\n\n${url}`;
-    
-    // Try to copy to clipboard first
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareData).then(() => {
-            showToast('Product link copied to clipboard! 📋');
-        }).catch(() => {
-            // If clipboard fails, show share options
-            showShareOptions(text, url);
-        });
-    } else {
-        showShareOptions(text, url);
-    }
-}
-
-// Show custom share options modal
-function showShareOptions(text, url) {
-    const shareModal = `
-        <div class="share-options-modal">
-            <h4>Share Product</h4>
-            <p>${text}</p>
-            <div class="share-buttons">
-                <button onclick="shareToWhatsApp('${text}', '${url}')" class="btn-share whatsapp">
-                    <i class="fab fa-whatsapp"></i> WhatsApp
-                </button>
-                <button onclick="copyToClipboard('${text} ${url}')" class="btn-share copy">
-                    <i class="fas fa-copy"></i> Copy Link
-                </button>
-            </div>
-        </div>
-    `;
-    
-    // You can implement a proper modal here
-    // For now, just copy to clipboard
-    copyToClipboard(text + ' ' + url);
-}
-
-// Share to WhatsApp
-function shareToWhatsApp(text, url) {
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
-    window.open(whatsappUrl, '_blank');
-}
-
-// Copy to clipboard utility
-function copyToClipboard(text) {
-    const tempInput = document.createElement('input');
-    tempInput.value = text;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand('copy');
-    document.body.removeChild(tempInput);
-    showToast('Link copied to clipboard! 📋');
-}
-
-function initApp() {
-    setupFirebaseAuth();
-    loadCart();
-    loadProductsFromFirebase();
-    updateCartUI();
-    setupNavigation();
-    setupSearch();
-    setupFilters();
-    setupCoupons();
-    setupNotifications();
-    setupRealTimeListeners();
-} // ✅ YEH CLOSING BRACE ADD KARO
-
-document.addEventListener('DOMContentLoaded', initApp);
-</script>
+    </script>
 </body>
 </html>
