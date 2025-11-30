@@ -1658,22 +1658,17 @@
     }
 }
 
-/* Logout Button Styling */
-.btn-logout {
-    background: transparent;
-    color: white;
-    border: 1px solid white;
-    padding: 8px 16px;
-    border-radius: 8px;
+/* Logout option styling */
+.preference-item[style*="color: var(--danger)"] {
     cursor: pointer;
-    font-size: 14px;
     transition: all 0.3s ease;
-    white-space: nowrap;
 }
 
-.btn-logout:hover {
-    background: white;
-    color: var(--primary);
+.preference-item[style*="color: var(--danger)"]:hover {
+    background: #FEE2E2;
+    border-radius: 8px;
+    padding: 12px;
+    margin: -12px -12px -12px -12px;
 }
         
 /* 🎯 EXTRA SMALL DEVICES */
@@ -1795,9 +1790,6 @@
                 <div class="search-results" id="searchResults"></div>
             </div>
             <div class="header-actions">
-                <button class="btn-logout" onclick="logout()" id="logoutBtn" style="display: none;">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
             </div>
         </div>
     </header>
@@ -2192,7 +2184,7 @@
     </div>
 </li>
 
-                <!-- Preferences Section -->
+                                <!-- Preferences Section -->
                 <div class="profile-section">
                     <h3 class="section-title">
                         <i class="fas fa-cog"></i>
@@ -2235,6 +2227,17 @@
                         </div>
                         <div class="menu-item-arrow">
                             <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- ★★★ ADD LOGOUT HERE ★★★ -->
+                    <div class="preference-item" onclick="logout()" style="color: var(--danger); border-top: 1px solid var(--border); margin-top: 10px; padding-top: 15px;">
+                        <div class="preference-info">
+                            <div class="preference-title" style="color: var(--danger);">Logout</div>
+                            <div class="preference-desc" style="color: var(--danger);">Sign out from your account</div>
+                        </div>
+                        <div class="menu-item-arrow" style="color: var(--danger);">
+                            <i class="fas fa-sign-out-alt"></i>
                         </div>
                     </div>
                 </div>
