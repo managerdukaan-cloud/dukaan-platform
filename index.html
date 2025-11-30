@@ -1597,6 +1597,85 @@
     }
 }
 
+        /* Header Layout Fix */
+.app-header .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    position: relative;
+}
+
+.app-header .search-container {
+    flex: 1;
+    max-width: 500px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.app-header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Center search bar on desktop */
+@media (min-width: 769px) {
+    .app-header .header-container {
+        position: relative;
+    }
+    
+    .app-header .search-container {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 400px;
+    }
+    
+    .app-header .header-actions {
+        margin-left: auto;
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .app-header .header-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .app-header .search-container {
+        order: 2;
+        width: 100%;
+        max-width: none;
+    }
+    
+    .app-header .header-actions {
+        order: 3;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* Logout Button Styling */
+.btn-logout {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-logout:hover {
+    background: white;
+    color: var(--primary);
+}
+        
 /* 🎯 EXTRA SMALL DEVICES */
 @media (max-width: 480px) {
     .product-grid {
@@ -1702,28 +1781,27 @@
         </div>
     </div>
 
-    <!-- Main App Screen -->
-    <div id="appScreen" style="display: none;">
-        <header class="app-header">
-    <div class="header-container">
-        <a href="#" class="brand">
-            <div class="brand-logo">D</div>
-            <span>Dukaan</span>
-        </a>
-        <div class="search-container">
-            <input type="text" id="search" class="search-bar" placeholder="Search for products, categories...">
-            <div class="search-icon"><i class="fas fa-search"></i></div>
-            <div class="search-results" id="searchResults"></div>
-        </div>
-        <!-- Customer App Navigation Links -->
-            <div class="nav-links">
-                <button class="btn btn-outline logout-btn" onclick="logout()">
+      <!-- Main App Screen -->
+<div id="appScreen" style="display: none;">
+    <header class="app-header">
+        <div class="header-container">
+            <a href="#" class="brand">
+                <div class="brand-logo">D</div>
+                <span>Dukaan</span>
+            </a>
+            <div class="search-container">
+                <input type="text" id="search" class="search-bar" placeholder="Search for products, categories...">
+                <div class="search-icon"><i class="fas fa-search"></i></div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-logout" onclick="logout()" id="logoutBtn" style="display: none;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
-    </div>
-</header>
-
+        </div>
+    </header>
+    
         <div class="container-main">
             <div id="homePage">
                 <div class="hero-banner">
