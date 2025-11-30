@@ -2598,14 +2598,17 @@
         };
 
         // Initialize Firebase
-        try {
-            firebase.initializeApp(firebaseConfig);
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            console.log('Firebase already initialized');
-        }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+            try {
+                firebase.initializeApp(firebaseConfig);
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.log('Firebase already initialized');
+            }
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            
+            // ✅ YEH NAYI LINE ADD KARO - AUTH PERSISTENCE
+            auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
 
         // Sample Data with Cloudinary Images
         const SHOPS = {
