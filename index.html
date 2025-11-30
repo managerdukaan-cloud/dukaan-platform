@@ -5049,25 +5049,6 @@ This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be 
                 clearInterval(orderTrackingInterval);
             }
             
-            // Simulate order progress for demo purposes
-            orderTrackingInterval = setInterval(() => {
-                if (!currentTrackingOrder) return;
-                
-                const statusOrder = ['confirmed', 'preparing', 'dispatched', 'delivered'];
-                const currentIndex = statusOrder.indexOf(currentTrackingOrder.status);
-                
-                // Only progress if not already delivered
-                if (currentIndex < statusOrder.length - 1) {
-                    // Simulate random progress (for demo)
-                    if (Math.random() > 0.7) { // 30% chance to progress
-                        const nextStatus = statusOrder[currentIndex + 1];
-                        updateOrderStatus(currentTrackingOrder.id, nextStatus);
-                    }
-                } else {
-                    clearInterval(orderTrackingInterval);
-                }
-            }, 10000); // Check every 10 seconds
-        }
 
         function updateOrderStatus(orderId, newStatus) {
             const orderIndex = orders.findIndex(o => o.id === orderId);
