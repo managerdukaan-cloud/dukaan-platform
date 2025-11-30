@@ -4696,18 +4696,19 @@ localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
                 for (const item of cart) {
                     // Create order item for shopkeeper
                     await db.collection('orderItems').add({
-                        orderId: orderRef.id,
-                        productId: item.id,
-                        productName: item.name,
-                        shopId: item.shopId,
-                        shopName: item.shopName,
-                        quantity: item.quantity,
-                        price: item.price,
-                        status: 'pending',
-                        customerId: currentUser.uid,
-                        customerEmail: currentUser.email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+    orderId: orderRef.id,
+    productId: item.id,
+    productName: item.name,
+    shopId: item.shopId,
+    shopName: item.shopName,
+    quantity: item.quantity,
+    price: item.price,
+    status: 'pending',
+    customerId: currentUser.uid,
+    customerEmail: currentUser.email,
+    paymentMethod: newOrder.paymentMethod, // ✅ ADD THIS LINE
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
 
                     // Update product stock
                     await db.collection('products').doc(item.id).update({
