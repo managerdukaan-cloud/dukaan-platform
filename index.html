@@ -2851,6 +2851,39 @@
             }
         }
 
+        // ✅ ADD THIS FUNCTION - ORDER HISTORY LOADING
+async function loadOrderHistory() {
+    if (!currentUser) return;
+    
+    try {
+        console.log("🔄 Loading order history...");
+        const snapshot = await db.collection('orders')
+            .where('customerId', '==', currentUser.uid)
+            .orderBy('createdAt', 'desc')
+            .get();
+        
+        orders = [];
+        snapshot.forEach(doc => {
+            orders.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Also save to local storage for offline access
+        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+        
+        renderOrders();
+        console.log("✅ Order history loaded:", orders.length, "orders");
+        
+    } catch (error) {
+        console.error('Error loading order history:', error);
+        // Fallback to local storage
+        const savedOrders = localStorage.getItem('dukaan_orders');
+        if (savedOrders) {
+            orders = JSON.parse(savedOrders);
+            renderOrders();
+        }
+    }
+}
+
         // Auth Functions - FIXED
         function showAuthScreen() {
             authScreen.style.display = 'block';
