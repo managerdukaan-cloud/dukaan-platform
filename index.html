@@ -2947,35 +2947,43 @@
         }
 
         // ★★★ ADD LOGOUT FUNCTION HERE ★★★
-        function logout() {
-            console.log("Logout function called");
+function logout() {
+    console.log("Logout function called");
+    
+    // Check if user is logged in with Firebase
+    if (firebase.auth().currentUser) {
+        firebase.auth().signOut().then(() => {
+            showToast("Logged out successfully!", 'success');
             
-            // Check if user is logged in with Firebase
-            if (firebase.auth().currentUser) {
-                firebase.auth().signOut().then(() => {
-                    showToast("Logged out successfully!", 'success');
-                    // Switch to auth screen
-                    document.getElementById('appScreen').style.display = 'none';
-                    document.getElementById('authScreen').style.display = 'block';
-                    // Reset forms
-                    document.getElementById('loginForm').reset();
-                    document.getElementById('signupForm').reset();
-                    // Show login form by default
-                    document.getElementById('loginForm').style.display = 'block';
-                    document.getElementById('signupForm').style.display = 'none';
-                    document.getElementById('loginFooter').style.display = 'block';
-                    document.getElementById('signupFooter').style.display = 'none';
-                }).catch((error) => {
-                    console.error("Logout error:", error);
-                    showToast("Error logging out: " + error.message, 'error');
-                });
-            } else {
-                // Fallback for any logged in state
-                document.getElementById('appScreen').style.display = 'none';
-                document.getElementById('authScreen').style.display = 'block';
-                showToast("Logged out successfully!");
-            }
-        }
+            // ✅ YEH LINE ADD KARO - UI IMMEDIATELY UPDATE
+            updateUIForAuth(null);
+            
+            // Switch to auth screen
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'block';
+            // Reset forms
+            document.getElementById('loginForm').reset();
+            document.getElementById('signupForm').reset();
+            // Show login form by default
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginFooter').style.display = 'block';
+            document.getElementById('signupFooter').style.display = 'none';
+        }).catch((error) => {
+            console.error("Logout error:", error);
+            showToast("Error logging out: " + error.message, 'error');
+        });
+    } else {
+        // Fallback for any logged in state
+        document.getElementById('appScreen').style.display = 'none';
+        document.getElementById('authScreen').style.display = 'block';
+        
+        // ✅ YEH LINE ADD KARO - UI UPDATE
+        updateUIForAuth(null);
+        
+        showToast("Logged out successfully!");
+    }
+}
 
         // ★★★ ADD MISSING MODAL FUNCTIONS ★★★
 
