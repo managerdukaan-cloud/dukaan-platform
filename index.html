@@ -3014,10 +3014,8 @@ function closeSavedAddressesModal() {
 }
 
 function addNewAddress() {
-    closeSavedAddressesModal();
-    // Open address form in checkout or show toast
-    showToast('Use the address form in checkout to add new addresses');
-}
+    // Close any existing address modal first
+    closeAddAddressModal();
     
     const modalHTML = `
     <div class="modal-overlay active" id="addAddressModal">
@@ -3028,28 +3026,28 @@ function addNewAddress() {
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="addressName" placeholder="Enter full name">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-control" id="addressName" placeholder="Enter full name" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number">
+                    <label class="form-label">Phone Number *</label>
+                    <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Pincode</label>
-                    <input type="text" class="form-control" id="addressPincode" placeholder="Enter pincode">
+                    <label class="form-label">Pincode *</label>
+                    <input type="text" class="form-control" id="addressPincode" placeholder="Enter pincode" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Address</label>
-                    <textarea class="form-control" id="addressLine1" placeholder="House no., Building, Street" rows="2"></textarea>
+                    <label class="form-label">Address *</label>
+                    <textarea class="form-control" id="addressLine1" placeholder="House no., Building, Street" rows="2" required></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Landmark (Optional)</label>
                     <input type="text" class="form-control" id="addressLandmark" placeholder="Nearby landmark">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">City</label>
-                    <input type="text" class="form-control" id="addressCity" placeholder="Enter city">
+                    <label class="form-label">City *</label>
+                    <input type="text" class="form-control" id="addressCity" placeholder="Enter city" required>
                 </div>
                 <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" id="defaultAddress">
@@ -3076,36 +3074,78 @@ function saveNewAddress() {
     const name = document.getElementById('addressName').value.trim();
     const phone = document.getElementById('addressPhone').value.trim();
     const pincode = document.getElementById('addressPincode').value.trim();
-    const address = document.getElementById('addressText').value.trim();
+    const address = document.getElementById('addressLine1').value.trim();
     const city = document.getElementById('addressCity').value.trim();
-    const state = document.getElementById('addressState').value.trim();
     const landmark = document.getElementById('addressLandmark').value.trim();
-    const type = document.getElementById('addressType').value;
+    const isDefault = document.getElementById('defaultAddress').checked;
 
-    if (!name || !phone || !pincode || !address || !city || !state) {
-        alert('Please fill all required fields');
+    console.log("Address form values:", { name, phone, pincode, address, city, landmark, isDefault });
+
+    // Validation
+    if (!name) {
+        showToast("Please enter full name", 'error');
+        return;
+    }
+    
+    if (!phone) {
+        showToast("Please enter phone number", 'error');
+        return;
+    }
+    
+    if (!pincode) {
+        showToast("Please enter pincode", 'error');
+        return;
+    }
+    
+    if (!address) {
+        showToast("Please enter address", 'error');
+        return;
+    }
+    
+    if (!city) {
+        showToast("Please enter city", 'error');
         return;
     }
 
-    const newAddress = {
-        id: 'addr_' + Date.now(),
-        name: name,
-        phone: phone,
-        pincode: pincode,
-        address: address,
-        city: city,
-        state: state,
-        landmark: landmark,
-        type: type,
-        isDefault: addresses.length === 0
-    };
+    try {
+        // Get existing addresses or create empty array
+        const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+        
+        const newAddress = {
+            id: 'addr_' + Date.now(),
+            name: name,
+            phone: phone,
+            pincode: pincode,
+            address: address,
+            city: city,
+            landmark: landmark,
+            isDefault: isDefault,
+            createdAt: new Date().toISOString()
+        };
 
-    addresses.push(newAddress);
-    localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
-    
-    closeAddAddressModal();
-    renderAddresses();
-    showToast('Address saved successfully!');
+        // If setting as default, remove default from others
+        if (isDefault) {
+            addresses.forEach(addr => addr.isDefault = false);
+        }
+
+        addresses.push(newAddress);
+        localStorage.setItem('userAddresses', JSON.stringify(addresses));
+        
+        showToast('Address saved successfully!', 'success');
+        closeAddAddressModal();
+        
+        // Refresh addresses list if open
+        setTimeout(() => {
+            if (document.getElementById('savedAddressesModal')) {
+                closeSavedAddressesModal();
+                savedAddresses(); // Reopen with updated list
+            }
+        }, 500);
+
+    } catch (error) {
+        console.error("Error saving address:", error);
+        showToast("Error saving address: " + error.message, 'error');
+    }
 }
         
 // ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
