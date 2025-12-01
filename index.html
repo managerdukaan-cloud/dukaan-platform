@@ -5059,55 +5059,89 @@ This action cannot be undone.`,
         }
 
         function cancelOrder(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            showConfirmationModal(
-                'Cancel Order',
-                `Are you sure you want to cancel order #${orderId.slice(-6)}? 
-                
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    showConfirmationModal(
+        'Cancel Order',
+        `Are you sure you want to cancel order #${orderId.slice(-6)}? 
+        
 This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be processed within 3-5 business days.' : ''}`,
-                () => {
-                    // Update order status to cancelled
-                    const orderIndex = orders.findIndex(o => o.id === orderId);
-                    if (orderIndex !== -1) {
-                        orders[orderIndex].status = 'cancelled';
-                        orders[orderIndex].cancelledAt = new Date().toISOString();
+        async () => {
+            // Update order status to cancelled
+            const orderIndex = orders.findIndex(o => o.id === orderId);
+            if (orderIndex !== -1) {
+                orders[orderIndex].status = 'cancelled';
+                orders[orderIndex].cancelledAt = new Date().toISOString();
+                
+                // STOP TRACKING SIMULATION FOR CANCELLED ORDERS
+                if (orderTrackingInterval) {
+                    clearInterval(orderTrackingInterval);
+                }
+                
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                
+                // ✅ FIX: UPDATE ALL COLLECTIONS - NOT JUST USER'S PERSONAL COLLECTION
+                if (currentUser) {
+                    try {
+                        // ✅ 1. Update main orders collection
+                        await db.collection('orders').doc(orderId).update({
+                            status: 'cancelled',
+                            cancelledAt: orders[orderIndex].cancelledAt,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
                         
-                        // STOP TRACKING SIMULATION FOR CANCELLED ORDERS
-                        if (orderTrackingInterval) {
-                            clearInterval(orderTrackingInterval);
+                        // ✅ 2. Update orderItems collection (for shopkeeper)
+                        const orderItemsQuery = await db.collection('orderItems')
+                            .where('orderId', '==', orderId)
+                            .get();
+                        
+                        if (!orderItemsQuery.empty) {
+                            const batch = db.batch();
+                            orderItemsQuery.forEach(doc => {
+                                const orderItemRef = db.collection('orderItems').doc(doc.id);
+                                batch.update(orderItemRef, {
+                                    status: 'cancelled',
+                                    cancelledAt: orders[orderIndex].cancelledAt,
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            });
+                            await batch.commit();
+                            console.log('✅ Cancelled order in orderItems collection');
                         }
                         
-                        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                        
-                        // Update Firebase if user is logged in
-                        if (currentUser) {
-                            db.collection('users').doc(currentUser.uid).collection('orders')
-                                .where('id', '==', orderId)
-                                .get()
-                                .then(snapshot => {
-                                    snapshot.forEach(doc => {
-                                        doc.ref.update({
-                                            status: 'cancelled',
-                                            cancelledAt: orders[orderIndex].cancelledAt
-                                        });
+                        // ✅ 3. Also update user's personal orders collection (optional)
+                        await db.collection('users').doc(currentUser.uid).collection('orders')
+                            .where('id', '==', orderId)
+                            .get()
+                            .then(snapshot => {
+                                snapshot.forEach(doc => {
+                                    doc.ref.update({
+                                        status: 'cancelled',
+                                        cancelledAt: orders[orderIndex].cancelledAt
                                     });
                                 });
-                        }
+                            });
                         
-                        // Close tracking modal
-                        closeOrderTracking();
-                        
-                        // Show success message
-                        showToast('Order cancelled successfully!');
-                        
-                        // Update orders list
-                        renderOrders();
+                    } catch (error) {
+                        console.error('Error updating cancelled order:', error);
+                        showToast('Error updating order status. Please try again.', 'error');
+                        return;
                     }
                 }
-            );
+                
+                // Close tracking modal
+                closeOrderTracking();
+                
+                // Show success message
+                showToast('Order cancelled successfully!');
+                
+                // Update orders list
+                renderOrders();
+            }
         }
+    );
+}
 
         function updateOrderStatus(orderId, newStatus) {
             const orderIndex = orders.findIndex(o => o.id === orderId);
