@@ -4778,19 +4778,54 @@ function renderProducts(products) {
                 return;
             }
             
-            // For QR payments, check if UTR is entered and valid
-            if (selectedPaymentMethod === 'qr') {
-                const utr = utrNumber.value.trim();
-                if (!/^\d{12}$/.test(utr)) {
-                    showToast('Please enter a valid UTR number for QR payment');
-                    return;
+                    // For QR payments, check if UTR is entered and valid
+        if (selectedPaymentMethod === 'qr') {
+            const utr = utrNumber.value.trim();
+            if (!/^\d{12}$/.test(utr)) {
+                showToast('Please enter a valid UTR number for QR payment');
+                return;
+            }
+        }
+        
+        const address = addresses.find(addr => addr.id === selectedAddress);
+        
+        /* ✅ CHECK IF ANY SHOP IS PICKUP ONLY - ADD THIS BLOCK */
+        let hasPickupOnlyShop = false;
+        let pickupShopNames = [];
+        
+        // Check each item's shop delivery type
+        for (const item of cart) {
+            if (item.shopId) {
+                try {
+                    // Try to get from product cache or fetch
+                    const product = PRODUCTS.find(p => p.id === item.id);
+                    if (product && product.shopDeliveryType === 'pickup_only') {
+                        hasPickupOnlyShop = true;
+                        pickupShopNames.push(product.shopName || 'Shop');
+                    }
+                } catch (error) {
+                    console.log('Could not check shop delivery type:', error);
                 }
             }
+        }
+        
+        // Show warning if pickup only shop in cart
+        if (hasPickupOnlyShop) {
+            const shopList = [...new Set(pickupShopNames)].join(', ');
+            const confirmMessage = `⚠️ The following shops are PICKUP ONLY: ${shopList}\n\nYou will need to collect your order from the shop(s).\n\nDo you want to continue?`;
             
-            const address = addresses.find(addr => addr.id === selectedAddress);
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let discount = 0;
+            if (!confirm(confirmMessage)) {
+                return; // User cancelled
+            }
             
+            // Update order type to pickup
+            selectedDeliveryType = 'pickup';
+            showToast('Note: Some items require pickup from shop', 'warning');
+        }
+        
+        /* ✅ END OF PICKUP CHECK BLOCK */
+        
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             if (appliedCoupon) {
                 if (appliedCoupon.type === 'percentage') {
                     discount = (subtotal * appliedCoupon.value) / 100;
@@ -4890,6 +4925,8 @@ This action cannot be undone.`,
             customerId: currentUser.uid || '',
             customerEmail: currentUser.email || '',
             customerName: currentUser.name || currentUser.email?.split('@')[0] || 'Customer',
+            /* ✅ ADD DELIVERY TYPE FIELD - ADD THIS LINE */
+            deliveryType: hasPickupOnlyShop ? 'pickup' : 'delivery',
             items: cart.map(item => ({
                 id: item.id || '',
                 name: item.name || '',
@@ -5158,6 +5195,22 @@ This action cannot be undone.`,
                 `;
                 ordersList.appendChild(orderCard);
             });
+        }
+
+        /* ✅ ADD PICKUP LOCATION FUNCTION - ADD THIS FUNCTION */
+        function showPickupLocation(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            // Get shop address from order items
+            const shopAddress = order.items && order.items[0] ? 
+                (order.items[0].shopAddress || 'Shop address not available') : 
+                'Shop address not available';
+            
+            const shopName = order.items && order.items[0] ? 
+                (order.items[0].shopName || 'Shop') : 'Shop';
+            
+            alert(`📍 ${shopName} Pickup Location:\n\n${shopAddress}\n\nPlease collect your order during shop hours.`);
         }
 
         function reorder(orderId) {
