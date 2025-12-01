@@ -2623,32 +2623,45 @@
         let PRODUCTS = [];
 
         // Firebase se real products load karne ka function
-        async function loadProductsFromFirebase() {
-            try {
-                const productsSnapshot = await db.collection('products')
-                    .where('status', '==', 'active')
-                    .where('stock', '>', 0)
-                    .get();
-                
-                PRODUCTS = [];
-                productsSnapshot.forEach(doc => {
-                    PRODUCTS.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // Agar koi products display function hai toh call karo
-                if (typeof displayProducts === 'function') {
-                    displayProducts();
-                }
-            } catch (error) {
-                console.error('Error loading products:', error);
-                // Fallback: Temporary demo products
-                PRODUCTS = getDemoProducts();
-                if (typeof displayProducts === 'function') {
-                    displayProducts();
-                }
+async function loadProductsFromFirebase() {
+    try {
+        const productsSnapshot = await db.collection('products')
+            .where('status', '==', 'active')
+            .where('stock', '>', 0)
+            .get();
+        
+        PRODUCTS = [];
+        productsSnapshot.forEach(doc => {
+            const product = { id: doc.id, ...doc.data() };
+            
+            // ✅ ENSURE REQUIRED FIELDS EXIST
+            if (!product.shopName) {
+                product.shopName = product.shop || 'Unknown Shop';
             }
+            if (!product.deliveryTime) {
+                product.deliveryTime = '10-15 min';
+            }
+            
+            PRODUCTS.push(product);
+        });
+        
+        // ✅ CALL renderProducts DIRECTLY
+        if (typeof renderProducts === 'function') {
+            renderProducts(PRODUCTS);
+        } else if (typeof displayProducts === 'function') {
+            displayProducts(); // Fallback
+        } else {
+            console.error('No render function found');
         }
-
+    } catch (error) {
+        console.error('Error loading products:', error);
+        // Fallback: Temporary demo products
+        PRODUCTS = getDemoProducts();
+        if (typeof renderProducts === 'function') {
+            renderProducts(PRODUCTS);
+        }
+    }
+}
         // Emergency fallback demo products
         function getDemoProducts() {
             return [
@@ -3460,47 +3473,48 @@ function logout() {
             }
         }
 
-        // Product Rendering
-        function renderProducts(products) {
-            productGrid.innerHTML = '';
-            
-            if (products.length === 0) {
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
-            
-            products.forEach(product => {
-                const shop = SHOPS[product.shop];
-                const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
-                const isInWishlist = wishlist.includes(product.id);
-                
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-                    <div class="shop-badge">${shop.name}</div>
-                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
-                    <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
-                    <p class="product-category">${product.category} • ${shop.deliveryTime}</p>
-                    <div class="product-price">
-                        <span class="current-price">₹${product.price}</span>
-                        <span class="original-price">₹${product.mrp}</span>
-                        <span class="discount">${discount}% OFF</span>
-                    </div>
-                    <div class="card-actions">
-                        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                    </div>
-                `;
-                productGrid.appendChild(productCard);
-            });
-        }
+        // Product Rendering - FIXED
+function renderProducts(products) {
+    productGrid.innerHTML = '';
+    
+    if (products.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    emptyState.style.display = 'none';
+    
+    products.forEach(product => {
+        // ✅ FIX: USE product.shopName DIRECTLY
+        const shopName = product.shopName || 'Unknown Shop';
+        const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
+        const isInWishlist = wishlist.includes(product.id);
+        
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+            ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+            <div class="shop-badge">${shopName}</div> <!-- ✅ FIXED HERE -->
+            <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
+                <i class="fas fa-heart"></i>
+            </button>
+            <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
+            <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
+            <p class="product-category">${product.category} • ${product.deliveryTime || '10-15 min'}</p>
+            <div class="product-price">
+                <span class="current-price">₹${product.price}</span>
+                ${product.mrp ? `<span class="original-price">₹${product.mrp}</span>` : ''}
+                ${discount > 0 ? `<span class="discount">${discount}% OFF</span>` : ''}
+            </div>
+            <div class="card-actions">
+                <button class="btn-add-cart" onclick="addToCart('${product.id}')">
+                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                </button>
+            </div>
+        `;
+        productGrid.appendChild(productCard);
+    });
+}
 
         // Enhanced Search Functionality - PHASE 2
         function handleSearch() {
