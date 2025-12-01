@@ -2625,43 +2625,42 @@
         // Firebase se real products load karne ka function
 async function loadProductsFromFirebase() {
     try {
+        // ✅ SIMPLE QUERY - NO COMPOUND WHERE
         const productsSnapshot = await db.collection('products')
             .where('status', '==', 'active')
-            .where('stock', '>', 0)
             .get();
         
         PRODUCTS = [];
         productsSnapshot.forEach(doc => {
             const firebaseProduct = doc.data();
             
-            // ✅ MAP FIELDS CORRECTLY
+            // ✅ FILTER LOCALLY FOR STOCK > 0
+            if (firebaseProduct.stock <= 0) {
+                console.log('Skipping out of stock:', firebaseProduct.name);
+                return; // Skip this product
+            }
+            
+            // ✅ MAP FIELDS
             const mappedProduct = {
                 id: doc.id,
                 name: firebaseProduct.name,
                 price: firebaseProduct.price,
                 mrp: firebaseProduct.mrp,
                 category: firebaseProduct.category,
-                // ✅ CHECK BOTH shop AND shopName FIELDS
                 shopId: firebaseProduct.shopId || firebaseProduct.shop,
-                shopName: firebaseProduct.shopName || firebaseProduct.shop, // Use shop if shopName missing
+                shopName: firebaseProduct.shopName || firebaseProduct.shop,
                 image: firebaseProduct.image,
                 stock: firebaseProduct.stock,
-                description: firebaseProduct.description,
-                // Add other fields if needed
-                isAvailable: firebaseProduct.isAvailable || true,
-                status: firebaseProduct.status || 'active'
+                description: firebaseProduct.description || '',
+                isAvailable: firebaseProduct.isAvailable !== false,
+                status: firebaseProduct.status || 'active',
+                deliveryTime: firebaseProduct.deliveryTime || '10-15 min'
             };
-            
-            console.log('🔥 Mapped product:', {
-                name: mappedProduct.name,
-                shopId: mappedProduct.shopId,
-                shopName: mappedProduct.shopName
-            });
             
             PRODUCTS.push(mappedProduct);
         });
         
-        console.log('📦 Total products loaded:', PRODUCTS.length);
+        console.log('📦 Products loaded:', PRODUCTS.length);
         
         if (typeof renderProducts === 'function') {
             renderProducts(PRODUCTS);
