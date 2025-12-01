@@ -4723,7 +4723,7 @@ This action cannot be undone.`,
             );
         }
 
-        // FIXED: Real order placement with shopkeeper integration
+                // FIXED: Real order placement with shopkeeper integration
         async function completeOrderPlacementWithShopkeeper(newOrder) {
             try {
                 // First check stock availability for all items
@@ -4736,13 +4736,20 @@ This action cannot be undone.`,
                     }
                 }
 
+                // ✅ GENERATE SINGLE ORDER ID FOR ALL COLLECTIONS
+                const orderId = db.collection('orders').doc().id;
+                
                 // Save order to local storage for history
                 const userOrders = JSON.parse(localStorage.getItem('dukaan_user_orders') || '[]');
+                
+                // ✅ USE SAME ID FOR LOCAL ORDER
+                newOrder.id = orderId;
                 userOrders.unshift(newOrder);
                 localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
 
-                // Create main order in Firebase
+                // ✅ CREATE MAIN ORDER IN FIREBASE WITH SAME ID
                 const orderData = {
+                    id: orderId, // ✅ ADD THIS
                     customerId: currentUser.uid,
                     customerEmail: currentUser.email,
                     items: cart,
@@ -4753,16 +4760,17 @@ This action cannot be undone.`,
                     paymentMethod: newOrder.paymentMethod,
                     utrNumber: newOrder.paymentMethod === 'qr' ? utrNumber.value.trim() : null,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    orderId: newOrder.id
+                    orderId: orderId // ✅ SAME ID HERE TOO
                 };
 
-                const orderRef = await db.collection('orders').add(orderData);
+                // ✅ USE doc() INSTEAD OF add() TO SET SPECIFIC ID
+                await db.collection('orders').doc(orderId).set(orderData);
 
-                // Create order items for shopkeepers
+                // ✅ CREATE ORDER ITEMS FOR SHOPKEEPERS WITH SAME ORDER ID
                 for (const item of cart) {
                     // Create order item for shopkeeper
                     await db.collection('orderItems').add({
-                        orderId: orderRef.id,
+                        orderId: orderId, // ✅ SAME ORDER ID
                         productId: item.id,
                         productName: item.name,
                         shopId: item.shopId,
@@ -4772,7 +4780,7 @@ This action cannot be undone.`,
                         status: 'pending',
                         customerId: currentUser.uid,
                         customerEmail: currentUser.email,
-                        paymentMethod: newOrder.paymentMethod, // ✅ ADD THIS LINE
+                        paymentMethod: newOrder.paymentMethod,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
 
@@ -4782,7 +4790,7 @@ This action cannot be undone.`,
                     });
                 }
 
-                // Save to local storage
+                // ✅ SAVE TO LOCAL STORAGE WITH SAME ID
                 orders.push(newOrder);
                 localStorage.setItem('dukaan_orders', JSON.stringify(orders));
                 
@@ -4805,7 +4813,7 @@ This action cannot be undone.`,
                 
                 // Show order tracking
                 setTimeout(() => {
-                    showOrderTracking(newOrder.id);
+                    showOrderTracking(orderId); // ✅ USE SAME ID HERE TOO
                 }, 1500);
 
             } catch (error) {
