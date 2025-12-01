@@ -2632,16 +2632,33 @@ async function loadProductsFromFirebase() {
         
         PRODUCTS = [];
         productsSnapshot.forEach(doc => {
-            const product = { id: doc.id, ...doc.data() };
+            const firebaseProduct = doc.data();
             
-            // ✅ DEBUG EACH PRODUCT FROM FIRESTORE
-            console.log('🔥 From Firestore:', {
-                name: product.name,
-                shopName: product.shopName,
-                shopId: product.shopId
+            // ✅ MAP FIELDS CORRECTLY
+            const mappedProduct = {
+                id: doc.id,
+                name: firebaseProduct.name,
+                price: firebaseProduct.price,
+                mrp: firebaseProduct.mrp,
+                category: firebaseProduct.category,
+                // ✅ CHECK BOTH shop AND shopName FIELDS
+                shopId: firebaseProduct.shopId || firebaseProduct.shop,
+                shopName: firebaseProduct.shopName || firebaseProduct.shop, // Use shop if shopName missing
+                image: firebaseProduct.image,
+                stock: firebaseProduct.stock,
+                description: firebaseProduct.description,
+                // Add other fields if needed
+                isAvailable: firebaseProduct.isAvailable || true,
+                status: firebaseProduct.status || 'active'
+            };
+            
+            console.log('🔥 Mapped product:', {
+                name: mappedProduct.name,
+                shopId: mappedProduct.shopId,
+                shopName: mappedProduct.shopName
             });
             
-            PRODUCTS.push(product);
+            PRODUCTS.push(mappedProduct);
         });
         
         console.log('📦 Total products loaded:', PRODUCTS.length);
@@ -2763,29 +2780,52 @@ async function loadProductsFromFirebase() {
         }
 
         // Firebase se products load karo
-        function loadProductsFromFirebase() {
-            if (db) {
-                db.collection('products').onSnapshot((snapshot) => {
-                    PRODUCTS = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        PRODUCTS.push({ 
-                            id: doc.id, 
-                            name: data.name,
-                            price: data.price,
-                            mrp: data.mrp,
-                            category: data.category,
-                            shop: 'freshmart',
-                            image: data.image,
-                            stock: data.stock,
-                            description: data.description
-                        });
-                    });
-                    renderProducts(PRODUCTS);
-                });
-            }
+        async function loadProductsFromFirebase() {
+    try {
+        const productsSnapshot = await db.collection('products')
+            .where('status', '==', 'active')
+            .where('stock', '>', 0)
+            .get();
+        
+        PRODUCTS = [];
+        productsSnapshot.forEach(doc => {
+            const firebaseProduct = doc.data();
+            
+            // ✅ MAP FIELDS CORRECTLY
+            const mappedProduct = {
+                id: doc.id,
+                name: firebaseProduct.name,
+                price: firebaseProduct.price,
+                mrp: firebaseProduct.mrp,
+                category: firebaseProduct.category,
+                // ✅ CHECK BOTH POSSIBLE FIELDS
+                shopId: firebaseProduct.shopId || firebaseProduct.shop,
+                shopName: firebaseProduct.shopName || firebaseProduct.shop,
+                image: firebaseProduct.image,
+                stock: firebaseProduct.stock,
+                description: firebaseProduct.description || '',
+                isAvailable: firebaseProduct.isAvailable !== false,
+                status: firebaseProduct.status || 'active',
+                deliveryTime: firebaseProduct.deliveryTime || '10-15 min'
+            };
+            
+            PRODUCTS.push(mappedProduct);
+        });
+        
+        console.log('📦 Products loaded:', PRODUCTS.length);
+        
+        if (typeof renderProducts === 'function') {
+            renderProducts(PRODUCTS);
         }
-
+        
+    } catch (error) {
+        console.error('Error loading products:', error);
+        PRODUCTS = getDemoProducts();
+        if (typeof renderProducts === 'function') {
+            renderProducts(PRODUCTS);
+        }
+    }
+}
         // Firebase Authentication - FIXED
         function setupFirebaseAuth() {
     auth.onAuthStateChanged((user) => {
@@ -3480,21 +3520,10 @@ function renderProducts(products) {
     
     emptyState.style.display = 'none';
     
-    // ✅ DEBUG: CHECK ALL PRODUCTS
-    console.log('=== ALL PRODUCTS DEBUG ===');
-    products.forEach((product, index) => {
-        console.log(`Product ${index}:`, {
-            name: product.name,
-            shopId: product.shopId,
-            shopName: product.shopName,
-            hasShopName: !!product.shopName,
-            allFields: Object.keys(product)
-        });
-    });
-    
     products.forEach(product => {
-        // ✅ USE shopName DIRECTLY (NOT from SHOPS object)
-        const shopName = product.shopName || 'Unknown Shop';
+        // ✅ USE MAPPED shopName FIELD
+        const shopName = product.shopName || 
+                        (product.shopId ? 'Shop ' + product.shopId.slice(-4) : 'Unknown Shop');
         
         const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
         const isInWishlist = wishlist.includes(product.id);
