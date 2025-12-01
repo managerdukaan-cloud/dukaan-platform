@@ -2923,6 +2923,7 @@ async function loadOrderHistory() {
 }
 
         // ✅ REAL-TIME ORDER UPDATES LISTENER
+        // ✅ REAL-TIME ORDER UPDATES LISTENER
 function setupOrderRealTimeListener() {
     if (!currentUser) return;
     
@@ -2931,43 +2932,54 @@ function setupOrderRealTimeListener() {
     db.collection('orders')
         .where('customerId', '==', currentUser.uid)
         .onSnapshot((snapshot) => {
-            console.log("🔄 Real-time order update received");
-            
-            orders = [];
-            snapshot.forEach(doc => {
-                const firebaseOrder = doc.data();
-                const mappedOrder = {
-                    id: firebaseOrder.orderId || doc.id,
-                    date: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
-                    items: firebaseOrder.items || [],
-                    address: firebaseOrder.address || {},
-                    phone: firebaseOrder.phone || '',
-                    paymentMethod: firebaseOrder.paymentMethod || 'cod',
-                    status: firebaseOrder.status || 'confirmed',
-                    total: firebaseOrder.total || 0,
-                    tracking: firebaseOrder.tracking || {
-                        confirmed: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
-                        preparing: null,
-                        dispatched: null,
-                        delivered: null
+            // ... existing code ...
+        });
+}
+
+/* ✅ ADD ORDER STATUS SYNC LISTENER HERE */
+function setupOrderStatusSyncListener() {
+    if (!currentUser) return;
+    
+    console.log("🛡️ Setting up order status sync listener");
+    
+    // Listen to orderItems collection for this customer
+    db.collection('orderItems')
+        .where('customerId', '==', currentUser.uid)
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'modified') {
+                    const updatedOrderItem = { id: change.doc.id, ...change.doc.data() };
+                    console.log("🔄 Order item status changed:", updatedOrderItem.id, updatedOrderItem.status);
+                    
+                    // Find order in local array
+                    const orderIndex = orders.findIndex(order => 
+                        order.id === updatedOrderItem.orderId || 
+                        order.id === updatedOrderItem.id
+                    );
+                    
+                    if (orderIndex !== -1) {
+                        const currentStatus = orders[orderIndex].status;
+                        
+                        // ⚠️ IMPORTANT: If customer cancelled, don't allow override
+                        if (currentStatus === 'cancelled' && updatedOrderItem.status !== 'cancelled') {
+                            console.log("❌ Customer cancelled order, ignoring shopkeeper update");
+                            return;
+                        }
+                        
+                        // Update order status
+                        orders[orderIndex].status = updatedOrderItem.status;
+                        
+                        // Save to local storage
+                        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                        
+                        // Update UI
+                        if (typeof renderOrders === 'function') {
+                            renderOrders();
+                            console.log("✅ Order status updated in UI");
+                        }
                     }
-                };
-                orders.push(mappedOrder);
+                }
             });
-            
-            // Manual sorting
-            orders.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // Save to local storage
-            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-            
-            // Update UI
-            if (typeof renderOrders === 'function') {
-                renderOrders();
-                console.log("✅ Orders updated in real-time");
-            }
-        }, (error) => {
-            console.error("❌ Real-time listener error:", error);
         });
 }
 
@@ -2976,12 +2988,18 @@ function setupOrderRealTimeListener() {
             authScreen.style.display = 'block';
             appScreen.style.display = 'none';
         }
-
-        function showAppScreen() {
+                function showAppScreen() {
             authScreen.style.display = 'none';
             appScreen.style.display = 'block';
             updateCouponAuth();
             renderProducts(PRODUCTS); // Ensure products are rendered
+            
+            // ✅ ADD ORDER STATUS SYNC LISTENER
+            if (currentUser) {
+                setTimeout(() => {
+                    setupOrderStatusSyncListener();
+                }, 1000);
+            }
         }
 
         async function handleLogin(event) {
