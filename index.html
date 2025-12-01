@@ -2781,23 +2781,33 @@ async function loadProductsFromFirebase() {
         // Firebase se products load karo
         async function loadProductsFromFirebase() {
     try {
-        const productsSnapshot = await db.collection('products')
-            .where('status', '==', 'active')
-            .where('stock', '>', 0)
-            .get();
+        // ✅ SIMPLEST QUERY - NO FILTERS
+        const productsSnapshot = await db.collection('products').get();
         
         PRODUCTS = [];
         productsSnapshot.forEach(doc => {
             const firebaseProduct = doc.data();
             
-            // ✅ MAP FIELDS CORRECTLY
+            // ✅ FILTER LOCALLY
+            // Skip if status is not active
+            if (firebaseProduct.status !== 'active') {
+                console.log('Skipping inactive:', firebaseProduct.name);
+                return;
+            }
+            
+            // Skip if stock is 0 or less
+            if (firebaseProduct.stock <= 0) {
+                console.log('Skipping out of stock:', firebaseProduct.name);
+                return;
+            }
+            
+            // ✅ MAP FIELDS
             const mappedProduct = {
                 id: doc.id,
                 name: firebaseProduct.name,
                 price: firebaseProduct.price,
                 mrp: firebaseProduct.mrp,
                 category: firebaseProduct.category,
-                // ✅ CHECK BOTH POSSIBLE FIELDS
                 shopId: firebaseProduct.shopId || firebaseProduct.shop,
                 shopName: firebaseProduct.shopName || firebaseProduct.shop,
                 image: firebaseProduct.image,
