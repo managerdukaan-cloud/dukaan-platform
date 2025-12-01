@@ -2634,28 +2634,24 @@ async function loadProductsFromFirebase() {
         productsSnapshot.forEach(doc => {
             const product = { id: doc.id, ...doc.data() };
             
-            // ✅ ENSURE REQUIRED FIELDS EXIST
-            if (!product.shopName) {
-                product.shopName = product.shop || 'Unknown Shop';
-            }
-            if (!product.deliveryTime) {
-                product.deliveryTime = '10-15 min';
-            }
+            // ✅ DEBUG EACH PRODUCT FROM FIRESTORE
+            console.log('🔥 From Firestore:', {
+                name: product.name,
+                shopName: product.shopName,
+                shopId: product.shopId
+            });
             
             PRODUCTS.push(product);
         });
         
-        // ✅ CALL renderProducts DIRECTLY
+        console.log('📦 Total products loaded:', PRODUCTS.length);
+        
         if (typeof renderProducts === 'function') {
             renderProducts(PRODUCTS);
-        } else if (typeof displayProducts === 'function') {
-            displayProducts(); // Fallback
-        } else {
-            console.error('No render function found');
         }
+        
     } catch (error) {
         console.error('Error loading products:', error);
-        // Fallback: Temporary demo products
         PRODUCTS = getDemoProducts();
         if (typeof renderProducts === 'function') {
             renderProducts(PRODUCTS);
@@ -3484,9 +3480,22 @@ function renderProducts(products) {
     
     emptyState.style.display = 'none';
     
+    // ✅ DEBUG: CHECK ALL PRODUCTS
+    console.log('=== ALL PRODUCTS DEBUG ===');
+    products.forEach((product, index) => {
+        console.log(`Product ${index}:`, {
+            name: product.name,
+            shopId: product.shopId,
+            shopName: product.shopName,
+            hasShopName: !!product.shopName,
+            allFields: Object.keys(product)
+        });
+    });
+    
     products.forEach(product => {
-        // ✅ FIX: USE product.shopName DIRECTLY
+        // ✅ USE shopName DIRECTLY (NOT from SHOPS object)
         const shopName = product.shopName || 'Unknown Shop';
+        
         const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
         const isInWishlist = wishlist.includes(product.id);
         
@@ -3515,7 +3524,6 @@ function renderProducts(products) {
         productGrid.appendChild(productCard);
     });
 }
-
         // Enhanced Search Functionality - PHASE 2
         function handleSearch() {
             openEnhancedSearch();
