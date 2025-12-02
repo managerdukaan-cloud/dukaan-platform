@@ -4755,141 +4755,175 @@ function renderProducts(products) {
             );
         }
 
-        // Order Placement - FIXED: Separate function with proper confirmation
-        function placeOrder() {
-            if (cart.length === 0) {
-                showToast('Your cart is empty');
-                return;
-            }
-            
-            if (!selectedAddress) {
-                showToast('Please select a delivery address');
-                return;
-            }
-            
-            const phone = checkoutPhone.value.trim();
-            if (!validatePhoneNumber(phone)) {
-                showToast('Please enter a valid phone number');
-                return;
-            }
-            
-            if (!selectedPaymentMethod) {
-                showToast('Please select a payment method');
-                return;
-            }
-            
-                    // For QR payments, check if UTR is entered and valid
-        if (selectedPaymentMethod === 'qr') {
-            const utr = utrNumber.value.trim();
-            if (!/^\d{12}$/.test(utr)) {
-                showToast('Please enter a valid UTR number for QR payment');
-                return;
-            }
+        // ✅ FIXED: Order placement without coupon
+async function placeOrder() {
+    try {
+        console.log('🛒 Place order called');
+        
+        // Validate checkout inputs
+        const phone = document.getElementById('checkoutPhone')?.value?.trim();
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        
+        if (!phone || phone.length < 10) {
+            showToast('Please enter a valid phone number', 'error');
+            return;
         }
         
-        const address = addresses.find(addr => addr.id === selectedAddress);
+        if (!selectedPaymentMethod) {
+            showToast('Please select a payment method', 'error');
+            return;
+        }
         
-        /* ✅ CHECK IF ANY SHOP IS PICKUP ONLY - ADD THIS BLOCK */
-        let hasPickupOnlyShop = false;
-        let pickupShopNames = [];
+        if (!selectedAddress) {
+            showToast('Please select a delivery address', 'error');
+            return;
+        }
         
-        // Check each item's shop delivery type
+        // Validate cart
+        if (cart.length === 0) {
+            showToast('Your cart is empty', 'error');
+            return;
+        }
+        
+        // Check if any item is invalid
         for (const item of cart) {
-            if (item.shopId) {
-                try {
-                    // Try to get from product cache or fetch
-                    const product = PRODUCTS.find(p => p.id === item.id);
-                    if (product && product.shopDeliveryType === 'pickup_only') {
-                        hasPickupOnlyShop = true;
-                        pickupShopNames.push(product.shopName || 'Shop');
-                    }
-                } catch (error) {
-                    console.log('Could not check shop delivery type:', error);
-                }
+            if (!item.id || !item.shopId) {
+                showToast('Some items in your cart are invalid', 'error');
+                return;
             }
         }
         
-        // Show warning if pickup only shop in cart
-        if (hasPickupOnlyShop) {
-            const shopList = [...new Set(pickupShopNames)].join(', ');
-            const confirmMessage = `⚠️ The following shops are PICKUP ONLY: ${shopList}\n\nYou will need to collect your order from the shop(s).\n\nDo you want to continue?`;
-            
-            if (!confirm(confirmMessage)) {
-                return; // User cancelled
+        const paymentMethod = selectedPaymentMethod.value;
+        let utrNumberValue = '';
+        
+        // If QR payment, validate UTR number
+        if (paymentMethod === 'qr') {
+            utrNumberValue = document.getElementById('utrNumber')?.value?.trim() || '';
+            if (!utrNumberValue) {
+                showToast('Please enter UTR number for QR payment', 'error');
+                return;
             }
-            
-            // Update order type to pickup
-            selectedDeliveryType = 'pickup';
-            showToast('Note: Some items require pickup from shop', 'warning');
         }
         
-        /* ✅ END OF PICKUP CHECK BLOCK */
+        // Calculate totals
+        const subtotal = calculateSubtotal();
+        const discount = appliedCoupon ? appliedCoupon.discountAmount || 0 : 0;
+        const deliveryCharge = 40; // Fixed delivery charge
+        const total = Math.max(0, subtotal - discount + deliveryCharge);
         
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            if (appliedCoupon) {
-                if (appliedCoupon.type === 'percentage') {
-                    discount = (subtotal * appliedCoupon.value) / 100;
-                } else {
-                    discount = appliedCoupon.value;
-                }
-                discount = Math.min(discount, subtotal);
-            }
-            
-            const total = subtotal - discount;
-            
-            const newOrder = {
-                id: generateId(),
-                date: new Date().toISOString(),
-                items: [...cart],
-                address: {...address},
-                phone: phone,
-                paymentMethod: selectedPaymentMethod,
-                status: selectedPaymentMethod === 'cod' ? 'confirmed' : 'paid',
-                subtotal: subtotal,
-                discount: discount,
-                total: total,
-                tracking: {
-                    confirmed: new Date().toISOString(),
-                    preparing: null,
-                    dispatched: null,
-                    delivered: null
-                }
-            };
-            
-            // Show final order confirmation modal
-            showConfirmationModal(
-                'Confirm Your Order',
-                `Are you sure you want to place this order?
-                
-Order Summary:
-• ${cart.length} item(s)
-• Total: ₹${total}
-• Delivery to: ${address.city}
-• Payment: ${selectedPaymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}
-${selectedPaymentMethod === 'qr' ? `• UTR: ${utrNumber.value.trim()}` : ''}
+        console.log('💰 Order calculations:', { subtotal, discount, deliveryCharge, total });
+        
+        // Create order object
+        const newOrder = {
+            id: '', // Will be set by Firebase
+            customerId: currentUser ? currentUser.uid : 'guest',
+            customerEmail: currentUser ? currentUser.email : 'guest@example.com',
+            customerName: currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : 'Guest',
+            items: cart.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                shopId: item.shopId,
+                shopName: item.shopName,
+                image: item.image || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop'
+            })),
+            subtotal: subtotal,
+            discount: discount,
+            deliveryCharge: deliveryCharge,
+            total: total,
+            status: 'pending',
+            address: selectedAddress,
+            phone: phone,
+            paymentMethod: paymentMethod,
+            utrNumber: paymentMethod === 'qr' ? utrNumberValue : null,
+            couponCode: appliedCoupon ? appliedCoupon.code : null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        console.log('📦 Order data prepared:', newOrder);
+        
+        // Show loading
+        showToast('Processing your order...', 'info');
+        
+        // Place order
+        if (currentUser) {
+            await completeOrderPlacementWithShopkeeper(newOrder);
+        } else {
+            // For guest users, save locally
+            completeOrderPlacement(newOrder);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error placing order:', error);
+        showToast('Error placing order: ' + error.message, 'error');
+    }
+}
 
-This action cannot be undone.`,
-                () => {
-                    // User confirmed - proceed with actual order placement
-                    completeOrderPlacementWithShopkeeper(newOrder);
-                }
-            );
-        }
+// ✅ FIXED: Updated completeOrderPlacement function for guest users
+function completeOrderPlacement(newOrder) {
+    try {
+        // Generate order ID for guest
+        const orderId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        newOrder.id = orderId;
+        
+        // Save to local storage
+        orders.push(newOrder);
+        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+        
+        // Clear cart
+        cart = [];
+        localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+        updateCartUI();
+        
+        // Reset checkout state
+        appliedCoupon = null;
+        selectedAddress = null;
+        
+        // Clear inputs
+        const couponCodeInput = document.getElementById('couponCode');
+        const couponMessage = document.getElementById('couponMessage');
+        const checkoutPhone = document.getElementById('checkoutPhone');
+        const utrNumber = document.getElementById('utrNumber');
+        
+        if (couponCodeInput) couponCodeInput.value = '';
+        if (couponMessage) couponMessage.textContent = '';
+        if (checkoutPhone) checkoutPhone.value = '';
+        if (utrNumber) utrNumber.value = '';
+        
+        // Close bottom sheet
+        closeBottomSheet();
+        
+        showToast('🎉 Order placed successfully!', 'success');
+        
+        // Show order tracking
+        setTimeout(() => {
+            showOrderTracking(orderId);
+        }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Error in guest order placement:', error);
+        showToast('Error placing order: ' + error.message, 'error');
+    }
+}
 
-                // FIXED: Real order placement with shopkeeper integration
+// ✅ FIXED: Updated completeOrderPlacementWithShopkeeper function
 async function completeOrderPlacementWithShopkeeper(newOrder) {
     try {
-        // First check stock availability for all items
+        console.log('🛍️ Starting order placement with shopkeeper...');
+        
+        // Check stock availability
         for (const item of cart) {
             if (!item.id) {
-                showToast(`Error: Invalid product item`);
+                showToast(`Error: Invalid product item`, 'error');
                 return;
             }
             
             try {
                 const productDoc = await db.collection('products').doc(item.id).get();
                 if (!productDoc.exists) {
-                    showToast(`Sorry, ${item.name || 'product'} is not available`);
+                    showToast(`Sorry, ${item.name || 'product'} is not available`, 'error');
                     return;
                 }
                 
@@ -4898,99 +4932,92 @@ async function completeOrderPlacementWithShopkeeper(newOrder) {
                 const requestedQuantity = item.quantity || 1;
                 
                 if (currentStock < requestedQuantity) {
-                    showToast(`Sorry, ${item.name || 'product'} is out of stock`);
+                    showToast(`Sorry, ${item.name || 'product'} is out of stock. Available: ${currentStock}`, 'error');
                     return;
                 }
             } catch (error) {
                 console.error('Stock check error:', error);
-                showToast('Error checking stock availability');
+                showToast('Error checking stock availability', 'error');
                 return;
             }
         }
 
         // ✅ GENERATE SINGLE ORDER ID FOR ALL COLLECTIONS
         const orderId = db.collection('orders').doc().id;
+        console.log('📋 Generated Order ID:', orderId);
         
-        // Save order to local storage for history
-        const userOrders = JSON.parse(localStorage.getItem('dukaan_user_orders') || '[]');
-        
-        // ✅ USE SAME ID FOR LOCAL ORDER
+        // Save to local storage
         newOrder.id = orderId;
+        orders.push(newOrder);
+        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+        
+        // Also save to user orders history
+        const userOrders = JSON.parse(localStorage.getItem('dukaan_user_orders') || '[]');
         userOrders.unshift(newOrder);
         localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
 
-        // Check if any shop is pickup only
+        // Check delivery type
         let hasPickupOnlyShop = false;
-        for (const item of cart) {
-            if (item.shopId) {
-                try {
-                    const shopDoc = await db.collection('shops').doc(item.shopId).get();
-                    if (shopDoc.exists) {
-                        const shopData = shopDoc.data();
-                        if (shopData.deliveryType === 'pickup_only') {
-                            hasPickupOnlyShop = true;
-                            break;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error checking shop delivery type:', error);
+        try {
+            // Check first item's shop for delivery type
+            const firstItem = cart[0];
+            if (firstItem && firstItem.shopId) {
+                const shopDoc = await db.collection('shops').doc(firstItem.shopId).get();
+                if (shopDoc.exists) {
+                    const shopData = shopDoc.data();
+                    hasPickupOnlyShop = shopData.deliveryType === 'pickup_only';
                 }
             }
+        } catch (error) {
+            console.error('Error checking shop delivery type:', error);
+            // Continue with delivery as default
         }
 
-        // ✅ CREATE MAIN ORDER IN FIREBASE WITH ALL REQUIRED FIELDS
+        // ✅ CREATE MAIN ORDER IN FIREBASE
         const orderData = {
             id: orderId,
             customerId: currentUser.uid || '',
             customerEmail: currentUser.email || '',
-            customerName: currentUser.name || currentUser.email?.split('@')[0] || 'Customer',
-            /* ✅ ADD DELIVERY TYPE FIELD - FIXED */
+            customerName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Customer',
             deliveryType: hasPickupOnlyShop ? 'pickup' : 'delivery',
             items: cart.map(item => ({
-    id: item.id || '',
-    name: item.name || '',
-    price: item.price || 0,
-    quantity: item.quantity || 1,
-    shopId: item.shopId || '',
-    shopName: item.shopName || '',
-    image: item.image || DEFAULT_PRODUCT_IMAGE  // ✅ DEFAULT IMAGE ADDED
-})),
+                id: item.id || '',
+                name: item.name || '',
+                price: item.price || 0,
+                quantity: item.quantity || 1,
+                shopId: item.shopId || '',
+                shopName: item.shopName || '',
+                image: item.image || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop'
+            })),
             total: newOrder.total || 0,
             subtotal: newOrder.subtotal || newOrder.total || 0,
             discount: newOrder.discount || 0,
-            status: newOrder.status || 'pending',
+            deliveryCharge: newOrder.deliveryCharge || 40,
+            status: 'pending',
             address: newOrder.address || {},
             phone: newOrder.phone || '',
             paymentMethod: newOrder.paymentMethod || 'cod',
             utrNumber: (newOrder.paymentMethod === 'qr' && newOrder.utrNumber) || null,
+            couponCode: newOrder.couponCode || null,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             orderId: orderId
         };
 
-        // ✅ REMOVE ANY UNDEFINED OR NULL FIELDS
+        // Remove undefined/null fields
         Object.keys(orderData).forEach(key => {
             if (orderData[key] === undefined || orderData[key] === null) {
                 delete orderData[key];
             }
         });
 
-        // ✅ REMOVE EMPTY OBJECTS/ARRAYS
-        if (orderData.address && Object.keys(orderData.address).length === 0) {
-            delete orderData.address;
-        }
-        
-        if (orderData.items && orderData.items.length === 0) {
-            delete orderData.items;
-        }
+        console.log('📤 Saving main order to Firestore:', orderData);
 
-        console.log('📦 Saving order to Firestore:', orderData);
-
-        // ✅ USE doc() INSTEAD OF add() TO SET SPECIFIC ID
+        // ✅ SAVE MAIN ORDER
         await db.collection('orders').doc(orderId).set(orderData);
         console.log('✅ Main order saved:', orderId);
 
-        // ✅ CREATE ORDER ITEMS FOR SHOPKEEPERS WITH SAME ORDER ID
+        // ✅ CREATE ORDER ITEMS FOR EACH SHOP
         let orderItemsCount = 0;
         
         for (const item of cart) {
@@ -5013,8 +5040,10 @@ async function completeOrderPlacementWithShopkeeper(newOrder) {
                     status: 'pending',
                     customerId: currentUser.uid || '',
                     customerEmail: currentUser.email || '',
-                    customerName: currentUser.name || currentUser.email?.split('@')[0] || 'Customer',
+                    customerName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Customer',
                     paymentMethod: newOrder.paymentMethod || 'cod',
+                    address: newOrder.address || {},
+                    phone: newOrder.phone || '',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -5036,6 +5065,7 @@ async function completeOrderPlacementWithShopkeeper(newOrder) {
                         stock: firebase.firestore.FieldValue.increment(-(item.quantity || 1)),
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
+                    console.log('✅ Stock updated for product:', item.id);
                 }
                 
             } catch (itemError) {
@@ -5046,10 +5076,6 @@ async function completeOrderPlacementWithShopkeeper(newOrder) {
 
         console.log(`✅ Created ${orderItemsCount} order items`);
 
-        // ✅ SAVE TO LOCAL STORAGE WITH SAME ID
-        orders.push(newOrder);
-        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-        
         // Clear cart
         cart = [];
         localStorage.setItem('dukaan_cart', JSON.stringify(cart));
@@ -5058,14 +5084,19 @@ async function completeOrderPlacementWithShopkeeper(newOrder) {
         // Reset checkout state
         appliedCoupon = null;
         selectedAddress = null;
-        selectedPaymentMethod = null;
+        
+        const couponCodeInput = document.getElementById('couponCode');
+        const couponMessage = document.getElementById('couponMessage');
+        const checkoutPhone = document.getElementById('checkoutPhone');
+        const utrNumber = document.getElementById('utrNumber');
+        
         if (couponCodeInput) couponCodeInput.value = '';
         if (couponMessage) couponMessage.textContent = '';
         if (checkoutPhone) checkoutPhone.value = '';
         if (utrNumber) utrNumber.value = '';
         
         closeBottomSheet();
-        showToast('🎉 Order placed successfully! Shopkeeper will process your order.');
+        showToast('🎉 Order placed successfully! Shopkeeper will process your order.', 'success');
         
         // Show order tracking
         setTimeout(() => {
