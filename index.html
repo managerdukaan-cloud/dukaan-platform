@@ -4861,6 +4861,259 @@ async function placeOrder() {
     }
 }
 
+        // ✅ FIXED: Updated placeOrder function with proper payment method validation
+async function placeOrder() {
+    try {
+        console.log('🛒 Place order called');
+        
+        // Validate checkout inputs
+        const checkoutPhoneInput = document.getElementById('checkoutPhone');
+        const phone = checkoutPhoneInput?.value?.trim();
+        
+        if (!phone || phone.length < 10) {
+            showToast('Please enter a valid phone number', 'error');
+            return;
+        }
+        
+        // Debug payment method selection
+        const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+        console.log('💰 Payment radios found:', paymentRadios.length);
+        
+        let selectedPaymentMethod = null;
+        paymentRadios.forEach(radio => {
+            console.log(`Radio: ${radio.value}, Checked: ${radio.checked}`);
+            if (radio.checked) {
+                selectedPaymentMethod = radio.value;
+            }
+        });
+        
+        if (!selectedPaymentMethod) {
+            showToast('Please select a payment method', 'error');
+            
+            // Highlight payment methods
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            paymentOptions.forEach(option => {
+                option.style.border = '2px solid red';
+                option.style.borderRadius = '8px';
+                option.style.padding = '10px';
+            });
+            
+            return;
+        }
+        
+        console.log('✅ Selected payment method:', selectedPaymentMethod);
+        
+        if (!selectedAddress) {
+            showToast('Please select a delivery address', 'error');
+            return;
+        }
+        
+        // Validate cart
+        if (cart.length === 0) {
+            showToast('Your cart is empty', 'error');
+            return;
+        }
+        
+        // Check if any item is invalid
+        for (const item of cart) {
+            if (!item.id || !item.shopId) {
+                showToast('Some items in your cart are invalid', 'error');
+                return;
+            }
+        }
+        
+        let utrNumberValue = '';
+        
+        // If QR payment, validate UTR number
+        if (selectedPaymentMethod === 'qr') {
+            const utrInput = document.getElementById('utrNumber');
+            utrNumberValue = utrInput?.value?.trim() || '';
+            
+            // Show UTR input if not visible
+            if (utrInput && utrInput.style.display === 'none') {
+                utrInput.style.display = 'block';
+                showToast('Please enter UTR number for QR payment', 'info');
+                return;
+            }
+            
+            if (!utrNumberValue) {
+                showToast('Please enter UTR number for QR payment', 'error');
+                if (utrInput) {
+                    utrInput.focus();
+                    utrInput.style.border = '2px solid red';
+                }
+                return;
+            }
+            
+            console.log('✅ UTR Number:', utrNumberValue);
+        }
+        
+        // Calculate totals
+        const subtotal = calculateSubtotal();
+        const discount = appliedCoupon ? appliedCoupon.discountAmount || 0 : 0;
+        const deliveryCharge = 40; // Fixed delivery charge
+        const total = Math.max(0, subtotal - discount + deliveryCharge);
+        
+        console.log('💰 Order calculations:', { subtotal, discount, deliveryCharge, total });
+        
+        // Create order object
+        const newOrder = {
+            id: '', // Will be set by Firebase
+            customerId: currentUser ? currentUser.uid : 'guest',
+            customerEmail: currentUser ? currentUser.email : 'guest@example.com',
+            customerName: currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : 'Guest',
+            items: cart.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                shopId: item.shopId,
+                shopName: item.shopName,
+                image: item.image || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop'
+            })),
+            subtotal: subtotal,
+            discount: discount,
+            deliveryCharge: deliveryCharge,
+            total: total,
+            status: 'pending',
+            address: selectedAddress,
+            phone: phone,
+            paymentMethod: selectedPaymentMethod,
+            utrNumber: selectedPaymentMethod === 'qr' ? utrNumberValue : null,
+            couponCode: appliedCoupon ? appliedCoupon.code : null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        console.log('📦 Order data prepared:', newOrder);
+        
+        // Show loading
+        showToast('Processing your order...', 'info');
+        
+        // Place order
+        if (currentUser) {
+            await completeOrderPlacementWithShopkeeper(newOrder);
+        } else {
+            // For guest users, save locally
+            completeOrderPlacement(newOrder);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error placing order:', error);
+        showToast('Error placing order: ' + error.message, 'error');
+    }
+}
+
+// ✅ FIXED: Update payment method selection UI
+function setupPaymentMethodSelection() {
+    const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    const paymentOptions = document.querySelectorAll('.payment-option');
+    const utrInput = document.getElementById('utrNumber');
+    
+    console.log('🔄 Setting up payment method selection...');
+    
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            console.log('📻 Payment method changed to:', this.value);
+            
+            // Remove all active classes
+            paymentOptions.forEach(option => {
+                option.classList.remove('active');
+                option.style.border = '1px solid #ddd'; // Reset border
+            });
+            
+            // Add active class to selected option
+            const selectedOption = this.closest('.payment-option');
+            if (selectedOption) {
+                selectedOption.classList.add('active');
+                selectedOption.style.border = '2px solid #0F2C59';
+                selectedOption.style.borderRadius = '8px';
+                selectedOption.style.padding = '10px';
+            }
+            
+            // Show/hide UTR input for QR payment
+            if (utrInput) {
+                if (this.value === 'qr') {
+                    utrInput.style.display = 'block';
+                    utrInput.required = true;
+                    console.log('🔶 UTR input shown');
+                } else {
+                    utrInput.style.display = 'none';
+                    utrInput.required = false;
+                    console.log('🔷 UTR input hidden');
+                }
+            }
+            
+            // Update payment method variable
+            selectedPaymentMethod = this.value;
+            console.log('✅ Payment method set to:', selectedPaymentMethod);
+        });
+    });
+    
+    // Initialize with default selection (COD)
+    const codRadio = document.querySelector('input[value="cod"]');
+    if (codRadio && !selectedPaymentMethod) {
+        codRadio.checked = true;
+        selectedPaymentMethod = 'cod';
+        
+        // Trigger change event
+        codRadio.dispatchEvent(new Event('change'));
+        console.log('✅ COD selected by default');
+    }
+    
+    // Also add click handlers to payment option divs
+    paymentOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change'));
+                console.log('🖱️ Payment option clicked:', radio.value);
+            }
+        });
+    });
+}
+
+// ✅ Call this function when checkout page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setupPaymentMethodSelection();
+    
+    // Also check if we're on checkout page and initialize
+    if (window.location.hash === '#checkout') {
+        setTimeout(() => {
+            setupPaymentMethodSelection();
+        }, 500);
+    }
+});
+
+// ✅ Add CSS for active payment option
+const paymentStyle = document.createElement('style');
+paymentStyle.textContent = `
+    .payment-option.active {
+        background-color: #f0f8ff !important;
+        border: 2px solid #0F2C59 !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+    }
+    
+    .payment-option {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .payment-option:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .payment-option input[type="radio"] {
+        margin-right: 10px;
+    }
+`;
+document.head.appendChild(paymentStyle);
+
 // ✅ FIXED: Updated completeOrderPlacement function for guest users
 function completeOrderPlacement(newOrder) {
     try {
