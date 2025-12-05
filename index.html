@@ -83,6 +83,10 @@
         .status-cancelled { background: var(--danger); color: white; }
         .status-preparing { background: var(--accent); color: white; }
         .status-dispatched { background: #8B5CF6; color: white; }
+        /* ✅ NEW STATUS COLORS ADDED */
+        .status-packed { background: #7C3AED; color: white; }
+        .status-ready-for-pickup { background: #10B981; color: white; }
+        .status-out-for-delivery { background: #3A8EF6; color: white; }
         .order-items { margin-bottom: 12px; }
         .order-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
         .order-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
@@ -168,6 +172,7 @@
         .address-phone { font-size: 12px; color: var(--text-light); }
         .address-form { background: var(--neutral); padding: 20px; border-radius: 12px; margin-top: 15px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        /* ✅ UPDATED ORDER TIMELINE WITH MORE STEPS */
         .order-timeline {
             display: flex;
             justify-content: space-between;
@@ -179,8 +184,8 @@
             content: '';
             position: absolute;
             top: 15px;
-            left: 10%;
-            right: 10%;
+            left: 5%;
+            right: 5%;
             height: 3px;
             background: var(--border);
             z-index: 1;
@@ -205,31 +210,34 @@
             transition: all 0.3s ease;
         }
         .step-icon.active {
-            background: var(--success);
-            color: white;
-        }
-        .step-icon.completed {
             background: var(--accent);
             color: white;
         }
+        .step-icon.completed {
+            background: var(--success);
+            color: white;
+        }
         .step-label {
-            font-size: 12px;
+            font-size: 11px;
             text-align: center;
             color: var(--text-light);
             font-weight: 500;
+            line-height: 1.2;
         }
         .step-label.active {
-            color: var(--success);
-            font-weight: 600;
-        }
-        .step-label.completed {
             color: var(--accent);
             font-weight: 600;
         }
+        .step-label.completed {
+            color: var(--success);
+            font-weight: 600;
+        }
         .step-time {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-light);
             margin-top: 2px;
+            text-align: center;
+            line-height: 1.2;
         }
         /* Product Detail Page Styles */
         .product-detail-container {
@@ -1545,6 +1553,25 @@
             .recent-search-item {
                 text-align: center;
             }
+            
+            /* ✅ MOBILE ORDER TRACKING FIX */
+            .order-timeline {
+                padding: 0 5px !important;
+            }
+            
+            .step-label {
+                font-size: 9px !important;
+            }
+            
+            .step-time {
+                font-size: 8px !important;
+            }
+            
+            .step-icon {
+                width: 30px !important;
+                height: 30px !important;
+                font-size: 12px !important;
+            }
         }
         /* Header Layout Fix */
         .app-header .header-container {
@@ -1653,6 +1680,25 @@
             .reviews-section { 
                 padding: 20px; 
             }
+            
+            /* ✅ EXTRA SMALL ORDER TRACKING */
+            .order-timeline {
+                padding: 0 2px !important;
+            }
+            
+            .step-label {
+                font-size: 8px !important;
+            }
+            
+            .step-time {
+                font-size: 7px !important;
+            }
+            
+            .step-icon {
+                width: 25px !important;
+                height: 25px !important;
+                font-size: 10px !important;
+            }
         }
         /* 🎯 TABLET OPTIMIZATION */
         @media (min-width: 769px) and (max-width: 1024px) {
@@ -1687,6 +1733,7 @@
         /* Order status specific colors */
         .status-preparing { background: #F59E0B; color: white; }
         .status-dispatched { background: #8B5CF6; color: white; }
+        .status-packed { background: #7C3AED; color: white; }
         .status-ready-for-pickup { background: #10B981; color: white; }
         .status-out-for-delivery { background: #3A8EF6; color: white; }
         
@@ -1717,7 +1764,7 @@
         <div class="auth-container">
             <div class="auth-card">
                 <div class="auth-header">
-                    <div class="auth-logo">D</div>
+                    <div class="auth-logo">R</div>
                     <h1 class="auth-title">Welcome to Raashanmart</h1>
                     <p class="auth-subtitle">Sign in to your account</p>
                 </div>
@@ -2570,7 +2617,7 @@
             </div>
         </div>
 
-        <!-- Order Tracking Modal -->
+        <!-- ✅ UPDATED ORDER TRACKING MODAL WITH MORE STEPS -->
         <div class="bottom-sheet" id="orderTracking">
             <span class="sheet-handle"></span>
             <div class="sheet-header">
@@ -2594,18 +2641,26 @@
                         <div class="step-time" id="timePreparing">In progress</div>
                     </div>
                     <div class="timeline-step">
+                        <div class="step-icon" id="stepPacked">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="step-label">Packed</div>
+                        <div class="step-time" id="timePacked">--</div>
+                    </div>
+                    <div class="timeline-step" id="stepDispatchedContainer">
                         <div class="step-icon" id="stepDispatched">
                             <i class="fas fa-shipping-fast"></i>
                         </div>
                         <div class="step-label">Dispatched</div>
                         <div class="step-time" id="timeDispatched">--</div>
                     </div>
-                    <div class="timeline-step">
-                        <div class="step-icon" id="stepDelivered">
-                            <i class="fas fa-home"></i>
+                    <!-- DELIVERY OR PICKUP STEP (DYNAMIC) -->
+                    <div class="timeline-step" id="finalStepContainer">
+                        <div class="step-icon" id="stepFinal">
+                            <i class="fas fa-home" id="finalIcon"></i>
                         </div>
-                        <div class="step-label">Delivered</div>
-                        <div class="step-time" id="timeDelivered">--</div>
+                        <div class="step-label" id="finalLabel">Delivered</div>
+                        <div class="step-time" id="timeFinal">--</div>
                     </div>
                 </div>
                 
@@ -2613,6 +2668,11 @@
                     <h5>Order Details</h5>
                     <div id="trackingOrderDetails"></div>
                 </div>
+                
+                <!-- PICKUP LOCATION BUTTON (SHOW ONLY FOR PICKUP ORDERS) -->
+                <button class="btn-outline w-100 mt-3" id="pickupLocationBtn" onclick="showPickupLocation()" style="display: none;">
+                    <i class="fas fa-map-marker-alt"></i> View Pickup Location
+                </button>
                 
                 <button class="btn-outline w-100 mt-3" id="cancelOrderBtn" onclick="cancelOrder()">
                     <i class="fas fa-times"></i> Cancel Order
@@ -2835,9 +2895,10 @@
         let orderBadges = {
             pending: 0,
             preparing: 0,
+            packed: 0,
             dispatched: 0,
-            outForDelivery: 0,
-            readyForPickup: 0
+            readyForPickup: 0,
+            outForDelivery: 0
         };
 
         // DOM Elements
@@ -2905,65 +2966,7 @@
             startRealTimeOrderListener();
         }
 
-        // Firebase se products load karo
-        async function loadProductsFromFirebase() {
-            try {
-                // ✅ SIMPLEST QUERY - NO FILTERS
-                const productsSnapshot = await db.collection('products').get();
-                
-                PRODUCTS = [];
-                productsSnapshot.forEach(doc => {
-                    const firebaseProduct = doc.data();
-                    
-                    // ✅ FILTER LOCALLY
-                    // Skip if status is not active
-                    if (firebaseProduct.status !== 'active') {
-                        console.log('Skipping inactive:', firebaseProduct.name);
-                        return;
-                    }
-                    
-                    // Skip if stock is 0 or less
-                    if (firebaseProduct.stock <= 0) {
-                        console.log('Skipping out of stock:', firebaseProduct.name);
-                        return;
-                    }
-                    
-                    // ✅ MAP FIELDS
-                    const mappedProduct = {
-                        id: doc.id,
-                        name: firebaseProduct.name,
-                        price: firebaseProduct.price,
-                        mrp: firebaseProduct.mrp,
-                        category: firebaseProduct.category,
-                        shopId: firebaseProduct.shopId || firebaseProduct.shop,
-                        shopName: firebaseProduct.shopName || firebaseProduct.shop,
-                        image: firebaseProduct.image,
-                        stock: firebaseProduct.stock,
-                        description: firebaseProduct.description || '',
-                        isAvailable: firebaseProduct.isAvailable !== false,
-                        status: firebaseProduct.status || 'active',
-                        deliveryTime: firebaseProduct.deliveryTime || '10-15 min'
-                    };
-                    
-                    PRODUCTS.push(mappedProduct);
-                });
-                
-                console.log('📦 Products loaded:', PRODUCTS.length);
-                
-                if (typeof renderProducts === 'function') {
-                    renderProducts(PRODUCTS);
-                }
-                
-            } catch (error) {
-                console.error('Error loading products:', error);
-                PRODUCTS = getDemoProducts();
-                if (typeof renderProducts === 'function') {
-                    renderProducts(PRODUCTS);
-                }
-            }
-        }
-        
-        // ✅ FIX 2: REAL-TIME ORDER TRACKING UPDATES - IMPROVED
+        // ✅ UPDATED: Real-time Order Listener with all statuses
         function startRealTimeOrderListener() {
             if (!currentUser) return;
             
@@ -3012,7 +3015,7 @@
                 });
         }
         
-        // ✅ NEW: Listen to orderItems collection for shopkeeper actions
+        // ✅ UPDATED: Listen to orderItems collection for shopkeeper actions
         function startOrderItemsListener() {
             if (!currentUser) return;
             
@@ -3041,7 +3044,7 @@
                 });
         }
         
-        // ✅ NEW: Handle order updates from shopkeeper app
+        // ✅ UPDATED: Handle order updates from shopkeeper app with all statuses
         function updateOrderFromShopkeeper(orderItem) {
             const orderIndex = orders.findIndex(order => order.id === orderItem.orderId);
             
@@ -3064,12 +3067,17 @@
                         case 'preparing':
                             orders[orderIndex].tracking.preparing = now;
                             break;
+                        case 'packed':
+                            orders[orderIndex].tracking.packed = now;
+                            break;
                         case 'dispatched':
-                        case 'out_for_delivery':
                             orders[orderIndex].tracking.dispatched = now;
                             break;
                         case 'ready_for_pickup':
                             orders[orderIndex].tracking.readyForPickup = now;
+                            break;
+                        case 'out_for_delivery':
+                            orders[orderIndex].tracking.outForDelivery = now;
                             break;
                         case 'delivered':
                             orders[orderIndex].tracking.delivered = now;
@@ -3095,13 +3103,14 @@
             }
         }
         
-        // ✅ NEW: Show order update notification
+        // ✅ UPDATED: Show order update notification with all statuses
         function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             const statusMessages = {
                 'preparing': 'is being prepared',
+                'packed': 'has been packed',
                 'dispatched': 'has been dispatched',
-                'out_for_delivery': 'is out for delivery',
                 'ready_for_pickup': 'is ready for pickup',
+                'out_for_delivery': 'is out for delivery',
                 'delivered': 'has been delivered'
             };
             
@@ -3118,7 +3127,7 @@
             }
         }
         
-        // ✅ NEW: Handle order update
+        // ✅ UPDATED: Handle order update with all statuses
         function handleOrderUpdate(updatedOrder) {
             const orderIndex = orders.findIndex(order => order.id === updatedOrder.id);
             const oldStatus = orderIndex !== -1 ? orders[orderIndex].status : null;
@@ -3131,7 +3140,10 @@
                     tracking: updatedOrder.tracking || orders[orderIndex].tracking || {
                         confirmed: updatedOrder.createdAt || new Date().toISOString(),
                         preparing: null,
+                        packed: null,
                         dispatched: null,
+                        readyForPickup: null,
+                        outForDelivery: null,
                         delivered: null
                     }
                 };
@@ -3142,7 +3154,10 @@
                     tracking: updatedOrder.tracking || {
                         confirmed: updatedOrder.createdAt || new Date().toISOString(),
                         preparing: null,
+                        packed: null,
                         dispatched: null,
+                        readyForPickup: null,
+                        outForDelivery: null,
                         delivered: null
                     }
                 });
@@ -3280,7 +3295,10 @@
                         tracking: firebaseOrder.tracking || {
                             confirmed: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
                             preparing: null,
+                            packed: null,
                             dispatched: null,
+                            readyForPickup: null,
+                            outForDelivery: null,
                             delivered: null
                         }
                     };
@@ -3318,15 +3336,16 @@
             }
         }
 
-        // ✅ NEW: Update order badges
+        // ✅ UPDATED: Update order badges with all statuses
         function updateOrderBadges() {
             // Reset badges
             orderBadges = {
                 pending: 0,
                 preparing: 0,
+                packed: 0,
                 dispatched: 0,
-                outForDelivery: 0,
-                readyForPickup: 0
+                readyForPickup: 0,
+                outForDelivery: 0
             };
             
             // Count orders by status
@@ -3339,14 +3358,17 @@
                     case 'preparing':
                         orderBadges.preparing++;
                         break;
+                    case 'packed':
+                        orderBadges.packed++;
+                        break;
                     case 'dispatched':
                         orderBadges.dispatched++;
                         break;
-                    case 'out_for_delivery':
-                        orderBadges.outForDelivery++;
-                        break;
                     case 'ready_for_pickup':
                         orderBadges.readyForPickup++;
+                        break;
+                    case 'out_for_delivery':
+                        orderBadges.outForDelivery++;
                         break;
                 }
             });
@@ -5559,15 +5581,16 @@
             });
         }
         
-        // ✅ NEW: Get status text
+        // ✅ UPDATED: Get status text for all statuses
         function getStatusText(status) {
             const statusMap = {
                 'pending': 'Pending',
                 'confirmed': 'Confirmed',
                 'preparing': 'Preparing',
+                'packed': 'Packed',
                 'dispatched': 'Dispatched',
-                'out_for_delivery': 'Out for Delivery',
                 'ready_for_pickup': 'Ready for Pickup',
+                'out_for_delivery': 'Out for Delivery',
                 'delivered': 'Delivered',
                 'cancelled': 'Cancelled'
             };
@@ -5609,6 +5632,7 @@
             openBottomSheet();
         }
 
+        // ✅ UPDATED: Show order tracking with dynamic steps
         function showOrderTracking(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (!order) return;
@@ -5636,7 +5660,16 @@
                 </div>
             `;
             
-            // 🛑 FIX: Show cancel button ONLY for 'confirmed' status, NOT for 'preparing'
+            // Show/Hide pickup location button based on delivery type
+            const pickupBtn = document.getElementById('pickupLocationBtn');
+            if (order.deliveryType === 'pickup') {
+                pickupBtn.style.display = 'block';
+                pickupBtn.setAttribute('onclick', `showPickupLocation('${order.id}')`);
+            } else {
+                pickupBtn.style.display = 'none';
+            }
+            
+            // Show cancel button ONLY for 'confirmed' status, NOT for 'preparing'
             const cancelBtn = document.getElementById('cancelOrderBtn');
             if (order.status === 'confirmed' || order.status === 'pending') {
                 cancelBtn.style.display = 'block';
@@ -5653,7 +5686,7 @@
             orderTracking.classList.add('open');
         }
         
-        // ✅ FIX 2: IMPROVED ORDER TRACKING TIMELINE
+        // ✅ UPDATED: IMPROVED ORDER TRACKING TIMELINE WITH ALL STEPS
         function updateTrackingTimeline(order) {
             console.log('🔄 Updating tracking timeline for order:', order.id, order.status, order.tracking);
             
@@ -5661,7 +5694,10 @@
             const tracking = order.tracking || {
                 confirmed: order.date || new Date().toISOString(),
                 preparing: null,
+                packed: null,
                 dispatched: null,
+                readyForPickup: null,
+                outForDelivery: null,
                 delivered: null
             };
             
@@ -5674,8 +5710,8 @@
                 document.getElementById('timeConfirmed').textContent = new Date().toLocaleString();
             }
             
-            // Update preparing step based on actual order status
-            if (order.status === 'preparing' || order.status === 'dispatched' || order.status === 'out_for_delivery' || order.status === 'ready_for_pickup' || order.status === 'delivered') {
+            // Update preparing step
+            if (order.status === 'preparing' || order.status === 'packed' || order.status === 'dispatched' || order.status === 'ready_for_pickup' || order.status === 'out_for_delivery' || order.status === 'delivered') {
                 document.getElementById('stepPreparing').className = 'step-icon completed';
                 document.getElementById('timePreparing').textContent = tracking.preparing ? 
                     new Date(tracking.preparing).toLocaleString() : 'Recently';
@@ -5687,30 +5723,95 @@
                 document.getElementById('timePreparing').textContent = '--';
             }
             
+            // Update packed step
+            if (order.status === 'packed' || order.status === 'dispatched' || order.status === 'ready_for_pickup' || order.status === 'out_for_delivery' || order.status === 'delivered') {
+                document.getElementById('stepPacked').className = 'step-icon completed';
+                document.getElementById('timePacked').textContent = tracking.packed ? 
+                    new Date(tracking.packed).toLocaleString() : 'Recently';
+            } else if (order.status === 'preparing') {
+                document.getElementById('stepPacked').className = 'step-icon';
+                document.getElementById('timePacked').textContent = '--';
+            } else {
+                document.getElementById('stepPacked').className = 'step-icon';
+                document.getElementById('timePacked').textContent = '--';
+            }
+            
             // Update dispatched step
-            if (order.status === 'dispatched' || order.status === 'out_for_delivery' || order.status === 'delivered') {
+            if (order.status === 'dispatched' || order.status === 'ready_for_pickup' || order.status === 'out_for_delivery' || order.status === 'delivered') {
                 document.getElementById('stepDispatched').className = 'step-icon completed';
                 document.getElementById('timeDispatched').textContent = tracking.dispatched ? 
                     new Date(tracking.dispatched).toLocaleString() : 'Recently';
-            } else if (order.status === 'preparing' || order.status === 'ready_for_pickup') {
-                document.getElementById('stepDispatched').className = 'step-icon';
-                document.getElementById('timeDispatched').textContent = '--';
+            } else if (order.status === 'packed') {
+                document.getElementById('stepDispatched').className = 'step-icon active';
+                document.getElementById('timeDispatched').textContent = 'In progress';
             } else {
                 document.getElementById('stepDispatched').className = 'step-icon';
                 document.getElementById('timeDispatched').textContent = '--';
             }
             
-            // Update delivered step
-            if (order.status === 'delivered') {
-                document.getElementById('stepDelivered').className = 'step-icon completed';
-                document.getElementById('timeDelivered').textContent = tracking.delivered ? 
-                    new Date(tracking.delivered).toLocaleString() : 'Recently';
-            } else if (order.status === 'dispatched' || order.status === 'out_for_delivery') {
-                document.getElementById('stepDelivered').className = 'step-icon active';
-                document.getElementById('timeDelivered').textContent = 'In progress';
+            // DYNAMIC FINAL STEP BASED ON DELIVERY TYPE
+            const finalIcon = document.getElementById('finalIcon');
+            const finalLabel = document.getElementById('finalLabel');
+            const stepFinal = document.getElementById('stepFinal');
+            const timeFinal = document.getElementById('timeFinal');
+            
+            if (order.deliveryType === 'pickup') {
+                // For pickup orders, show "Ready for Pickup" instead of "Delivered"
+                finalIcon.className = 'fas fa-box-open';
+                finalLabel.textContent = 'Ready for Pickup';
+                
+                if (order.status === 'ready_for_pickup' || order.status === 'delivered') {
+                    stepFinal.className = 'step-icon completed';
+                    timeFinal.textContent = tracking.readyForPickup ? 
+                        new Date(tracking.readyForPickup).toLocaleString() : 'Recently';
+                } else if (order.status === 'dispatched') {
+                    stepFinal.className = 'step-icon active';
+                    timeFinal.textContent = 'In progress';
+                } else {
+                    stepFinal.className = 'step-icon';
+                    timeFinal.textContent = '--';
+                }
             } else {
-                document.getElementById('stepDelivered').className = 'step-icon';
-                document.getElementById('timeDelivered').textContent = '--';
+                // For delivery orders, show "Out for Delivery" and "Delivered"
+                // Check if we need to show "Out for Delivery" step
+                const stepDispatchedContainer = document.getElementById('stepDispatchedContainer');
+                const finalStepContainer = document.getElementById('finalStepContainer');
+                
+                if (order.status === 'out_for_delivery' || order.status === 'delivered') {
+                    // Show "Out for Delivery" as completed and "Delivered" as final
+                    document.getElementById('stepDispatched').className = 'step-icon completed';
+                    document.getElementById('timeDispatched').textContent = tracking.dispatched ? 
+                        new Date(tracking.dispatched).toLocaleString() : 'Recently';
+                    
+                    finalIcon.className = 'fas fa-motorcycle';
+                    finalLabel.textContent = 'Out for Delivery';
+                    
+                    if (order.status === 'out_for_delivery') {
+                        stepFinal.className = 'step-icon active';
+                        timeFinal.textContent = tracking.outForDelivery ? 
+                            new Date(tracking.outForDelivery).toLocaleString() : 'In progress';
+                    } else if (order.status === 'delivered') {
+                        stepFinal.className = 'step-icon completed';
+                        timeFinal.textContent = tracking.delivered ? 
+                            new Date(tracking.delivered).toLocaleString() : 'Recently';
+                    }
+                } else {
+                    // Regular delivery flow
+                    finalIcon.className = 'fas fa-home';
+                    finalLabel.textContent = 'Delivered';
+                    
+                    if (order.status === 'delivered') {
+                        stepFinal.className = 'step-icon completed';
+                        timeFinal.textContent = tracking.delivered ? 
+                            new Date(tracking.delivered).toLocaleString() : 'Recently';
+                    } else if (order.status === 'dispatched') {
+                        stepFinal.className = 'step-icon active';
+                        timeFinal.textContent = 'In progress';
+                    } else {
+                        stepFinal.className = 'step-icon';
+                        timeFinal.textContent = '--';
+                    }
+                }
             }
             
             // Update ETA countdown
@@ -5809,6 +5910,7 @@ This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be 
             );
         }
 
+        // ✅ UPDATED: Update order status with all statuses
         function updateOrderStatus(orderId, newStatus) {
             const orderIndex = orders.findIndex(o => o.id === orderId);
             if (orderIndex === -1) return;
@@ -5824,11 +5926,23 @@ This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be 
                     order.tracking.preparing = now;
                     showToast('👨‍🍳 Your order is now being prepared!');
                     break;
+                case 'packed':
+                    order.tracking.packed = now;
+                    showToast('📦 Your order has been packed!');
+                    break;
                 case 'dispatched':
                     order.tracking.dispatched = now;
                     showToast('🚚 Your order has been dispatched!');
                     // Simulate delivery agent assignment
                     assignDeliveryAgent(orderId);
+                    break;
+                case 'ready_for_pickup':
+                    order.tracking.readyForPickup = now;
+                    showToast('📦 Your order is ready for pickup!');
+                    break;
+                case 'out_for_delivery':
+                    order.tracking.outForDelivery = now;
+                    showToast('🏍️ Your order is out for delivery!');
                     break;
                 case 'delivered':
                     order.tracking.delivered = now;
@@ -5907,9 +6021,17 @@ This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be 
                 case 'preparing':
                     etaMinutes = 35;
                     break;
+                case 'packed':
+                    etaMinutes = 30;
+                    break;
                 case 'dispatched':
+                    etaMinutes = 25;
+                    break;
+                case 'ready_for_pickup':
+                    etaMinutes = 10;
+                    break;
                 case 'out_for_delivery':
-                    etaMinutes = 20;
+                    etaMinutes = 15;
                     break;
                 default:
                     etaMinutes = 0;
@@ -6477,7 +6599,7 @@ Track your order: ${window.location.href}
 
         // Utility Functions
         function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
         }
 
         function showToast(message) {
