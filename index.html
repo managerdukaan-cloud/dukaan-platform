@@ -5682,418 +5682,215 @@ async function placeOrder() {
             openBottomSheet();
         }
 
-        // ✅ UPDATED: Show order tracking with dynamic steps
-        function showOrderTracking(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            currentTrackingOrder = order;
-            
-            // Update tracking timeline
-            updateTrackingTimeline(order);
-            
-            // Update order details
-            const trackingDetails = document.getElementById('trackingOrderDetails');
-            trackingDetails.innerHTML = `
-                <div class="order-tracking-details">
-                    <p><strong>Order ID:</strong> #${order.id.slice(-6)}</p>
-                    <p><strong>Placed on:</strong> ${new Date(order.date).toLocaleDateString()}</p>
-                    <p><strong>Total Amount:</strong> ₹${order.total}</p>
-                    <p><strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'QR Payment'}</p>
-                    <p><strong>Delivery Address:</strong> ${order.address.details}, ${order.address.city} - ${order.address.pincode}</p>
-                    ${order.status !== 'delivered' && order.status !== 'cancelled' ? `
-                        <div class="eta-section mt-3 p-3 bg-light rounded">
-                            <h6><i class="fas fa-clock"></i> Estimated Delivery</h6>
-                            <div id="etaCountdown" class="fw-bold text-primary"></div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-            
-            // Show/Hide pickup location button based on delivery type
-            const pickupBtn = document.getElementById('pickupLocationBtn');
-            if (order.deliveryType === 'pickup') {
-                pickupBtn.style.display = 'block';
-                pickupBtn.setAttribute('onclick', `showPickupLocation('${order.id}')`);
-            } else {
-                pickupBtn.style.display = 'none';
-            }
-            
-            // Show cancel button ONLY for 'confirmed' status, NOT for 'preparing'
-            const cancelBtn = document.getElementById('cancelOrderBtn');
-            if (order.status === 'confirmed' || order.status === 'pending') {
-                cancelBtn.style.display = 'block';
-                cancelBtn.setAttribute('onclick', `cancelOrder('${order.id}')`);
-            } else {
-                cancelBtn.style.display = 'none';
-            }
-            
-            // Start real-time tracking simulation for active orders
-            if (order.status !== 'delivered' && order.status !== 'cancelled') {
-                updateETACountdown(order);
-            }
-            
-            orderTracking.classList.add('open');
-        }
+        // ✅ FIXED: IMPROVED ORDER TRACKING TIMELINE WITH ALL STEPS
+function updateTrackingTimeline(order) {
+    console.log('🔄 Updating tracking timeline for order:', order.id, 'Status:', order.status);
+    
+    const tracking = order.tracking || {
+        confirmed: order.date || new Date().toISOString(),
+        preparing: null,
+        packed: null,
+        dispatched: null,
+        readyForPickup: null,
+        outForDelivery: null,
+        delivered: null
+    };
+    
+    // Get status sequence based on delivery type
+    const statusSequence = getStatusSequence(order.deliveryType);
+    const currentStatus = order.status;
+    const currentIndex = statusSequence.findIndex(s => s.id === currentStatus);
+    
+    console.log('Status Sequence:', statusSequence);
+    console.log('Current Status:', currentStatus, 'Index:', currentIndex);
+    
+    // Reset all steps
+    ['stepConfirmed', 'stepPreparing', 'stepPacked', 'stepDispatched', 'stepFinal'].forEach(stepId => {
+        const element = document.getElementById(stepId);
+        if (element) element.className = 'step-icon';
+    });
+    
+    ['timeConfirmed', 'timePreparing', 'timePacked', 'timeDispatched', 'timeFinal'].forEach(timeId => {
+        const element = document.getElementById(timeId);
+        if (element) element.textContent = '--';
+    });
+    
+    const finalIcon = document.getElementById('finalIcon');
+    const finalLabel = document.getElementById('finalLabel');
+    const stepFinal = document.getElementById('stepFinal');
+    const timeFinal = document.getElementById('timeFinal');
+    
+    // Mark completed steps
+    for (let i = 0; i <= currentIndex; i++) {
+        const step = statusSequence[i];
+        if (!step) continue;
         
-        // ✅ UPDATED: IMPROVED ORDER TRACKING TIMELINE WITH ALL STEPS
-        function updateTrackingTimeline(order) {
-            console.log('🔄 Updating tracking timeline for order:', order.id, order.status, order.tracking);
-            
-            // Use real tracking data from Firebase or fallback to local
-            const tracking = order.tracking || {
-                confirmed: order.date || new Date().toISOString(),
-                preparing: null,
-                packed: null,
-                dispatched: null,
-                readyForPickup: null,
-                outForDelivery: null,
-                delivered: null
-            };
-            
-            // Update confirmed step
-            if (tracking.confirmed) {
+        // Mark step as completed
+        switch(step.id) {
+            case 'pending':
+                // Already handled by confirmed
+                break;
+            case 'confirmed':
                 document.getElementById('stepConfirmed').className = 'step-icon completed';
-                document.getElementById('timeConfirmed').textContent = new Date(tracking.confirmed).toLocaleString();
-            } else {
-                document.getElementById('stepConfirmed').className = 'step-icon completed';
-                document.getElementById('timeConfirmed').textContent = new Date().toLocaleString();
-            }
-            
-            // Update preparing step
-            if (order.status === 'preparing' || order.status === 'packed' || order.status === 'dispatched' || order.status === 'ready_for_pickup' || order.status === 'out_for_delivery' || order.status === 'delivered') {
+                document.getElementById('timeConfirmed').textContent = tracking.confirmed ? 
+                    new Date(tracking.confirmed).toLocaleString() : 'Recently';
+                break;
+            case 'preparing':
                 document.getElementById('stepPreparing').className = 'step-icon completed';
                 document.getElementById('timePreparing').textContent = tracking.preparing ? 
                     new Date(tracking.preparing).toLocaleString() : 'Recently';
-            } else if (order.status === 'confirmed' || order.status === 'pending') {
-                document.getElementById('stepPreparing').className = 'step-icon active';
-                document.getElementById('timePreparing').textContent = 'In progress';
-            } else {
-                document.getElementById('stepPreparing').className = 'step-icon';
-                document.getElementById('timePreparing').textContent = '--';
-            }
-            
-            // Update packed step
-            if (order.status === 'packed' || order.status === 'dispatched' || order.status === 'ready_for_pickup' || order.status === 'out_for_delivery' || order.status === 'delivered') {
+                break;
+            case 'packed':
                 document.getElementById('stepPacked').className = 'step-icon completed';
                 document.getElementById('timePacked').textContent = tracking.packed ? 
                     new Date(tracking.packed).toLocaleString() : 'Recently';
-            } else if (order.status === 'preparing') {
-                document.getElementById('stepPacked').className = 'step-icon';
-                document.getElementById('timePacked').textContent = '--';
-            } else {
-                document.getElementById('stepPacked').className = 'step-icon';
-                document.getElementById('timePacked').textContent = '--';
-            }
-            
-            // Update dispatched step
-            if (order.status === 'dispatched' || order.status === 'ready_for_pickup' || order.status === 'out_for_delivery' || order.status === 'delivered') {
+                break;
+            case 'dispatched':
                 document.getElementById('stepDispatched').className = 'step-icon completed';
                 document.getElementById('timeDispatched').textContent = tracking.dispatched ? 
                     new Date(tracking.dispatched).toLocaleString() : 'Recently';
-            } else if (order.status === 'packed') {
-                document.getElementById('stepDispatched').className = 'step-icon active';
-                document.getElementById('timeDispatched').textContent = 'In progress';
-            } else {
-                document.getElementById('stepDispatched').className = 'step-icon';
-                document.getElementById('timeDispatched').textContent = '--';
-            }
-            
-            // DYNAMIC FINAL STEP BASED ON DELIVERY TYPE
-            const finalIcon = document.getElementById('finalIcon');
-            const finalLabel = document.getElementById('finalLabel');
-            const stepFinal = document.getElementById('stepFinal');
-            const timeFinal = document.getElementById('timeFinal');
-            
-            if (order.deliveryType === 'pickup') {
-                // For pickup orders, show "Ready for Pickup" instead of "Delivered"
+                break;
+            case 'ready_for_pickup':
                 finalIcon.className = 'fas fa-box-open';
                 finalLabel.textContent = 'Ready for Pickup';
-                
-                if (order.status === 'ready_for_pickup' || order.status === 'delivered') {
-                    stepFinal.className = 'step-icon completed';
-                    timeFinal.textContent = tracking.readyForPickup ? 
-                        new Date(tracking.readyForPickup).toLocaleString() : 'Recently';
-                } else if (order.status === 'dispatched') {
-                    stepFinal.className = 'step-icon active';
-                    timeFinal.textContent = 'In progress';
-                } else {
-                    stepFinal.className = 'step-icon';
-                    timeFinal.textContent = '--';
-                }
+                stepFinal.className = 'step-icon completed';
+                timeFinal.textContent = tracking.readyForPickup ? 
+                    new Date(tracking.readyForPickup).toLocaleString() : 'Recently';
+                break;
+            case 'out_for_delivery':
+                finalIcon.className = 'fas fa-motorcycle';
+                finalLabel.textContent = 'Out for Delivery';
+                stepFinal.className = 'step-icon completed';
+                timeFinal.textContent = tracking.outForDelivery ? 
+                    new Date(tracking.outForDelivery).toLocaleString() : 'Recently';
+                break;
+            case 'delivered':
+                finalIcon.className = 'fas fa-home';
+                finalLabel.textContent = 'Delivered';
+                stepFinal.className = 'step-icon completed';
+                timeFinal.textContent = tracking.delivered ? 
+                    new Date(tracking.delivered).toLocaleString() : 'Recently';
+                break;
+            case 'picked_up':
+                finalIcon.className = 'fas fa-store';
+                finalLabel.textContent = 'Picked Up';
+                stepFinal.className = 'step-icon completed';
+                timeFinal.textContent = tracking.delivered ? 
+                    new Date(tracking.delivered).toLocaleString() : 'Recently';
+                break;
+        }
+    }
+    
+    // Mark current step as active (if not already delivered/picked up)
+    if (currentIndex >= 0 && currentIndex < statusSequence.length) {
+        const currentStep = statusSequence[currentIndex];
+        
+        if (currentStep.id === 'out_for_delivery') {
+            finalIcon.className = 'fas fa-motorcycle';
+            finalLabel.textContent = 'Out for Delivery';
+            stepFinal.className = 'step-icon active';
+            timeFinal.textContent = tracking.outForDelivery ? 
+                new Date(tracking.outForDelivery).toLocaleString() : 'In progress';
+        } else if (currentStep.id === 'ready_for_pickup') {
+            finalIcon.className = 'fas fa-box-open';
+            finalLabel.textContent = 'Ready for Pickup';
+            stepFinal.className = 'step-icon active';
+            timeFinal.textContent = tracking.readyForPickup ? 
+                new Date(tracking.readyForPickup).toLocaleString() : 'In progress';
+        }
+    }
+    
+    // Update ETA
+    updateETACountdown(order);
+}
+
+// ✅ NEW FUNCTION: Get correct status sequence based on delivery type
+function getStatusSequence(deliveryType) {
+    if (deliveryType === 'pickup') {
+        return [
+            { id: 'pending', label: 'Order Placed' },
+            { id: 'confirmed', label: 'Confirmed' },
+            { id: 'preparing', label: 'Preparing' },
+            { id: 'ready_for_pickup', label: 'Ready for Pickup' },
+            { id: 'picked_up', label: 'Picked Up' }
+        ];
+    } else {
+        return [
+            { id: 'pending', label: 'Order Placed' },
+            { id: 'confirmed', label: 'Confirmed' },
+            { id: 'preparing', label: 'Preparing' },
+            { id: 'dispatched', label: 'Dispatched' },
+            { id: 'out_for_delivery', label: 'Out for Delivery' },
+            { id: 'delivered', label: 'Delivered' }
+        ];
+    }
+}
+// ✅ UPDATE: Also update the updateETACountdown() function
+function updateETACountdown(order) {
+    const etaElement = document.getElementById('etaCountdown');
+    if (!etaElement) return;
+    
+    let etaMinutes = 0;
+    let statusText = '';
+    
+    // GET CORRECT STATUS SEQUENCE
+    const statusSequence = getStatusSequence(order.deliveryType);
+    const currentStatus = order.status;
+    
+    switch(currentStatus) {
+        case 'pending':
+            etaMinutes = 45;
+            statusText = 'Order will be confirmed soon';
+            break;
+        case 'confirmed':
+            etaMinutes = 40;
+            statusText = 'Preparing will start soon';
+            break;
+        case 'preparing':
+            etaMinutes = 30;
+            statusText = 'Your order is being prepared';
+            break;
+        case 'packed':
+            etaMinutes = 25;
+            statusText = 'Order packed, ready for dispatch';
+            break;
+        case 'dispatched':
+            if (order.deliveryType === 'pickup') {
+                etaMinutes = 15;
+                statusText = 'Will be ready for pickup soon';
             } else {
-                // For delivery orders, show "Out for Delivery" and "Delivered"
-                // Check if we need to show "Out for Delivery" step
-                const stepDispatchedContainer = document.getElementById('stepDispatchedContainer');
-                const finalStepContainer = document.getElementById('finalStepContainer');
-                
-                if (order.status === 'out_for_delivery' || order.status === 'delivered') {
-                    // Show "Out for Delivery" as completed and "Delivered" as final
-                    document.getElementById('stepDispatched').className = 'step-icon completed';
-                    document.getElementById('timeDispatched').textContent = tracking.dispatched ? 
-                        new Date(tracking.dispatched).toLocaleString() : 'Recently';
-                    
-                    finalIcon.className = 'fas fa-motorcycle';
-                    finalLabel.textContent = 'Out for Delivery';
-                    
-                    if (order.status === 'out_for_delivery') {
-                        stepFinal.className = 'step-icon active';
-                        timeFinal.textContent = tracking.outForDelivery ? 
-                            new Date(tracking.outForDelivery).toLocaleString() : 'In progress';
-                    } else if (order.status === 'delivered') {
-                        stepFinal.className = 'step-icon completed';
-                        timeFinal.textContent = tracking.delivered ? 
-                            new Date(tracking.delivered).toLocaleString() : 'Recently';
-                    }
-                } else {
-                    // Regular delivery flow
-                    finalIcon.className = 'fas fa-home';
-                    finalLabel.textContent = 'Delivered';
-                    
-                    if (order.status === 'delivered') {
-                        stepFinal.className = 'step-icon completed';
-                        timeFinal.textContent = tracking.delivered ? 
-                            new Date(tracking.delivered).toLocaleString() : 'Recently';
-                    } else if (order.status === 'dispatched') {
-                        stepFinal.className = 'step-icon active';
-                        timeFinal.textContent = 'In progress';
-                    } else {
-                        stepFinal.className = 'step-icon';
-                        timeFinal.textContent = '--';
-                    }
-                }
+                etaMinutes = 20;
+                statusText = 'Out for delivery soon';
             }
-            
-            // Update ETA countdown
-            updateETACountdown(order);
-        }
-
-        function closeOrderTracking() {
-            orderTracking.classList.remove('open');
-        }
-
-        function cancelOrder(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            showConfirmationModal(
-                'Cancel Order',
-                `Are you sure you want to cancel order #${orderId.slice(-6)}? 
-                
-This action cannot be undone.${order.paymentMethod !== 'cod' ? ' Refund will be processed within 3-5 business days.' : ''}`,
-                async () => {
-                    // Update order status to cancelled
-                    const orderIndex = orders.findIndex(o => o.id === orderId);
-                    if (orderIndex !== -1) {
-                        orders[orderIndex].status = 'cancelled';
-                        orders[orderIndex].cancelledAt = new Date().toISOString();
-                        
-                        // STOP TRACKING SIMULATION FOR CANCELLED ORDERS
-                        if (orderTrackingInterval) {
-                            clearInterval(orderTrackingInterval);
-                        }
-                        
-                        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                        
-                        // ✅ FIX: UPDATE ALL COLLECTIONS - NOT JUST USER'S PERSONAL COLLECTION
-                        if (currentUser) {
-                            try {
-                                // ✅ 1. Update main orders collection
-                                await db.collection('orders').doc(orderId).update({
-                                    status: 'cancelled',
-                                    cancelledAt: orders[orderIndex].cancelledAt,
-                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                                
-                                // ✅ 2. Update orderItems collection (for shopkeeper)
-                                const orderItemsQuery = await db.collection('orderItems')
-                                    .where('orderId', '==', orderId)
-                                    .get();
-                                
-                                if (!orderItemsQuery.empty) {
-                                    const batch = db.batch();
-                                    orderItemsQuery.forEach(doc => {
-                                        const orderItemRef = db.collection('orderItems').doc(doc.id);
-                                        batch.update(orderItemRef, {
-                                            status: 'cancelled',
-                                            cancelledAt: orders[orderIndex].cancelledAt,
-                                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                                        });
-                                    });
-                                    await batch.commit();
-                                    console.log('✅ Cancelled order in orderItems collection');
-                                }
-                                
-                                // ✅ 3. Also update user's personal orders collection (optional)
-                                await db.collection('users').doc(currentUser.uid).collection('orders')
-                                    .where('id', '==', orderId)
-                                    .get()
-                                    .then(snapshot => {
-                                        snapshot.forEach(doc => {
-                                            doc.ref.update({
-                                                status: 'cancelled',
-                                                cancelledAt: orders[orderIndex].cancelledAt
-                                            });
-                                        });
-                                    });
-                                
-                            } catch (error) {
-                                console.error('Error updating cancelled order:', error);
-                                showToast('Error updating order status. Please try again.', 'error');
-                                return;
-                            }
-                        }
-                        
-                        // Close tracking modal
-                        closeOrderTracking();
-                        
-                        // Show success message
-                        showToast('Order cancelled successfully!');
-                        
-                        // Update orders list
-                        renderOrders();
-                        
-                        // ✅ UPDATE ORDER BADGES
-                        updateOrderBadges();
-                    }
-                }
-            );
-        }
-
-        // ✅ UPDATED: Update order status with all statuses
-        function updateOrderStatus(orderId, newStatus) {
-            const orderIndex = orders.findIndex(o => o.id === orderId);
-            if (orderIndex === -1) return;
-            
-            const order = orders[orderIndex];
-            const now = new Date().toISOString();
-            
-            // Update status and tracking times
-            order.status = newStatus;
-            
-            switch(newStatus) {
-                case 'preparing':
-                    order.tracking.preparing = now;
-                    showToast('👨‍🍳 Your order is now being prepared!');
-                    break;
-                case 'packed':
-                    order.tracking.packed = now;
-                    showToast('📦 Your order has been packed!');
-                    break;
-                case 'dispatched':
-                    order.tracking.dispatched = now;
-                    showToast('🚚 Your order has been dispatched!');
-                    // Simulate delivery agent assignment
-                    assignDeliveryAgent(orderId);
-                    break;
-                case 'ready_for_pickup':
-                    order.tracking.readyForPickup = now;
-                    showToast('📦 Your order is ready for pickup!');
-                    break;
-                case 'out_for_delivery':
-                    order.tracking.outForDelivery = now;
-                    showToast('🏍️ Your order is out for delivery!');
-                    break;
-                case 'delivered':
-                    order.tracking.delivered = now;
-                    showToast('🎉 Order delivered successfully!');
-                    if (orderTrackingInterval) {
-                        clearInterval(orderTrackingInterval);
-                    }
-                    break;
-            }
-            
-            // Update localStorage
-            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-            
-            // Update Firebase if user is logged in
-            if (currentUser) {
-                db.collection('users').doc(currentUser.uid).collection('orders')
-                    .where('id', '==', orderId)
-                    .get()
-                    .then(snapshot => {
-                        snapshot.forEach(doc => {
-                            doc.ref.update({
-                                status: newStatus,
-                                tracking: order.tracking
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error updating order status:', error);
-                    });
-            }
-            
-            // Update UI if this order is currently being tracked
-            if (currentTrackingOrder && currentTrackingOrder.id === orderId) {
-                updateTrackingTimeline(order);
-                updateETACountdown(order);
-            }
-            
-            // Update orders page
-            renderOrders();
-            
-            // ✅ UPDATE ORDER BADGES
-            updateOrderBadges();
-        }
-
-        function assignDeliveryAgent(orderId) {
-            const orderIndex = orders.findIndex(o => o.id === orderId);
-            if (orderIndex === -1) return;
-            
-            // Simulate delivery agent details
-            const deliveryAgents = [
-                { name: 'Rahul Kumar', phone: '9876543210', vehicle: 'Bike', rating: 4.5 },
-                { name: 'Priya Singh', phone: '9876543211', vehicle: 'Scooter', rating: 4.8 },
-                { name: 'Amit Sharma', phone: '9876543212', vehicle: 'Bike', rating: 4.3 }
-            ];
-            
-            const randomAgent = deliveryAgents[Math.floor(Math.random() * deliveryAgents.length)];
-            orders[orderIndex].deliveryAgent = randomAgent;
-            
-            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-            
-            // Show delivery agent notification
-            showToast(`🚚 Delivery agent assigned: ${randomAgent.name}`);
-        }
-
-        function updateETACountdown(order) {
-            const etaElement = document.getElementById('etaCountdown');
-            if (!etaElement) return;
-            
-            let etaMinutes = 45; // Default ETA
-            
-            switch(order.status) {
-                case 'confirmed':
-                case 'pending':
-                    etaMinutes = 45;
-                    break;
-                case 'preparing':
-                    etaMinutes = 35;
-                    break;
-                case 'packed':
-                    etaMinutes = 30;
-                    break;
-                case 'dispatched':
-                    etaMinutes = 25;
-                    break;
-                case 'ready_for_pickup':
-                    etaMinutes = 10;
-                    break;
-                case 'out_for_delivery':
-                    etaMinutes = 15;
-                    break;
-                default:
-                    etaMinutes = 0;
-            }
-            
-            if (etaMinutes > 0) {
-                const deliveryTime = new Date(new Date().getTime() + etaMinutes * 60000);
-                etaElement.textContent = `${deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${etaMinutes} min)`;
-            } else {
-                etaElement.textContent = 'Delivered';
-            }
-        }
+            break;
+        case 'ready_for_pickup':
+            etaMinutes = 0;
+            statusText = 'Ready for pickup';
+            break;
+        case 'out_for_delivery':
+            etaMinutes = 15;
+            statusText = 'On the way to you';
+            break;
+        case 'delivered':
+        case 'picked_up':
+            etaMinutes = 0;
+            statusText = order.deliveryType === 'pickup' ? 'Picked up successfully!' : 'Delivered successfully!';
+            break;
+        default:
+            etaMinutes = 0;
+            statusText = getStatusText(currentStatus);
+    }
+    
+    if (etaMinutes > 0) {
+        const deliveryTime = new Date(new Date().getTime() + etaMinutes * 60000);
+        etaElement.innerHTML = `
+            <div>${statusText}</div>
+            <div class="text-primary fw-bold">ETA: ${deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${etaMinutes} min)</div>
+        `;
+    } else {
+        etaElement.innerHTML = `<div class="text-success fw-bold">${statusText}</div>`;
+    }
+}
 
         function shareOrder(orderId) {
             const order = orders.find(o => o.id === orderId);
