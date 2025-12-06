@@ -2952,6 +2952,229 @@
         const ordersNavBadge = document.getElementById('ordersNavBadge');
         const ordersBadge = document.getElementById('ordersBadge');
 
+        // ✅ NEW: Get selected shop function
+        function getSelectedShop() {
+            if (!cart || cart.length === 0) {
+                return {
+                    id: "default_shop",
+                    name: "Default Shop",
+                    address: "Shop address not available"
+                };
+            }
+            
+            // Get shop from first item in cart
+            const firstItem = cart[0];
+            return {
+                id: firstItem.shopId || "default_shop",
+                name: firstItem.shopName || "Default Shop",
+                address: "Shop address not available"
+            };
+        }
+
+        // ✅ NEW: Show loading function
+        function showLoading(show) {
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+            if (!placeOrderBtn) return;
+            
+            if (show) {
+                placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                placeOrderBtn.disabled = true;
+            } else {
+                placeOrderBtn.innerHTML = '<i class="fas fa-lock"></i> Place Order Securely';
+                placeOrderBtn.disabled = cart.length === 0;
+            }
+        }
+
+        // ✅ NEW: Clear cart function
+        function clearCart() {
+            cart = [];
+            localStorage.setItem('dukaan_cart', JSON.stringify(cart));
+            updateCartUI();
+        }
+
+        // ✅ UPDATED: Complete placeOrder() function
+        async function placeOrder() {
+            try {
+                console.log('🛒 Place order called');
+                
+                // Validate checkout inputs
+                const phone = document.getElementById('checkoutPhone')?.value?.trim();
+                
+                if (!phone || phone.length < 10) {
+                    showToast('Please enter a valid phone number', 'error');
+                    return;
+                }
+                
+                if (!selectedPaymentMethod) {
+                    showToast('Please select a payment method', 'error');
+                    return;
+                }
+                
+                // Validate selected address
+                if (!selectedAddress) {
+                    // Check if addresses array has addresses
+                    if (addresses.length === 0) {
+                        showToast('Please add a delivery address first', 'error');
+                        return;
+                    }
+                    // Auto-select first address
+                    selectedAddress = addresses[0];
+                }
+                
+                // Validate cart
+                if (cart.length === 0) {
+                    showToast('Your cart is empty', 'error');
+                    return;
+                }
+                
+                // Check if any item is invalid
+                for (const item of cart) {
+                    if (!item.id || !item.shopId) {
+                        showToast('Some items in your cart are invalid', 'error');
+                        return;
+                    }
+                }
+                
+                let utrNumberValue = '';
+                
+                // If QR payment, validate UTR number
+                if (selectedPaymentMethod === 'qr') {
+                    utrNumberValue = document.getElementById('utrNumber')?.value?.trim() || '';
+                    if (!utrNumberValue) {
+                        showToast('Please enter UTR number for QR payment', 'error');
+                        return;
+                    }
+                }
+                
+                // Show loading
+                showLoading(true);
+                
+                // Get current user
+                const user = auth.currentUser;
+                if (!user) {
+                    showToast('Please login to place order', 'error');
+                    showLoading(false);
+                    return;
+                }
+                
+                // Get selected shop info
+                const selectedShop = getSelectedShop();
+                
+                if (!selectedShop) {
+                    showToast('Please select a shop', 'error');
+                    showLoading(false);
+                    return;
+                }
+                
+                // Calculate totals
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const deliveryCharge = 40; // Example delivery charge
+                let discount = 0;
+                let total = subtotal + deliveryCharge;
+                
+                // Apply coupon if any
+                if (appliedCoupon) {
+                    if (appliedCoupon.type === 'percentage') {
+                        discount = (subtotal * appliedCoupon.value) / 100;
+                    } else {
+                        discount = appliedCoupon.value;
+                    }
+                    total = subtotal + deliveryCharge - discount;
+                }
+                
+                // Prepare order items
+                const orderItems = cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    image: item.image,
+                    shopId: item.shopId,
+                    shopName: item.shopName
+                }));
+                
+                // First, create a temporary order ID
+                const tempOrderId = 'temp_' + Date.now();
+                
+                // Create order data WITHOUT orderId initially
+                const orderData = {
+                    // ❌ DON'T add orderId here - we'll update it after getting Firestore ID
+                    customerId: user.uid,
+                    customerName: user.displayName || 'Customer',
+                    customerEmail: user.email,
+                    phone: phone,
+                    items: orderItems,
+                    subtotal: subtotal,
+                    deliveryCharge: deliveryCharge,
+                    discount: discount,
+                    total: total,
+                    totalAmount: total,
+                    address: selectedAddress,
+                    deliveryType: 'delivery',
+                    status: 'pending',
+                    paymentMethod: selectedPaymentMethod,
+                    paymentStatus: selectedPaymentMethod === 'qr' ? 'paid' : 'pending',
+                    shopId: selectedShop.id,
+                    shopName: selectedShop.name,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Add UTR number if QR payment
+                if (selectedPaymentMethod === 'qr' && utrNumberValue) {
+                    orderData.utrNumber = utrNumberValue;
+                }
+                
+                // Add coupon if applied
+                if (appliedCoupon) {
+                    orderData.couponCode = appliedCoupon.code;
+                    orderData.couponDiscount = discount;
+                }
+                
+                console.log('📦 Creating order with data:', orderData);
+                
+                // 1️⃣ First, add order to Firestore (without orderId)
+                const docRef = await db.collection('orders').add(orderData);
+                const firestoreOrderId = docRef.id;
+                console.log('🔥 Firestore Order ID created:', firestoreOrderId);
+                
+                // 2️⃣ IMPORTANT: Now update the order with orderId = Firestore document ID
+                await db.collection('orders').doc(firestoreOrderId).update({
+                    orderId: firestoreOrderId, // ✅ Set orderId to Firestore ID
+                    id: firestoreOrderId // ✅ Also update id field if exists
+                });
+                
+                console.log('✅ Order updated with orderId:', firestoreOrderId);
+                
+                // 3️⃣ Clear cart after successful order
+                clearCart();
+                
+                // 4️⃣ Hide loading
+                showLoading(false);
+                
+                // 5️⃣ Show success message with ORDER ID
+                showToast(`✅ Order placed successfully! Order ID: #${firestoreOrderId.substring(0, 6)}`, 'success');
+                
+                // 6️⃣ Close bottom sheet
+                closeBottomSheet();
+                
+                // 7️⃣ Redirect to orders page
+                setTimeout(() => {
+                    navigateToPage('orders');
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Error placing order:', error);
+                showLoading(false);
+                showToast('Error placing order: ' + error.message, 'error');
+            }
+        }
+
+        // ✅ ADD THIS HELPER FUNCTION
+        function calculateSubtotal() {
+            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
+
         // Initialize App
         function initApp() {
             setupEventListeners();
@@ -3806,7 +4029,6 @@
             });
 
             // Checkout listeners
-            placeOrderBtn.addEventListener('click', placeOrder);
             applyCouponBtn.addEventListener('click', applyCoupon);
 
             // Payment method selection
@@ -5070,466 +5292,6 @@
             );
         }
 
-        // ✅ FIX 1: ORDER PLACEMENT WITHOUT COUPON - FIXED
-async function placeOrder() {
-    try {
-        console.log('🛒 Place order called');
-        
-        // Validate checkout inputs
-        const phone = document.getElementById('checkoutPhone')?.value?.trim();
-        
-        if (!phone || phone.length < 10) {
-            showToast('Please enter a valid phone number', 'error');
-            return;
-        }
-        
-        if (!selectedPaymentMethod) {
-            showToast('Please select a payment method', 'error');
-            return;
-        }
-        
-        if (!selectedAddress) {
-            showToast('Please select a delivery address', 'error');
-            return;
-        }
-        
-        // Validate cart
-        if (cart.length === 0) {
-            showToast('Your cart is empty', 'error');
-            return;
-        }
-        
-        // Check if any item is invalid
-        for (const item of cart) {
-            if (!item.id || !item.shopId) {
-                showToast('Some items in your cart are invalid', 'error');
-                return;
-            }
-        }
-        
-        let utrNumberValue = '';
-        
-        // If QR payment, validate UTR number
-        if (selectedPaymentMethod === 'qr') {
-            utrNumberValue = document.getElementById('utrNumber')?.value?.trim() || '';
-            if (!utrNumberValue) {
-                showToast('Please enter UTR number for QR payment', 'error');
-                return;
-            }
-        }
-        
-        // Show loading
-        showLoading(true);
-        
-        // Get current user
-        const user = auth.currentUser;
-        if (!user) {
-            showToast('Please login to place order', 'error');
-            showLoading(false);
-            return;
-        }
-        
-        // Get selected shop info (assuming you have this)
-        const selectedShop = getSelectedShop(); // Ye function aapke app mein hoga
-        
-        if (!selectedShop) {
-            showToast('Please select a shop', 'error');
-            showLoading(false);
-            return;
-        }
-        
-        // Calculate totals
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const deliveryCharge = 40; // Example delivery charge
-        let discount = 0;
-        let total = subtotal + deliveryCharge;
-        
-        // Apply coupon if any
-        if (selectedCoupon) {
-            discount = (subtotal * selectedCoupon.discountPercent) / 100;
-            total = subtotal + deliveryCharge - discount;
-        }
-        
-        // Prepare order items
-        const orderItems = cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
-            shopId: item.shopId,
-            shopName: item.shopName
-        }));
-        
-        // First, create a temporary order ID
-        const tempOrderId = 'temp_' + Date.now();
-        
-        // Create order data WITHOUT orderId initially
-        const orderData = {
-            // ❌ DON'T add orderId here - we'll update it after getting Firestore ID
-            customerId: user.uid,
-            customerName: user.displayName || 'Customer',
-            customerEmail: user.email,
-            phone: phone,
-            items: orderItems,
-            subtotal: subtotal,
-            deliveryCharge: deliveryCharge,
-            discount: discount,
-            total: total,
-            totalAmount: total,
-            address: selectedAddress,
-            deliveryType: 'delivery',
-            status: 'pending',
-            paymentMethod: selectedPaymentMethod,
-            paymentStatus: selectedPaymentMethod === 'qr' ? 'paid' : 'pending',
-            shopId: selectedShop.id,
-            shopName: selectedShop.name,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        
-        // Add UTR number if QR payment
-        if (selectedPaymentMethod === 'qr' && utrNumberValue) {
-            orderData.utrNumber = utrNumberValue;
-        }
-        
-        // Add coupon if applied
-        if (selectedCoupon) {
-            orderData.couponCode = selectedCoupon.code;
-            orderData.couponDiscount = discount;
-        }
-        
-        console.log('📦 Creating order with data:', orderData);
-        
-        // 1️⃣ First, add order to Firestore (without orderId)
-        const docRef = await db.collection('orders').add(orderData);
-        const firestoreOrderId = docRef.id;
-        console.log('🔥 Firestore Order ID created:', firestoreOrderId);
-        
-        // 2️⃣ IMPORTANT: Now update the order with orderId = Firestore document ID
-        await db.collection('orders').doc(firestoreOrderId).update({
-            orderId: firestoreOrderId, // ✅ Set orderId to Firestore ID
-            id: firestoreOrderId // ✅ Also update id field if exists
-        });
-        
-        console.log('✅ Order updated with orderId:', firestoreOrderId);
-        
-        // 3️⃣ Clear cart after successful order
-        clearCart();
-        
-        // 4️⃣ Hide loading
-        showLoading(false);
-        
-        // 5️⃣ Show success message with ORDER ID
-        showToast(`✅ Order placed successfully! Order ID: #${firestoreOrderId.substring(0, 6)}`, 'success');
-        
-        // 6️⃣ Redirect to order confirmation page
-        setTimeout(() => {
-            window.location.href = `order-confirmation.html?orderId=${firestoreOrderId}`;
-        }, 2000);
-        
-    } catch (error) {
-        console.error('❌ Error placing order:', error);
-        showLoading(false);
-        showToast('Error placing order: ' + error.message, 'error');
-    }
-}
-
-        // ✅ ADD THIS HELPER FUNCTION
-        function calculateSubtotal() {
-            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        }
-
-        // ✅ FIXED: Updated completeOrderPlacement function for guest users
-        function completeOrderPlacement(newOrder) {
-            try {
-                // Generate order ID for guest
-                const orderId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                newOrder.id = orderId;
-                
-                // Save to local storage
-                orders.push(newOrder);
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                
-                // Clear cart
-                cart = [];
-                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-                updateCartUI();
-                
-                // Reset checkout state
-                appliedCoupon = null;
-                selectedAddress = null;
-                
-                // Clear inputs
-                const couponCodeInput = document.getElementById('couponCode');
-                const couponMessage = document.getElementById('couponMessage');
-                const checkoutPhone = document.getElementById('checkoutPhone');
-                const utrNumber = document.getElementById('utrNumber');
-                
-                if (couponCodeInput) couponCodeInput.value = '';
-                if (couponMessage) couponMessage.textContent = '';
-                if (checkoutPhone) checkoutPhone.value = '';
-                if (utrNumber) utrNumber.value = '';
-                
-                // Close bottom sheet
-                closeBottomSheet();
-                
-                showToast('🎉 Order placed successfully!', 'success');
-                
-                // Show order tracking
-                setTimeout(() => {
-                    showOrderTracking(orderId);
-                }, 1500);
-                
-            } catch (error) {
-                console.error('❌ Error in guest order placement:', error);
-                showToast('Error placing order: ' + error.message, 'error');
-            }
-        }
-
-        // ✅ FIXED: Updated completeOrderPlacementWithShopkeeper function
-        async function completeOrderPlacementWithShopkeeper(newOrder) {
-            try {
-                console.log('🛍️ Starting order placement with shopkeeper...');
-                
-                // Check stock availability
-                for (const item of cart) {
-                    if (!item.id) {
-                        showToast(`Error: Invalid product item`, 'error');
-                        return;
-                    }
-                    
-                    try {
-                        const productDoc = await db.collection('products').doc(item.id).get();
-                        if (!productDoc.exists) {
-                            showToast(`Sorry, ${item.name || 'product'} is not available`, 'error');
-                            return;
-                        }
-                        
-                        const productData = productDoc.data();
-                        const currentStock = productData.stock || 0;
-                        const requestedQuantity = item.quantity || 1;
-                        
-                        if (currentStock < requestedQuantity) {
-                            showToast(`Sorry, ${item.name || 'product'} is out of stock. Available: ${currentStock}`, 'error');
-                            return;
-                        }
-                    } catch (error) {
-                        console.error('Stock check error:', error);
-                        showToast('Error checking stock availability', 'error');
-                        return;
-                    }
-                }
-
-                // ✅ GENERATE SINGLE ORDER ID FOR ALL COLLECTIONS
-                const orderId = db.collection('orders').doc().id;
-                console.log('📋 Generated Order ID:', orderId);
-                
-                // Save to local storage
-                newOrder.id = orderId;
-                orders.push(newOrder);
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                
-                // Also save to user orders history
-                const userOrders = JSON.parse(localStorage.getItem('dukaan_user_orders') || '[]');
-                userOrders.unshift(newOrder);
-                localStorage.setItem('dukaan_user_orders', JSON.stringify(userOrders));
-
-                // Check delivery type
-                let hasPickupOnlyShop = false;
-                try {
-                    // Check first item's shop for delivery type
-                    const firstItem = cart[0];
-                    if (firstItem && firstItem.shopId) {
-                        const shopDoc = await db.collection('shops').doc(firstItem.shopId).get();
-                        if (shopDoc.exists) {
-                            const shopData = shopDoc.data();
-                            hasPickupOnlyShop = shopData.deliveryType === 'pickup_only';
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error checking shop delivery type:', error);
-                    // Continue with delivery as default
-                }
-
-                // ✅ CREATE MAIN ORDER IN FIREBASE
-                const orderData = {
-                    id: orderId,
-                    customerId: currentUser.uid || '',
-                    customerEmail: currentUser.email || '',
-                    customerName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Customer',
-                    deliveryType: hasPickupOnlyShop ? 'pickup' : 'delivery',
-                    items: cart.map(item => ({
-                        id: item.id || '',
-                        name: item.name || '',
-                        price: item.price || 0,
-                        quantity: item.quantity || 1,
-                        shopId: item.shopId || '',
-                        shopName: item.shopName || '',
-                        image: item.image || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop'
-                    })),
-                    total: newOrder.total || 0,
-                    subtotal: newOrder.subtotal || newOrder.total || 0,
-                    discount: newOrder.discount || 0,
-                    deliveryCharge: newOrder.deliveryCharge || 40,
-                    status: 'pending',
-                    address: newOrder.address || {},
-                    phone: newOrder.phone || '',
-                    paymentMethod: newOrder.paymentMethod || 'cod',
-                    utrNumber: (newOrder.paymentMethod === 'qr' && newOrder.utrNumber) || null,
-                    couponCode: newOrder.couponCode || null, // ✅ CAN BE NULL
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    orderId: orderId
-                };
-
-                // Remove undefined/null fields
-                Object.keys(orderData).forEach(key => {
-                    if (orderData[key] === undefined || orderData[key] === null) {
-                        delete orderData[key];
-                    }
-                });
-
-                console.log('📤 Saving main order to Firestore:', orderData);
-
-                // ✅ SAVE MAIN ORDER
-                await db.collection('orders').doc(orderId).set(orderData);
-                console.log('✅ Main order saved:', orderId);
-
-                // ✅ CREATE ORDER ITEMS FOR EACH SHOP
-                let orderItemsCount = 0;
-                
-                for (const item of cart) {
-                    if (!item.id || !item.shopId) {
-                        console.warn('⚠️ Skipping invalid cart item:', item);
-                        continue;
-                    }
-                    
-                    try {
-                        // Create order item for shopkeeper
-                        const orderItemData = {
-                            orderId: orderId,
-                            productId: item.id || '',
-                            productName: item.name || '',
-                            shopId: item.shopId || '',
-                            shopName: item.shopName || '',
-                            quantity: item.quantity || 1,
-                            price: item.price || 0,
-                            totalAmount: (item.price || 0) * (item.quantity || 1),
-                            status: 'pending',
-                            customerId: currentUser.uid || '',
-                            customerEmail: currentUser.email || '',
-                            customerName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Customer',
-                            paymentMethod: newOrder.paymentMethod || 'cod',
-                            address: newOrder.address || {},
-                            phone: newOrder.phone || '',
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        };
-
-                        // Remove undefined fields
-                        Object.keys(orderItemData).forEach(key => {
-                            if (orderItemData[key] === undefined || orderItemData[key] === null) {
-                                delete orderItemData[key];
-                            }
-                        });
-
-                        await db.collection('orderItems').add(orderItemData);
-                        orderItemsCount++;
-                        console.log('✅ Order item created for shop:', item.shopId);
-
-                        // Update product stock
-                        if (item.id) {
-                            await db.collection('products').doc(item.id).update({
-                                stock: firebase.firestore.FieldValue.increment(-(item.quantity || 1)),
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                            console.log('✅ Stock updated for product:', item.id);
-                        }
-                        
-                    } catch (itemError) {
-                        console.error('❌ Error creating order item:', itemError);
-                        // Continue with other items
-                    }
-                }
-
-                console.log(`✅ Created ${orderItemsCount} order items`);
-
-                // Clear cart
-                cart = [];
-                localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-                updateCartUI();
-                
-                // Reset checkout state
-                appliedCoupon = null;
-                selectedAddress = null;
-                
-                const couponCodeInput = document.getElementById('couponCode');
-                const couponMessage = document.getElementById('couponMessage');
-                const checkoutPhone = document.getElementById('checkoutPhone');
-                const utrNumber = document.getElementById('utrNumber');
-                
-                if (couponCodeInput) couponCodeInput.value = '';
-                if (couponMessage) couponMessage.textContent = '';
-                if (checkoutPhone) checkoutPhone.value = '';
-                if (utrNumber) utrNumber.value = '';
-                
-                closeBottomSheet();
-                showToast('🎉 Order placed successfully! Shopkeeper will process your order.', 'success');
-                
-                // ✅ UPDATE ORDER BADGES
-                updateOrderBadges();
-                
-                // Show order tracking
-                setTimeout(() => {
-                    showOrderTracking(orderId);
-                }, 1500);
-
-            } catch (error) {
-                console.error('❌ Error placing order:', error);
-                console.error('❌ Error stack:', error.stack);
-                showToast('Error placing order: ' + error.message, 'error');
-            }
-        }
-        
-        // Separate function for actual order placement after confirmation
-        function completeOrderPlacement(newOrder) {
-            orders.push(newOrder);
-            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-            
-            // Save to Firebase if user is logged in
-            if (currentUser) {
-                db.collection('users').doc(currentUser.uid).collection('orders').add(newOrder).catch(error => {
-                    console.error('Error saving order to Firebase:', error);
-                });
-            }
-            
-            // Clear cart
-            cart = [];
-            localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-            updateCartUI();
-            
-            // Reset checkout state
-            appliedCoupon = null;
-            selectedAddress = null;
-            selectedPaymentMethod = null;
-            couponCodeInput.value = '';
-            couponMessage.textContent = '';
-            checkoutPhone.value = '';
-            utrNumber.value = '';
-            
-            closeBottomSheet();
-            showToast('🎉 Order placed successfully!');
-            
-            // ✅ UPDATE ORDER BADGES
-            updateOrderBadges();
-            
-            // Show order tracking
-            setTimeout(() => {
-                showOrderTracking(newOrder.id);
-            }, 1500);
-        }
-
         // Confirmation Modal System
         function showConfirmationModal(title, message, onConfirm) {
             document.getElementById('confirmationTitle').textContent = title;
@@ -5684,214 +5446,215 @@ async function placeOrder() {
         }
 
         // ✅ FIXED: IMPROVED ORDER TRACKING TIMELINE WITH ALL STEPS
-function updateTrackingTimeline(order) {
-    console.log('🔄 Updating tracking timeline for order:', order.id, 'Status:', order.status);
-    
-    const tracking = order.tracking || {
-        confirmed: order.date || new Date().toISOString(),
-        preparing: null,
-        packed: null,
-        dispatched: null,
-        readyForPickup: null,
-        outForDelivery: null,
-        delivered: null
-    };
-    
-    // Get status sequence based on delivery type
-    const statusSequence = getStatusSequence(order.deliveryType);
-    const currentStatus = order.status;
-    const currentIndex = statusSequence.findIndex(s => s.id === currentStatus);
-    
-    console.log('Status Sequence:', statusSequence);
-    console.log('Current Status:', currentStatus, 'Index:', currentIndex);
-    
-    // Reset all steps
-    ['stepConfirmed', 'stepPreparing', 'stepPacked', 'stepDispatched', 'stepFinal'].forEach(stepId => {
-        const element = document.getElementById(stepId);
-        if (element) element.className = 'step-icon';
-    });
-    
-    ['timeConfirmed', 'timePreparing', 'timePacked', 'timeDispatched', 'timeFinal'].forEach(timeId => {
-        const element = document.getElementById(timeId);
-        if (element) element.textContent = '--';
-    });
-    
-    const finalIcon = document.getElementById('finalIcon');
-    const finalLabel = document.getElementById('finalLabel');
-    const stepFinal = document.getElementById('stepFinal');
-    const timeFinal = document.getElementById('timeFinal');
-    
-    // Mark completed steps
-    for (let i = 0; i <= currentIndex; i++) {
-        const step = statusSequence[i];
-        if (!step) continue;
-        
-        // Mark step as completed
-        switch(step.id) {
-            case 'pending':
-                // Already handled by confirmed
-                break;
-            case 'confirmed':
-                document.getElementById('stepConfirmed').className = 'step-icon completed';
-                document.getElementById('timeConfirmed').textContent = tracking.confirmed ? 
-                    new Date(tracking.confirmed).toLocaleString() : 'Recently';
-                break;
-            case 'preparing':
-                document.getElementById('stepPreparing').className = 'step-icon completed';
-                document.getElementById('timePreparing').textContent = tracking.preparing ? 
-                    new Date(tracking.preparing).toLocaleString() : 'Recently';
-                break;
-            case 'packed':
-                document.getElementById('stepPacked').className = 'step-icon completed';
-                document.getElementById('timePacked').textContent = tracking.packed ? 
-                    new Date(tracking.packed).toLocaleString() : 'Recently';
-                break;
-            case 'dispatched':
-                document.getElementById('stepDispatched').className = 'step-icon completed';
-                document.getElementById('timeDispatched').textContent = tracking.dispatched ? 
-                    new Date(tracking.dispatched).toLocaleString() : 'Recently';
-                break;
-            case 'ready_for_pickup':
-                finalIcon.className = 'fas fa-box-open';
-                finalLabel.textContent = 'Ready for Pickup';
-                stepFinal.className = 'step-icon completed';
-                timeFinal.textContent = tracking.readyForPickup ? 
-                    new Date(tracking.readyForPickup).toLocaleString() : 'Recently';
-                break;
-            case 'out_for_delivery':
-                finalIcon.className = 'fas fa-motorcycle';
-                finalLabel.textContent = 'Out for Delivery';
-                stepFinal.className = 'step-icon completed';
-                timeFinal.textContent = tracking.outForDelivery ? 
-                    new Date(tracking.outForDelivery).toLocaleString() : 'Recently';
-                break;
-            case 'delivered':
-                finalIcon.className = 'fas fa-home';
-                finalLabel.textContent = 'Delivered';
-                stepFinal.className = 'step-icon completed';
-                timeFinal.textContent = tracking.delivered ? 
-                    new Date(tracking.delivered).toLocaleString() : 'Recently';
-                break;
-            case 'picked_up':
-                finalIcon.className = 'fas fa-store';
-                finalLabel.textContent = 'Picked Up';
-                stepFinal.className = 'step-icon completed';
-                timeFinal.textContent = tracking.delivered ? 
-                    new Date(tracking.delivered).toLocaleString() : 'Recently';
-                break;
-        }
-    }
-    
-    // Mark current step as active (if not already delivered/picked up)
-    if (currentIndex >= 0 && currentIndex < statusSequence.length) {
-        const currentStep = statusSequence[currentIndex];
-        
-        if (currentStep.id === 'out_for_delivery') {
-            finalIcon.className = 'fas fa-motorcycle';
-            finalLabel.textContent = 'Out for Delivery';
-            stepFinal.className = 'step-icon active';
-            timeFinal.textContent = tracking.outForDelivery ? 
-                new Date(tracking.outForDelivery).toLocaleString() : 'In progress';
-        } else if (currentStep.id === 'ready_for_pickup') {
-            finalIcon.className = 'fas fa-box-open';
-            finalLabel.textContent = 'Ready for Pickup';
-            stepFinal.className = 'step-icon active';
-            timeFinal.textContent = tracking.readyForPickup ? 
-                new Date(tracking.readyForPickup).toLocaleString() : 'In progress';
-        }
-    }
-    
-    // Update ETA
-    updateETACountdown(order);
-}
-
-// ✅ NEW FUNCTION: Get correct status sequence based on delivery type
-function getStatusSequence(deliveryType) {
-    if (deliveryType === 'pickup') {
-        return [
-            { id: 'pending', label: 'Order Placed' },
-            { id: 'confirmed', label: 'Confirmed' },
-            { id: 'preparing', label: 'Preparing' },
-            { id: 'ready_for_pickup', label: 'Ready for Pickup' },
-            { id: 'picked_up', label: 'Picked Up' }
-        ];
-    } else {
-        return [
-            { id: 'pending', label: 'Order Placed' },
-            { id: 'confirmed', label: 'Confirmed' },
-            { id: 'preparing', label: 'Preparing' },
-            { id: 'dispatched', label: 'Dispatched' },
-            { id: 'out_for_delivery', label: 'Out for Delivery' },
-            { id: 'delivered', label: 'Delivered' }
-        ];
-    }
-}
-// ✅ UPDATE: Also update the updateETACountdown() function
-function updateETACountdown(order) {
-    const etaElement = document.getElementById('etaCountdown');
-    if (!etaElement) return;
-    
-    let etaMinutes = 0;
-    let statusText = '';
-    
-    // GET CORRECT STATUS SEQUENCE
-    const statusSequence = getStatusSequence(order.deliveryType);
-    const currentStatus = order.status;
-    
-    switch(currentStatus) {
-        case 'pending':
-            etaMinutes = 45;
-            statusText = 'Order will be confirmed soon';
-            break;
-        case 'confirmed':
-            etaMinutes = 40;
-            statusText = 'Preparing will start soon';
-            break;
-        case 'preparing':
-            etaMinutes = 30;
-            statusText = 'Your order is being prepared';
-            break;
-        case 'packed':
-            etaMinutes = 25;
-            statusText = 'Order packed, ready for dispatch';
-            break;
-        case 'dispatched':
-            if (order.deliveryType === 'pickup') {
-                etaMinutes = 15;
-                statusText = 'Will be ready for pickup soon';
-            } else {
-                etaMinutes = 20;
-                statusText = 'Out for delivery soon';
+        function updateTrackingTimeline(order) {
+            console.log('🔄 Updating tracking timeline for order:', order.id, 'Status:', order.status);
+            
+            const tracking = order.tracking || {
+                confirmed: order.date || new Date().toISOString(),
+                preparing: null,
+                packed: null,
+                dispatched: null,
+                readyForPickup: null,
+                outForDelivery: null,
+                delivered: null
+            };
+            
+            // Get status sequence based on delivery type
+            const statusSequence = getStatusSequence(order.deliveryType);
+            const currentStatus = order.status;
+            const currentIndex = statusSequence.findIndex(s => s.id === currentStatus);
+            
+            console.log('Status Sequence:', statusSequence);
+            console.log('Current Status:', currentStatus, 'Index:', currentIndex);
+            
+            // Reset all steps
+            ['stepConfirmed', 'stepPreparing', 'stepPacked', 'stepDispatched', 'stepFinal'].forEach(stepId => {
+                const element = document.getElementById(stepId);
+                if (element) element.className = 'step-icon';
+            });
+            
+            ['timeConfirmed', 'timePreparing', 'timePacked', 'timeDispatched', 'timeFinal'].forEach(timeId => {
+                const element = document.getElementById(timeId);
+                if (element) element.textContent = '--';
+            });
+            
+            const finalIcon = document.getElementById('finalIcon');
+            const finalLabel = document.getElementById('finalLabel');
+            const stepFinal = document.getElementById('stepFinal');
+            const timeFinal = document.getElementById('timeFinal');
+            
+            // Mark completed steps
+            for (let i = 0; i <= currentIndex; i++) {
+                const step = statusSequence[i];
+                if (!step) continue;
+                
+                // Mark step as completed
+                switch(step.id) {
+                    case 'pending':
+                        // Already handled by confirmed
+                        break;
+                    case 'confirmed':
+                        document.getElementById('stepConfirmed').className = 'step-icon completed';
+                        document.getElementById('timeConfirmed').textContent = tracking.confirmed ? 
+                            new Date(tracking.confirmed).toLocaleString() : 'Recently';
+                        break;
+                    case 'preparing':
+                        document.getElementById('stepPreparing').className = 'step-icon completed';
+                        document.getElementById('timePreparing').textContent = tracking.preparing ? 
+                            new Date(tracking.preparing).toLocaleString() : 'Recently';
+                        break;
+                    case 'packed':
+                        document.getElementById('stepPacked').className = 'step-icon completed';
+                        document.getElementById('timePacked').textContent = tracking.packed ? 
+                            new Date(tracking.packed).toLocaleString() : 'Recently';
+                        break;
+                    case 'dispatched':
+                        document.getElementById('stepDispatched').className = 'step-icon completed';
+                        document.getElementById('timeDispatched').textContent = tracking.dispatched ? 
+                            new Date(tracking.dispatched).toLocaleString() : 'Recently';
+                        break;
+                    case 'ready_for_pickup':
+                        finalIcon.className = 'fas fa-box-open';
+                        finalLabel.textContent = 'Ready for Pickup';
+                        stepFinal.className = 'step-icon completed';
+                        timeFinal.textContent = tracking.readyForPickup ? 
+                            new Date(tracking.readyForPickup).toLocaleString() : 'Recently';
+                        break;
+                    case 'out_for_delivery':
+                        finalIcon.className = 'fas fa-motorcycle';
+                        finalLabel.textContent = 'Out for Delivery';
+                        stepFinal.className = 'step-icon completed';
+                        timeFinal.textContent = tracking.outForDelivery ? 
+                            new Date(tracking.outForDelivery).toLocaleString() : 'Recently';
+                        break;
+                    case 'delivered':
+                        finalIcon.className = 'fas fa-home';
+                        finalLabel.textContent = 'Delivered';
+                        stepFinal.className = 'step-icon completed';
+                        timeFinal.textContent = tracking.delivered ? 
+                            new Date(tracking.delivered).toLocaleString() : 'Recently';
+                        break;
+                    case 'picked_up':
+                        finalIcon.className = 'fas fa-store';
+                        finalLabel.textContent = 'Picked Up';
+                        stepFinal.className = 'step-icon completed';
+                        timeFinal.textContent = tracking.delivered ? 
+                            new Date(tracking.delivered).toLocaleString() : 'Recently';
+                        break;
+                }
             }
-            break;
-        case 'ready_for_pickup':
-            etaMinutes = 0;
-            statusText = 'Ready for pickup';
-            break;
-        case 'out_for_delivery':
-            etaMinutes = 15;
-            statusText = 'On the way to you';
-            break;
-        case 'delivered':
-        case 'picked_up':
-            etaMinutes = 0;
-            statusText = order.deliveryType === 'pickup' ? 'Picked up successfully!' : 'Delivered successfully!';
-            break;
-        default:
-            etaMinutes = 0;
-            statusText = getStatusText(currentStatus);
-    }
-    
-    if (etaMinutes > 0) {
-        const deliveryTime = new Date(new Date().getTime() + etaMinutes * 60000);
-        etaElement.innerHTML = `
-            <div>${statusText}</div>
-            <div class="text-primary fw-bold">ETA: ${deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${etaMinutes} min)</div>
-        `;
-    } else {
-        etaElement.innerHTML = `<div class="text-success fw-bold">${statusText}</div>`;
-    }
-}
+            
+            // Mark current step as active (if not already delivered/picked up)
+            if (currentIndex >= 0 && currentIndex < statusSequence.length) {
+                const currentStep = statusSequence[currentIndex];
+                
+                if (currentStep.id === 'out_for_delivery') {
+                    finalIcon.className = 'fas fa-motorcycle';
+                    finalLabel.textContent = 'Out for Delivery';
+                    stepFinal.className = 'step-icon active';
+                    timeFinal.textContent = tracking.outForDelivery ? 
+                        new Date(tracking.outForDelivery).toLocaleString() : 'In progress';
+                } else if (currentStep.id === 'ready_for_pickup') {
+                    finalIcon.className = 'fas fa-box-open';
+                    finalLabel.textContent = 'Ready for Pickup';
+                    stepFinal.className = 'step-icon active';
+                    timeFinal.textContent = tracking.readyForPickup ? 
+                        new Date(tracking.readyForPickup).toLocaleString() : 'In progress';
+                }
+            }
+            
+            // Update ETA
+            updateETACountdown(order);
+        }
+
+        // ✅ NEW FUNCTION: Get correct status sequence based on delivery type
+        function getStatusSequence(deliveryType) {
+            if (deliveryType === 'pickup') {
+                return [
+                    { id: 'pending', label: 'Order Placed' },
+                    { id: 'confirmed', label: 'Confirmed' },
+                    { id: 'preparing', label: 'Preparing' },
+                    { id: 'ready_for_pickup', label: 'Ready for Pickup' },
+                    { id: 'picked_up', label: 'Picked Up' }
+                ];
+            } else {
+                return [
+                    { id: 'pending', label: 'Order Placed' },
+                    { id: 'confirmed', label: 'Confirmed' },
+                    { id: 'preparing', label: 'Preparing' },
+                    { id: 'dispatched', label: 'Dispatched' },
+                    { id: 'out_for_delivery', label: 'Out for Delivery' },
+                    { id: 'delivered', label: 'Delivered' }
+                ];
+            }
+        }
+        
+        // ✅ UPDATE: Also update the updateETACountdown() function
+        function updateETACountdown(order) {
+            const etaElement = document.getElementById('etaCountdown');
+            if (!etaElement) return;
+            
+            let etaMinutes = 0;
+            let statusText = '';
+            
+            // GET CORRECT STATUS SEQUENCE
+            const statusSequence = getStatusSequence(order.deliveryType);
+            const currentStatus = order.status;
+            
+            switch(currentStatus) {
+                case 'pending':
+                    etaMinutes = 45;
+                    statusText = 'Order will be confirmed soon';
+                    break;
+                case 'confirmed':
+                    etaMinutes = 40;
+                    statusText = 'Preparing will start soon';
+                    break;
+                case 'preparing':
+                    etaMinutes = 30;
+                    statusText = 'Your order is being prepared';
+                    break;
+                case 'packed':
+                    etaMinutes = 25;
+                    statusText = 'Order packed, ready for dispatch';
+                    break;
+                case 'dispatched':
+                    if (order.deliveryType === 'pickup') {
+                        etaMinutes = 15;
+                        statusText = 'Will be ready for pickup soon';
+                    } else {
+                        etaMinutes = 20;
+                        statusText = 'Out for delivery soon';
+                    }
+                    break;
+                case 'ready_for_pickup':
+                    etaMinutes = 0;
+                    statusText = 'Ready for pickup';
+                    break;
+                case 'out_for_delivery':
+                    etaMinutes = 15;
+                    statusText = 'On the way to you';
+                    break;
+                case 'delivered':
+                case 'picked_up':
+                    etaMinutes = 0;
+                    statusText = order.deliveryType === 'pickup' ? 'Picked up successfully!' : 'Delivered successfully!';
+                    break;
+                default:
+                    etaMinutes = 0;
+                    statusText = getStatusText(currentStatus);
+            }
+            
+            if (etaMinutes > 0) {
+                const deliveryTime = new Date(new Date().getTime() + etaMinutes * 60000);
+                etaElement.innerHTML = `
+                    <div>${statusText}</div>
+                    <div class="text-primary fw-bold">ETA: ${deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} (${etaMinutes} min)</div>
+                `;
+            } else {
+                etaElement.innerHTML = `<div class="text-success fw-bold">${statusText}</div>`;
+            }
+        }
 
         function shareOrder(orderId) {
             const order = orders.find(o => o.id === orderId);
