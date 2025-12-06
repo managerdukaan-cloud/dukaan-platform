@@ -1296,6 +1296,70 @@
             padding-top: 20px;
             border-top: 1px solid var(--border);
         }
+        /* ✅ FIX: ORDER STATUS BADGES */
+.orders-count-badge {
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    background: var(--danger);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Order status specific colors */
+.status-preparing { background: #F59E0B; color: white; }
+.status-dispatched { background: #8B5CF6; color: white; }
+.status-packed { background: #7C3AED; color: white; }
+.status-ready-for-pickup { background: #10B981; color: white; }
+.status-out-for-delivery { background: #3A8EF6; color: white; }
+
+/* Real-time update notification */
+.order-update-notification {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    background: var(--success);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ✅ REFUND NOTIFICATION STYLES - ADD HERE */
+.refund-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    max-width: 300px;
+    animation: slideIn 0.3s ease;
+}
+
+.refund-message {
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 4px solid #F59E0B;
+}
         /* 🎯 MOBILE LAYOUT FIXES */
         @media (max-width: 768px) {
             /* Better product grid - 2 products with proper spacing */
@@ -2849,6 +2913,97 @@
             }
         }
 
+        // ✅ NEW: Partial Order Refund System
+function setupPartialOrderRefundSystem() {
+    // Listen for refund updates in Firestore
+    if (!currentUser) return;
+    
+    db.collection('refunds')
+        .where('customerId', '==', currentUser.uid)
+        .where('status', '==', 'pending')
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === 'added') {
+                    const refundData = change.doc.data();
+                    showRefundNotification(refundData);
+                }
+            });
+        });
+}
+
+// ✅ NEW: Show refund notification
+function showRefundNotification(refundData) {
+    const { orderId, refundAmount, reason, estimatedTime } = refundData;
+    
+    const notificationHTML = `
+        <div class="refund-notification" style="
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            max-width: 300px;
+            animation: slideIn 0.3s ease;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <i class="fas fa-money-bill-wave" style="font-size: 18px;"></i>
+                <strong style="font-size: 14px;">Refund Initiated</strong>
+            </div>
+            <div style="font-size: 12px; margin-bottom: 5px;">
+                ₹${refundAmount} will be refunded for Order #${orderId.slice(-6)}
+            </div>
+            <div style="font-size: 11px; opacity: 0.9;">
+                <i class="fas fa-clock"></i> Expected within ${estimatedTime}
+            </div>
+        </div>
+    `;
+    
+    // Remove any existing refund notification
+    const existingNotification = document.querySelector('.refund-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Add new notification
+    document.body.insertAdjacentHTML('beforeend', notificationHTML);
+    
+    // Auto remove after 10 seconds
+    setTimeout(() => {
+        const notification = document.querySelector('.refund-notification');
+        if (notification) {
+            notification.remove();
+        }
+    }, 10000);
+}
+
+// ✅ NEW: Add refund message in order details
+function addRefundMessageToOrder(order) {
+    if (order.refundStatus && order.refundStatus === 'pending') {
+        return `
+            <div class="refund-message" style="
+                background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+                padding: 10px 15px;
+                border-radius: 8px;
+                margin-top: 10px;
+                border-left: 4px solid #F59E0B;
+            ">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                    <i class="fas fa-exchange-alt" style="color: #D97706;"></i>
+                    <strong style="color: #92400E;">Partial Refund Initiated</strong>
+                </div>
+                <div style="font-size: 12px; color: #92400E;">
+                    ₹${order.refundAmount || 0} will be refunded within 24-48 hours
+                </div>
+            </div>
+        `;
+    }
+    return '';
+}
+        
         // Emergency fallback demo products
         function getDemoProducts() {
             return [
@@ -3177,19 +3332,22 @@
 
         // Initialize App
         function initApp() {
-            setupEventListeners();
-            setupFirebaseAuth();
-            setupDemoLogin();
-            renderProducts(PRODUCTS);
-            updateCartUI();
-            updateWishlistUI();
-            renderOrders();
-            renderAddresses();
-            setupSorting();
-            
-            // ✅ FIX: START REAL-TIME ORDER LISTENER
-            startRealTimeOrderListener();
-        }
+    setupEventListeners();
+    setupFirebaseAuth();
+    setupDemoLogin();
+    renderProducts(PRODUCTS);
+    updateCartUI();
+    updateWishlistUI();
+    renderOrders();
+    renderAddresses();
+    setupSorting();
+    
+    // ✅ FIX: START REAL-TIME ORDER LISTENER
+    startRealTimeOrderListener();
+    
+    // ✅ NEW: START REFUND LISTENER
+    setupPartialOrderRefundSystem();
+}
 
         // ✅ UPDATED: Real-time Order Listener with all statuses
         function startRealTimeOrderListener() {
@@ -3329,28 +3487,28 @@
         }
         
         // ✅ UPDATED: Show order update notification with all statuses
-        function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
-            const statusMessages = {
-                'preparing': 'is being prepared',
-                'packed': 'has been packed',
-                'dispatched': 'has been dispatched',
-                'ready_for_pickup': 'is ready for pickup',
-                'out_for_delivery': 'is out for delivery',
-                'delivered': 'has been delivered'
-            };
-            
-            const message = statusMessages[newStatus];
-            if (message) {
-                const notification = document.getElementById('orderUpdateNotification');
-                notification.innerHTML = `<i class="fas fa-bell"></i> Order #${orderId.slice(-6)} ${message}!`;
-                notification.style.display = 'block';
-                
-                // Auto hide after 5 seconds
-                setTimeout(() => {
-                    notification.style.display = 'none';
-                }, 5000);
-            }
-        }
+function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
+    const statusMessages = {
+        'preparing': 'is being prepared',
+        'packed': 'has been packed',
+        'dispatched': 'has been dispatched',
+        'ready_for_pickup': 'is ready for pickup',
+        'out_for_delivery': 'is out for delivery',
+        'delivered': 'has been delivered'
+    };
+    
+    const message = statusMessages[newStatus];
+    if (message) {
+        const notification = document.getElementById('orderUpdateNotification');
+        notification.innerHTML = `<i class="fas fa-bell"></i> Order #${orderId.slice(-6)} ${message}!`;
+        notification.style.display = 'block';
+        
+        // Auto hide after 5 seconds
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 5000);
+    }
+}
         
         // ✅ UPDATED: Handle order update with all statuses
         function handleOrderUpdate(updatedOrder) {
@@ -5320,79 +5478,73 @@
 
         // Order Management
         function renderOrders() {
-            if (!ordersList) return;
-            
-            ordersList.innerHTML = '';
-            
-            if (orders.length === 0) {
-                noOrders.style.display = 'block';
-                return;
-            }
-            
-            noOrders.style.display = 'none';
-            
-            // Sort orders by date (newest first)
-            const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            sortedOrders.forEach(order => {
-                const orderCard = document.createElement('div');
-                orderCard.className = 'order-card';
-                
-                const statusClass = `status-${order.status}`;
-                const statusText = getStatusText(order.status);
-                
-                orderCard.innerHTML = `
-                    <div class="order-header">
-                        <div class="order-id">Order #${order.id.slice(-6)}</div>
-                        <div class="order-status ${statusClass}">${statusText}</div>
+    if (!ordersList) return;
+    
+    ordersList.innerHTML = '';
+    
+    if (orders.length === 0) {
+        noOrders.style.display = 'block';
+        return;
+    }
+    
+    noOrders.style.display = 'none';
+    
+    // Sort orders by date (newest first)
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    sortedOrders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
+        
+        const statusClass = `status-${order.status}`;
+        const statusText = getStatusText(order.status);
+        
+        // ✅ FIXED: Use order.orderId if available, otherwise use order.id
+        const displayOrderId = order.orderId || order.id;
+        
+        // ✅ ADD: Get refund message if applicable
+        const refundMessage = addRefundMessageToOrder(order);
+        
+        orderCard.innerHTML = `
+            <div class="order-header">
+                <div class="order-id">Order #${displayOrderId.slice(-6)}</div>
+                <div class="order-status ${statusClass}">${statusText}</div>
+            </div>
+            <div class="order-items">
+                ${order.items.map(item => `
+                    <div class="order-item">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>₹${item.price * item.quantity}</span>
                     </div>
-                    <div class="order-items">
-                        ${order.items.map(item => `
-                            <div class="order-item">
-                                <span>${item.name} × ${item.quantity}</span>
-                                <span>₹${item.price * item.quantity}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="order-footer">
-                        <div class="order-total">₹${order.total}</div>
-                        <div class="order-actions">
-                            <button class="btn-reorder" onclick="reorder('${order.id}')">
-                                <i class="fas fa-redo"></i> Reorder
-                            </button>
-                            <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
-                                <i class="fas fa-map-marker-alt"></i> Track
-                            </button>
-                            ${order.status === 'confirmed' || order.status === 'pending' ? `
-                                <button class="btn-outline" onclick="modifyOrder('${order.id}')">
-                                    <i class="fas fa-edit"></i> Modify
-                                </button>
-                            ` : ''}
-                            <button class="btn-outline" onclick="shareOrder('${order.id}')">
-                                <i class="fas fa-share"></i> Share
-                            </button>
-                        </div>
-                    </div>
-                    ${order.deliveryAgent ? `
-                        <div class="delivery-agent-info mt-3 p-3 bg-light rounded">
-                            <h6><i class="fas fa-motorcycle"></i> Delivery Agent</h6>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>${order.deliveryAgent.name}</strong>
-                                    <div class="text-muted small">
-                                        ${order.deliveryAgent.vehicle} • ⭐ ${order.deliveryAgent.rating}
-                                    </div>
-                                </div>
-                                <button class="btn-primary btn-sm" onclick="contactDeliveryAgent('${order.id}')">
-                                    <i class="fas fa-phone"></i> Call
-                                </button>
-                            </div>
-                        </div>
+                `).join('')}
+            </div>
+            
+            <!-- ✅ REFUND MESSAGE SECTION -->
+            ${refundMessage}
+            
+            <div class="order-footer">
+                <div class="order-total">₹${order.total}</div>
+                <div class="order-actions">
+                    <button class="btn-reorder" onclick="reorder('${order.id}')">
+                        <i class="fas fa-redo"></i> Reorder
+                    </button>
+                    <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
+                        <i class="fas fa-map-marker-alt"></i> Track
+                    </button>
+                    ${order.status === 'confirmed' || order.status === 'pending' ? `
+                        <button class="btn-outline" onclick="modifyOrder('${order.id}')">
+                            <i class="fas fa-edit"></i> Modify
+                        </button>
                     ` : ''}
-                `;
-                ordersList.appendChild(orderCard);
-            });
-        }
+                    <button class="btn-outline" onclick="shareOrder('${order.id}')">
+                        <i class="fas fa-share"></i> Share
+                    </button>
+                </div>
+            </div>
+        `;
+        ordersList.appendChild(orderCard);
+    });
+}
         
         // ✅ UPDATED: Get status text for all statuses
         function getStatusText(status) {
