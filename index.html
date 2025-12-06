@@ -2611,9 +2611,11 @@
                     </div>
                 </div>
                 
-                <button id="placeOrderBtn" class="btn-primary w-100 py-3">
-                    <i class="fas fa-lock"></i> Place Order Securely
-                </button>
+                <button id="placeOrderBtn" class="btn-primary w-100 py-3" 
+        onclick="placeOrder()" 
+        ${cart.length === 0 ? 'disabled' : ''}>
+    <i class="fas fa-lock"></i> Place Order Securely
+</button>
             </div>
         </div>
 
@@ -5068,7 +5070,6 @@
             );
         }
 
-        // ✅ FIX 1: ORDER PLACEMENT WITHOUT COUPON - FIXED
         // ✅ FIX 1: ORDER PLACEMENT WITHOUT COUPON - FIXED
 async function placeOrder() {
     try {
