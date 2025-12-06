@@ -1360,6 +1360,30 @@
     margin: 10px 0;
     border-left: 4px solid #F59E0B;
 }
+
+.refund-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.refund-pending {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.refund-processing {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.refund-completed {
+    background: #D1FAE5;
+    color: #065F46;
+}
         /* 🎯 MOBILE LAYOUT FIXES */
         @media (max-width: 768px) {
             /* Better product grid - 2 products with proper spacing */
@@ -2768,8 +2792,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ✅ FIX 1: ORDER BADGES UPDATING
-        // ✅ FIX 2: SHOPKEEPER APP ACTIONS REAL-TIME SYNC
+        // ✅ FIX 1: एकीकृत ऑर्डर आईडी सिस्टम
+        // ✅ FIX 2: रिफंड सिस्टम शॉपकीपर और कस्टमर दोनों के लिए
         
         // Firebase Configuration
         const firebaseConfig = {
@@ -2913,21 +2937,63 @@
             }
         }
 
-        // ✅ REFUND SYSTEM FUNCTIONS
+        // ✅ ENHANCED REFUND SYSTEM FUNCTIONS
         function setupPartialOrderRefundSystem() {
             if (!currentUser) return;
             
+            console.log("💰 Setting up refund listener for user:", currentUser.uid);
+            
+            // Listen to refunds collection for this customer
             db.collection('refunds')
                 .where('customerId', '==', currentUser.uid)
-                .where('status', '==', 'pending')
                 .onSnapshot((snapshot) => {
+                    console.log("🔄 Refund update received:", snapshot.docChanges().length, "changes");
+                    
                     snapshot.docChanges().forEach((change) => {
-                        if (change.type === 'added') {
-                            const refundData = change.doc.data();
-                            showRefundNotification(refundData);
+                        const refundData = { 
+                            id: change.doc.id, 
+                            ...change.doc.data() 
+                        };
+                        
+                        console.log("💰 Refund update type:", change.type, "Refund ID:", refundData.id, "Status:", refundData.status);
+                        
+                        if (change.type === 'added' || change.type === 'modified') {
+                            handleRefundUpdate(refundData);
                         }
                     });
+                }, (error) => {
+                    console.error("❌ Error in refund listener:", error);
                 });
+        }
+
+        function handleRefundUpdate(refundData) {
+            const { orderId, refundAmount, status, estimatedTime, completedAt } = refundData;
+            
+            // Find the order
+            const orderIndex = orders.findIndex(order => order.id === orderId);
+            
+            if (orderIndex !== -1) {
+                // Update order with refund information
+                orders[orderIndex].refundStatus = status;
+                orders[orderIndex].refundAmount = refundAmount;
+                orders[orderIndex].refundEstimatedTime = estimatedTime;
+                if (completedAt) {
+                    orders[orderIndex].refundCompletedAt = completedAt;
+                }
+                
+                // Save to local storage
+                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                
+                // Update UI
+                renderOrders();
+                
+                // Show notification if status is pending or completed
+                if (status === 'pending') {
+                    showRefundNotification(refundData);
+                } else if (status === 'completed') {
+                    showRefundCompletedNotification(refundData);
+                }
+            }
         }
 
         function showRefundNotification(refundData) {
@@ -2959,19 +3025,82 @@
             }, 10000);
         }
 
+        function showRefundCompletedNotification(refundData) {
+            const { orderId, refundAmount } = refundData;
+            
+            showToast(`✅ Refund of ₹${refundAmount} completed for Order #${orderId.slice(-6)}`);
+        }
+
         function addRefundMessageToOrder(order) {
-            if (order.refundStatus && order.refundStatus === 'pending') {
-                return `
-                    <div class="refund-message">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                            <i class="fas fa-exchange-alt" style="color: #D97706;"></i>
-                            <strong style="color: #92400E;">Partial Refund Initiated</strong>
-                        </div>
-                        <div style="color: #92400E;">
-                            ₹${order.refundAmount || 0} will be refunded within 24-48 hours
-                        </div>
-                    </div>
-                `;
+            if (order.refundStatus) {
+                let message = '';
+                let badgeClass = '';
+                let badgeText = '';
+                
+                switch(order.refundStatus) {
+                    case 'pending':
+                        message = `
+                            <div class="refund-message">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                    <i class="fas fa-exchange-alt" style="color: #D97706;"></i>
+                                    <strong style="color: #92400E;">Partial Refund Initiated</strong>
+                                </div>
+                                <div style="color: #92400E;">
+                                    ₹${order.refundAmount || 0} will be refunded within ${order.refundEstimatedTime || '24-48 hours'}
+                                </div>
+                            </div>
+                        `;
+                        badgeClass = 'refund-pending';
+                        badgeText = 'Refund Pending';
+                        break;
+                        
+                    case 'processing':
+                        message = `
+                            <div class="refund-message">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                    <i class="fas fa-sync-alt" style="color: #1E40AF;"></i>
+                                    <strong style="color: #1E40AF;">Refund Processing</strong>
+                                </div>
+                                <div style="color: #1E40AF;">
+                                    ₹${order.refundAmount || 0} is being processed
+                                </div>
+                            </div>
+                        `;
+                        badgeClass = 'refund-processing';
+                        badgeText = 'Processing';
+                        break;
+                        
+                    case 'completed':
+                        const completedDate = order.refundCompletedAt ? 
+                            new Date(order.refundCompletedAt).toLocaleDateString() : 'Recently';
+                        message = `
+                            <div class="refund-message">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                    <i class="fas fa-check-circle" style="color: #059669;"></i>
+                                    <strong style="color: #065F46;">Refund Completed</strong>
+                                </div>
+                                <div style="color: #065F46;">
+                                    ₹${order.refundAmount || 0} refunded on ${completedDate}
+                                </div>
+                            </div>
+                        `;
+                        badgeClass = 'refund-completed';
+                        badgeText = 'Refunded';
+                        break;
+                }
+                
+                // Add badge to order status
+                if (badgeClass && badgeText) {
+                    const orderElement = document.querySelector(`[data-order-id="${order.id}"]`);
+                    if (orderElement) {
+                        const badge = document.createElement('span');
+                        badge.className = `refund-status-badge ${badgeClass}`;
+                        badge.textContent = badgeText;
+                        orderElement.querySelector('.order-status').appendChild(badge);
+                    }
+                }
+                
+                return message;
             }
             return '';
         }
@@ -3119,7 +3248,7 @@
             updateCartUI();
         }
 
-        // ✅ UPDATED: Complete placeOrder() function
+        // ✅ UPDATED: Complete placeOrder() function with UNIFIED ORDER ID
         async function placeOrder() {
             try {
                 console.log('🛒 Place order called');
@@ -3220,12 +3349,15 @@
                     shopName: item.shopName
                 }));
                 
-                // First, create a temporary order ID
-                const tempOrderId = 'temp_' + Date.now();
+                // ✅ FIX 1: CREATE UNIFIED ORDER ID FIRST
+                const unifiedOrderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                console.log('✅ Generated Unified Order ID:', unifiedOrderId);
                 
-                // Create order data WITHOUT orderId initially
+                // Create order data WITH UNIFIED ORDER ID
                 const orderData = {
-                    // ❌ DON'T add orderId here - we'll update it after getting Firestore ID
+                    // ✅ CRITICAL: Use the same orderId for both apps
+                    orderId: unifiedOrderId,
+                    id: unifiedOrderId, // Also set as id for consistency
                     customerId: user.uid,
                     customerName: user.displayName || 'Customer',
                     customerEmail: user.email,
@@ -3258,20 +3390,19 @@
                     orderData.couponDiscount = discount;
                 }
                 
-                console.log('📦 Creating order with data:', orderData);
+                console.log('📦 Creating order with unified ID:', unifiedOrderId);
                 
-                // 1️⃣ First, add order to Firestore (without orderId)
+                // 1️⃣ First, add order to Firestore with unified orderId
                 const docRef = await db.collection('orders').add(orderData);
-                const firestoreOrderId = docRef.id;
-                console.log('🔥 Firestore Order ID created:', firestoreOrderId);
+                const firestoreDocId = docRef.id;
+                console.log('🔥 Firestore Document ID:', firestoreDocId);
                 
-                // 2️⃣ IMPORTANT: Now update the order with orderId = Firestore document ID
-                await db.collection('orders').doc(firestoreOrderId).update({
-                    orderId: firestoreOrderId, // ✅ Set orderId to Firestore ID
-                    id: firestoreOrderId // ✅ Also update id field if exists
+                // 2️⃣ IMPORTANT: Also save the firestore document ID for reference
+                await db.collection('orders').doc(firestoreDocId).update({
+                    firestoreId: firestoreDocId // Store firestore ID separately
                 });
                 
-                console.log('✅ Order updated with orderId:', firestoreOrderId);
+                console.log('✅ Order created with Unified Order ID:', unifiedOrderId);
                 
                 // 3️⃣ Clear cart after successful order
                 clearCart();
@@ -3279,8 +3410,8 @@
                 // 4️⃣ Hide loading
                 showLoading(false);
                 
-                // 5️⃣ Show success message with ORDER ID
-                showToast(`✅ Order placed successfully! Order ID: #${firestoreOrderId.substring(0, 6)}`, 'success');
+                // 5️⃣ Show success message with UNIFIED ORDER ID
+                showToast(`✅ Order placed successfully! Order ID: ${unifiedOrderId}`, 'success');
                 
                 // 6️⃣ Close bottom sheet
                 closeBottomSheet();
@@ -3321,7 +3452,7 @@
     setupPartialOrderRefundSystem();
 }
 
-        // ✅ UPDATED: Real-time Order Listener with all statuses
+        // ✅ UPDATED: Real-time Order Listener with UNIFIED ORDER ID
         function startRealTimeOrderListener() {
             if (!currentUser) return;
             
@@ -3340,6 +3471,9 @@
                             ...change.doc.data() 
                         };
                         
+                        // ✅ CRITICAL: Use unified orderId if available
+                        const orderIdToUse = updatedOrder.orderId || change.doc.id;
+                        
                         // Convert Firestore timestamps to ISO strings
                         if (updatedOrder.createdAt && updatedOrder.createdAt.toDate) {
                             updatedOrder.createdAt = updatedOrder.createdAt.toDate().toISOString();
@@ -3348,13 +3482,13 @@
                             updatedOrder.updatedAt = updatedOrder.updatedAt.toDate().toISOString();
                         }
                         
-                        console.log("📝 Order update type:", change.type, "Order ID:", updatedOrder.id, "Status:", updatedOrder.status);
+                        console.log("📝 Order update type:", change.type, "Order ID:", orderIdToUse, "Status:", updatedOrder.status);
                         
                         if (change.type === 'added' || change.type === 'modified') {
-                            handleOrderUpdate(updatedOrder);
+                            handleOrderUpdate({...updatedOrder, id: orderIdToUse});
                         } else if (change.type === 'removed') {
                             // Handle order removal if needed
-                            const orderIndex = orders.findIndex(order => order.id === updatedOrder.id);
+                            const orderIndex = orders.findIndex(order => order.id === orderIdToUse);
                             if (orderIndex !== -1) {
                                 orders.splice(orderIndex, 1);
                                 localStorage.setItem('dukaan_orders', JSON.stringify(orders));
@@ -3619,14 +3753,14 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
         }
 
-        // ✅ FIX: ORDER HISTORY LOADING
+        // ✅ FIX: ORDER HISTORY LOADING with UNIFIED ORDER ID
         async function loadOrderHistory() {
             if (!currentUser) return;
             
             try {
                 console.log("🔄 Loading order history for:", currentUser.uid);
                 
-                // ✅ TEMPORARY FIX: REMOVE ORDERBY - NO INDEX NEEDED
+                // Load from Firestore orders collection
                 const snapshot = await db.collection('orders')
                     .where('customerId', '==', currentUser.uid)
                     .get();
@@ -3635,9 +3769,13 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 snapshot.forEach(doc => {
                     const firebaseOrder = doc.data();
                     
+                    // ✅ CRITICAL: Use unified orderId
+                    const orderIdToUse = firebaseOrder.orderId || doc.id;
+                    
                     // ✅ CONVERT FIREBASE DATA TO EXPECTED FORMAT
                     const mappedOrder = {
-                        id: firebaseOrder.orderId || doc.id,
+                        id: orderIdToUse, // Use unified order ID
+                        orderId: orderIdToUse, // Also store as orderId
                         date: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
                         items: firebaseOrder.items || [],
                         address: firebaseOrder.address || {},
@@ -3664,7 +3802,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 // ✅ MANUAL SORTING (NO INDEX NEEDED)
                 orders.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
-                console.log("✅ Mapped orders:", orders.length);
+                console.log("✅ Mapped orders:", orders.length, "Unified Order IDs used");
                 
                 // Also save to local storage for offline access
                 localStorage.setItem('dukaan_orders', JSON.stringify(orders));
@@ -5467,11 +5605,12 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
     sortedOrders.forEach(order => {
         const orderCard = document.createElement('div');
         orderCard.className = 'order-card';
+        orderCard.setAttribute('data-order-id', order.id);
         
         const statusClass = `status-${order.status}`;
         const statusText = getStatusText(order.status);
         
-        // ✅ FIXED: Use order.orderId if available, otherwise use order.id
+        // ✅ FIXED: Use unified orderId
         const displayOrderId = order.orderId || order.id;
         
         // ✅ ADD: Get refund message if applicable
@@ -5479,7 +5618,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         
         orderCard.innerHTML = `
             <div class="order-header">
-                <div class="order-id">Order #${(order.orderId || order.id).slice(-6)}</div>
+                <div class="order-id">Order #${displayOrderId.slice(-6)}</div>
                 <div class="order-status ${statusClass}">${statusText}</div>
             </div>
             <div class="order-items">
@@ -6472,13 +6611,6 @@ Track your order: ${window.location.href}
         document.addEventListener('DOMContentLoaded', function() {
             initApp();
             loadProductsFromFirebase();
-            
-            // Check for existing refunds on page load
-            setTimeout(() => {
-                if (currentUser && typeof checkForManualRefunds === 'function') {
-                    checkForManualRefunds();
-                }
-            }, 2000);
         });
     </script>
 </body>
