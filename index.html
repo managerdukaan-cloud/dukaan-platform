@@ -5069,120 +5069,170 @@
         }
 
         // ✅ FIX 1: ORDER PLACEMENT WITHOUT COUPON - FIXED
-        async function placeOrder() {
-            try {
-                console.log('🛒 Place order called');
-                
-                // Validate checkout inputs
-                const phone = document.getElementById('checkoutPhone')?.value?.trim();
-                
-                if (!phone || phone.length < 10) {
-                    showToast('Please enter a valid phone number', 'error');
-                    return;
-                }
-                
-                if (!selectedPaymentMethod) {
-                    showToast('Please select a payment method', 'error');
-                    return;
-                }
-                
-                if (!selectedAddress) {
-                    showToast('Please select a delivery address', 'error');
-                    return;
-                }
-                
-                // Validate cart
-                if (cart.length === 0) {
-                    showToast('Your cart is empty', 'error');
-                    return;
-                }
-                
-                // Check if any item is invalid
-                for (const item of cart) {
-                    if (!item.id || !item.shopId) {
-                        showToast('Some items in your cart are invalid', 'error');
-                        return;
-                    }
-                }
-                
-                let utrNumberValue = '';
-                
-                // If QR payment, validate UTR number
-                if (selectedPaymentMethod === 'qr') {
-                    utrNumberValue = document.getElementById('utrNumber')?.value?.trim() || '';
-                    if (!utrNumberValue) {
-                        showToast('Please enter UTR number for QR payment', 'error');
-                        return;
-                    }
-                }
-                
-                // Calculate totals - ✅ COUPON IS OPTIONAL
-                const subtotal = calculateSubtotal();
-                let discount = 0;
-                
-                // ✅ FIX: Check if coupon is applied and valid
-                if (appliedCoupon) {
-                    if (appliedCoupon.type === 'percentage') {
-                        discount = (subtotal * appliedCoupon.value) / 100;
-                    } else {
-                        discount = appliedCoupon.value;
-                    }
-                    // Ensure discount doesn't exceed subtotal
-                    discount = Math.min(discount, subtotal);
-                }
-                
-                const deliveryCharge = 40; // Fixed delivery charge
-                const total = Math.max(0, subtotal - discount + deliveryCharge);
-                
-                console.log('💰 Order calculations:', { subtotal, discount, deliveryCharge, total });
-                
-                // Create order object - ✅ COUPON IS OPTIONAL
-                const newOrder = {
-                    id: '', // Will be set by Firebase
-                    customerId: currentUser ? currentUser.uid : 'guest',
-                    customerEmail: currentUser ? currentUser.email : 'guest@example.com',
-                    customerName: currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : 'Guest',
-                    items: cart.map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        shopId: item.shopId,
-                        shopName: item.shopName,
-                        image: item.image || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop'
-                    })),
-                    subtotal: subtotal,
-                    discount: discount,
-                    deliveryCharge: deliveryCharge,
-                    total: total,
-                    status: 'pending',
-                    address: selectedAddress,
-                    phone: phone,
-                    paymentMethod: selectedPaymentMethod,
-                    utrNumber: selectedPaymentMethod === 'qr' ? utrNumberValue : null,
-                    couponCode: appliedCoupon ? appliedCoupon.code : null, // ✅ CAN BE NULL
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                
-                console.log('📦 Order data prepared:', newOrder);
-                
-                // Show loading
-                showToast('Processing your order...', 'info');
-                
-                // Place order
-                if (currentUser) {
-                    await completeOrderPlacementWithShopkeeper(newOrder);
-                } else {
-                    // For guest users, save locally
-                    completeOrderPlacement(newOrder);
-                }
-                
-            } catch (error) {
-                console.error('❌ Error placing order:', error);
-                showToast('Error placing order: ' + error.message, 'error');
+        // ✅ FIX 1: ORDER PLACEMENT WITHOUT COUPON - FIXED
+async function placeOrder() {
+    try {
+        console.log('🛒 Place order called');
+        
+        // Validate checkout inputs
+        const phone = document.getElementById('checkoutPhone')?.value?.trim();
+        
+        if (!phone || phone.length < 10) {
+            showToast('Please enter a valid phone number', 'error');
+            return;
+        }
+        
+        if (!selectedPaymentMethod) {
+            showToast('Please select a payment method', 'error');
+            return;
+        }
+        
+        if (!selectedAddress) {
+            showToast('Please select a delivery address', 'error');
+            return;
+        }
+        
+        // Validate cart
+        if (cart.length === 0) {
+            showToast('Your cart is empty', 'error');
+            return;
+        }
+        
+        // Check if any item is invalid
+        for (const item of cart) {
+            if (!item.id || !item.shopId) {
+                showToast('Some items in your cart are invalid', 'error');
+                return;
             }
         }
+        
+        let utrNumberValue = '';
+        
+        // If QR payment, validate UTR number
+        if (selectedPaymentMethod === 'qr') {
+            utrNumberValue = document.getElementById('utrNumber')?.value?.trim() || '';
+            if (!utrNumberValue) {
+                showToast('Please enter UTR number for QR payment', 'error');
+                return;
+            }
+        }
+        
+        // Show loading
+        showLoading(true);
+        
+        // Get current user
+        const user = auth.currentUser;
+        if (!user) {
+            showToast('Please login to place order', 'error');
+            showLoading(false);
+            return;
+        }
+        
+        // Get selected shop info (assuming you have this)
+        const selectedShop = getSelectedShop(); // Ye function aapke app mein hoga
+        
+        if (!selectedShop) {
+            showToast('Please select a shop', 'error');
+            showLoading(false);
+            return;
+        }
+        
+        // Calculate totals
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const deliveryCharge = 40; // Example delivery charge
+        let discount = 0;
+        let total = subtotal + deliveryCharge;
+        
+        // Apply coupon if any
+        if (selectedCoupon) {
+            discount = (subtotal * selectedCoupon.discountPercent) / 100;
+            total = subtotal + deliveryCharge - discount;
+        }
+        
+        // Prepare order items
+        const orderItems = cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+            shopId: item.shopId,
+            shopName: item.shopName
+        }));
+        
+        // First, create a temporary order ID
+        const tempOrderId = 'temp_' + Date.now();
+        
+        // Create order data WITHOUT orderId initially
+        const orderData = {
+            // ❌ DON'T add orderId here - we'll update it after getting Firestore ID
+            customerId: user.uid,
+            customerName: user.displayName || 'Customer',
+            customerEmail: user.email,
+            phone: phone,
+            items: orderItems,
+            subtotal: subtotal,
+            deliveryCharge: deliveryCharge,
+            discount: discount,
+            total: total,
+            totalAmount: total,
+            address: selectedAddress,
+            deliveryType: 'delivery',
+            status: 'pending',
+            paymentMethod: selectedPaymentMethod,
+            paymentStatus: selectedPaymentMethod === 'qr' ? 'paid' : 'pending',
+            shopId: selectedShop.id,
+            shopName: selectedShop.name,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        // Add UTR number if QR payment
+        if (selectedPaymentMethod === 'qr' && utrNumberValue) {
+            orderData.utrNumber = utrNumberValue;
+        }
+        
+        // Add coupon if applied
+        if (selectedCoupon) {
+            orderData.couponCode = selectedCoupon.code;
+            orderData.couponDiscount = discount;
+        }
+        
+        console.log('📦 Creating order with data:', orderData);
+        
+        // 1️⃣ First, add order to Firestore (without orderId)
+        const docRef = await db.collection('orders').add(orderData);
+        const firestoreOrderId = docRef.id;
+        console.log('🔥 Firestore Order ID created:', firestoreOrderId);
+        
+        // 2️⃣ IMPORTANT: Now update the order with orderId = Firestore document ID
+        await db.collection('orders').doc(firestoreOrderId).update({
+            orderId: firestoreOrderId, // ✅ Set orderId to Firestore ID
+            id: firestoreOrderId // ✅ Also update id field if exists
+        });
+        
+        console.log('✅ Order updated with orderId:', firestoreOrderId);
+        
+        // 3️⃣ Clear cart after successful order
+        clearCart();
+        
+        // 4️⃣ Hide loading
+        showLoading(false);
+        
+        // 5️⃣ Show success message with ORDER ID
+        showToast(`✅ Order placed successfully! Order ID: #${firestoreOrderId.substring(0, 6)}`, 'success');
+        
+        // 6️⃣ Redirect to order confirmation page
+        setTimeout(() => {
+            window.location.href = `order-confirmation.html?orderId=${firestoreOrderId}`;
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Error placing order:', error);
+        showLoading(false);
+        showToast('Error placing order: ' + error.message, 'error');
+    }
+}
 
         // ✅ ADD THIS HELPER FUNCTION
         function calculateSubtotal() {
