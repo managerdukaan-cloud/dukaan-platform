@@ -1338,7 +1338,7 @@
     to { transform: translateX(0); opacity: 1; }
 }
 
-/* ✅ REFUND NOTIFICATION STYLES - ADD HERE */
+/* ✅ REFUND STYLES */
 .refund-notification {
     position: fixed;
     top: 80px;
@@ -2913,97 +2913,69 @@
             }
         }
 
-        // ✅ NEW: Partial Order Refund System
-function setupPartialOrderRefundSystem() {
-    // Listen for refund updates in Firestore
-    if (!currentUser) return;
-    
-    db.collection('refunds')
-        .where('customerId', '==', currentUser.uid)
-        .where('status', '==', 'pending')
-        .onSnapshot((snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === 'added') {
-                    const refundData = change.doc.data();
-                    showRefundNotification(refundData);
-                }
-            });
-        });
-}
-
-// ✅ NEW: Show refund notification
-function showRefundNotification(refundData) {
-    const { orderId, refundAmount, reason, estimatedTime } = refundData;
-    
-    const notificationHTML = `
-        <div class="refund-notification" style="
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: linear-gradient(135deg, #10B981, #059669);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 9999;
-            max-width: 300px;
-            animation: slideIn 0.3s ease;
-        ">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                <i class="fas fa-money-bill-wave" style="font-size: 18px;"></i>
-                <strong style="font-size: 14px;">Refund Initiated</strong>
-            </div>
-            <div style="font-size: 12px; margin-bottom: 5px;">
-                ₹${refundAmount} will be refunded for Order #${orderId.slice(-6)}
-            </div>
-            <div style="font-size: 11px; opacity: 0.9;">
-                <i class="fas fa-clock"></i> Expected within ${estimatedTime}
-            </div>
-        </div>
-    `;
-    
-    // Remove any existing refund notification
-    const existingNotification = document.querySelector('.refund-notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-    
-    // Add new notification
-    document.body.insertAdjacentHTML('beforeend', notificationHTML);
-    
-    // Auto remove after 10 seconds
-    setTimeout(() => {
-        const notification = document.querySelector('.refund-notification');
-        if (notification) {
-            notification.remove();
+        // ✅ REFUND SYSTEM FUNCTIONS
+        function setupPartialOrderRefundSystem() {
+            if (!currentUser) return;
+            
+            db.collection('refunds')
+                .where('customerId', '==', currentUser.uid)
+                .where('status', '==', 'pending')
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const refundData = change.doc.data();
+                            showRefundNotification(refundData);
+                        }
+                    });
+                });
         }
-    }, 10000);
-}
 
-// ✅ NEW: Add refund message in order details
-function addRefundMessageToOrder(order) {
-    if (order.refundStatus && order.refundStatus === 'pending') {
-        return `
-            <div class="refund-message" style="
-                background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-                padding: 10px 15px;
-                border-radius: 8px;
-                margin-top: 10px;
-                border-left: 4px solid #F59E0B;
-            ">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                    <i class="fas fa-exchange-alt" style="color: #D97706;"></i>
-                    <strong style="color: #92400E;">Partial Refund Initiated</strong>
+        function showRefundNotification(refundData) {
+            const { orderId, refundAmount, estimatedTime } = refundData;
+            
+            const notificationHTML = `
+                <div class="refund-notification">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <strong>Refund Initiated</strong>
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        ₹${refundAmount} will be refunded for Order #${orderId.slice(-6)}
+                    </div>
+                    <div style="opacity: 0.9;">
+                        <i class="fas fa-clock"></i> Expected within ${estimatedTime}
+                    </div>
                 </div>
-                <div style="font-size: 12px; color: #92400E;">
-                    ₹${order.refundAmount || 0} will be refunded within 24-48 hours
-                </div>
-            </div>
-        `;
-    }
-    return '';
-}
-        
+            `;
+            
+            const existing = document.querySelector('.refund-notification');
+            if (existing) existing.remove();
+            
+            document.body.insertAdjacentHTML('beforeend', notificationHTML);
+            
+            setTimeout(() => {
+                const notif = document.querySelector('.refund-notification');
+                if (notif) notif.remove();
+            }, 10000);
+        }
+
+        function addRefundMessageToOrder(order) {
+            if (order.refundStatus && order.refundStatus === 'pending') {
+                return `
+                    <div class="refund-message">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                            <i class="fas fa-exchange-alt" style="color: #D97706;"></i>
+                            <strong style="color: #92400E;">Partial Refund Initiated</strong>
+                        </div>
+                        <div style="color: #92400E;">
+                            ₹${order.refundAmount || 0} will be refunded within 24-48 hours
+                        </div>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
         // Emergency fallback demo products
         function getDemoProducts() {
             return [
@@ -5507,7 +5479,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         
         orderCard.innerHTML = `
             <div class="order-header">
-                <div class="order-id">Order #${displayOrderId.slice(-6)}</div>
+                <div class="order-id">Order #${(order.orderId || order.id).slice(-6)}</div>
                 <div class="order-status ${statusClass}">${statusText}</div>
             </div>
             <div class="order-items">
@@ -6500,6 +6472,13 @@ Track your order: ${window.location.href}
         document.addEventListener('DOMContentLoaded', function() {
             initApp();
             loadProductsFromFirebase();
+            
+            // Check for existing refunds on page load
+            setTimeout(() => {
+                if (currentUser && typeof checkForManualRefunds === 'function') {
+                    checkForManualRefunds();
+                }
+            }, 2000);
         });
     </script>
 </body>
