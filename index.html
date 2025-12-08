@@ -6623,13 +6623,22 @@ Track your order: ${window.location.href}
 
 <script>
     firebase.auth().onAuthStateChanged(user => {
-        const link = document.getElementById("privacy-link");
-        if (!user) {
-            link.style.display = "block"; 
+    const link = document.getElementById("privacy-link");
+
+    // If user NOT logged in → Show only on login screen
+    if (!user) {
+        if (window.location.hash.includes("login") || 
+            window.location.hash.includes("#/") || 
+            window.location.hash === "" ) {
+            link.style.display = "block";
         } else {
-            link.style.display = "none";   
+            link.style.display = "none";
         }
-    });
+    } else {
+        // If user logged in → ALWAYS hide
+        link.style.display = "none";
+    }
+});
 </script>
 </body>
 </html>
