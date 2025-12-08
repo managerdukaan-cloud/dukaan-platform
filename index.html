@@ -6614,32 +6614,5 @@ Track your order: ${window.location.href}
         });
     
 </script>
-
-<!-- 🔹 Privacy Policy (only for logged-out users) -->
-<div id="privacy-link" style="text-align:center; margin:25px 0; display:none;">
-    <a href="privacy.html" style="color:#007bff; font-size:14px; text-decoration:none;">
-        Privacy Policy
-    </a>
-</div>
-
-<script>
-// Run on auth change
-firebase.auth().onAuthStateChanged(user => {
-    const link = document.getElementById("privacy-link");
-
-    if (!user) {
-        // Wait 500ms so UI loads then show only if login box visible
-        setTimeout(() => {
-            const loginBox = document.querySelector(".login-box, #login, .auth-container, input[type='email']");
-            if (loginBox) {
-                link.style.display = "block";
-            }
-        }, 500);
-    } else {
-        link.style.display = "none";
-    }
-});
-</script>
-
 </body>
 </html>
