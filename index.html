@@ -6512,7 +6512,7 @@ Track your order: ${window.location.href}
             return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
         }
 
-        function showToast(message) {
+                function showToast(message) {
             // Create toast element
             const toast = document.createElement('div');
             toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
@@ -6533,6 +6533,132 @@ Track your order: ${window.location.href}
                 toast.remove();
             }, 3000);
         }
+
+// ✅ ADD THESE POLICY FUNCTIONS HERE:
+function openPrivacyPolicy() {
+    closeHamburgerMenu();
+    showPolicyModal('Privacy Policy');
+}
+
+function openTermsConditions() {
+    closeHamburgerMenu();
+    showPolicyModal('Terms & Conditions');
+}
+
+function openRefundPolicy() {
+    closeHamburgerMenu();
+    showPolicyModal('Refund Policy');
+}
+
+// ✅ SHOW POLICY MODAL
+function showPolicyModal(title) {
+    const modalHTML = `
+        <div class="modal-overlay active" id="policyModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">${title}</h3>
+                    <button class="modal-close" onclick="closePolicyModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${getPolicyContent(title)}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-outline" onclick="closePolicyModal()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// ✅ POLICY CONTENT
+function getPolicyContent(title) {
+    if (title === 'Privacy Policy') {
+        return `
+            <div style="padding: 1rem; line-height: 1.6;">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Privacy Policy</h4>
+                <p>This Privacy Policy describes how Dukaan collects, uses, and protects your personal information.</p>
+                
+                <h5>Information We Collect</h5>
+                <ul>
+                    <li>Personal details (name, email, phone)</li>
+                    <li>Delivery addresses</li>
+                    <li>Order history</li>
+                    <li>Payment information (securely processed)</li>
+                </ul>
+                
+                <h5>Data Protection</h5>
+                <p>We implement security measures to protect your data from unauthorized access.</p>
+                
+                <h5>Contact Us</h5>
+                <p>For privacy concerns: support@dukaan.com</p>
+            </div>
+        `;
+    }
+    
+    if (title === 'Terms & Conditions') {
+        return `
+            <div style="padding: 1rem; line-height: 1.6;">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Terms & Conditions</h4>
+                <p>Welcome to Dukaan! By using our platform, you agree to these terms.</p>
+                
+                <h5>1. User Accounts</h5>
+                <p>You must provide accurate information and keep your login credentials secure.</p>
+                
+                <h5>2. Orders & Payments</h5>
+                <ul>
+                    <li>Orders are subject to availability</li>
+                    <li>Prices may change without notice</li>
+                    <li>Payments are processed securely</li>
+                </ul>
+                
+                <h5>3. Delivery</h5>
+                <p>Delivery times are estimates. We deliver to addresses provided during checkout.</p>
+                
+                <h5>4. Contact</h5>
+                <p>Questions? Contact: support@dukaan.com</p>
+            </div>
+        `;
+    }
+    
+    if (title === 'Refund Policy') {
+        return `
+            <div style="padding: 1rem; line-height: 1.6;">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Refund Policy</h4>
+                <p>Our refund policy ensures fair treatment for all customers.</p>
+                
+                <h5>1. Return Eligibility</h5>
+                <ul>
+                    <li>Items must be returned within 7 days</li>
+                    <li>Products must be unused and in original packaging</li>
+                    <li>Provide proof of purchase</li>
+                </ul>
+                
+                <h5>2. Refund Process</h5>
+                <ol>
+                    <li>Contact customer support</li>
+                    <li>Return the product</li>
+                    <li>Inspection (3-5 business days)</li>
+                    <li>Refund processed to original payment method</li>
+                </ol>
+                
+                <h5>3. Contact</h5>
+                <p>Refund requests: support@dukaan.com</p>
+            </div>
+        `;
+    }
+    
+    return `<p>Content not available</p>`;
+}
+
+// ✅ CLOSE POLICY MODAL
+function closePolicyModal() {
+    const modal = document.getElementById('policyModal');
+    if (modal) modal.remove();
+}
 
         // SOCIAL SHARE FUNCTIONALITY - PHASE 5.2
         function shareProduct(productId) {
