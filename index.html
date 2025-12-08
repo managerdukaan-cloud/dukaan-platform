@@ -6615,30 +6615,31 @@ Track your order: ${window.location.href}
     
 </script>
 
-    <div id="privacy-link" style="text-align:center; margin-bottom:40px; display:none;">
+<!-- 🔹 Privacy Policy Link (Will show only on login screen) -->
+<div id="privacy-link" style="text-align:center; margin:25px 0; display:none;">
     <a href="privacy.html" style="color:#007bff; font-size:14px; text-decoration:none;">
         Privacy Policy
     </a>
 </div>
 
 <script>
-    firebase.auth().onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(user => {
     const link = document.getElementById("privacy-link");
 
-    // If user NOT logged in → Show only on login screen
-    if (!user) {
-        if (window.location.hash.includes("login") || 
-            window.location.hash.includes("#/") || 
-            window.location.hash === "" ) {
-            link.style.display = "block";
-        } else {
-            link.style.display = "none";
-        }
+    // Show ONLY when user is not logged in AND page is login/start page
+    const isLoginPage =
+        window.location.hash === "" ||
+        window.location.hash === "#login" ||
+        window.location.hash.includes("signin") ||
+        window.location.hash.includes("account");
+
+    if (!user && isLoginPage) {
+        link.style.display = "block";
     } else {
-        // If user logged in → ALWAYS hide
         link.style.display = "none";
     }
 });
 </script>
+
 </body>
 </html>
