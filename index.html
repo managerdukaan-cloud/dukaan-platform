@@ -1384,6 +1384,110 @@
     background: #D1FAE5;
     color: #065F46;
 }
+
+/* ✅ OFFLINE NOTIFICATION STYLES */
+.offline-notification {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--danger);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    display: none;
+    animation: slideDown 0.3s ease;
+    text-align: center;
+    max-width: 90%;
+}
+
+.online-notification {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--success);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    display: none;
+    animation: slideDown 0.3s ease;
+    text-align: center;
+    max-width: 90%;
+}
+
+@keyframes slideDown {
+    from { transform: translate(-50%, -100%); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* ✅ OFFLINE MODE STYLES */
+.offline-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.offline-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+}
+
+.offline-icon {
+    font-size: 60px;
+    color: var(--danger);
+    margin-bottom: 20px;
+}
+
+.offline-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.offline-message {
+    color: var(--text-light);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.reload-button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.reload-button:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+}
         /* 🎯 MOBILE LAYOUT FIXES */
         @media (max-width: 768px) {
             /* Better product grid - 2 products with proper spacing */
@@ -1847,6 +1951,34 @@
     </style>
 </head>
 <body>
+    <!-- ✅ OFFLINE DETECTION OVERLAY -->
+    <div id="offlineOverlay" class="offline-overlay">
+        <div class="offline-content">
+            <div class="offline-icon">
+                <i class="fas fa-wifi-slash"></i>
+            </div>
+            <h3 class="offline-title">No Internet Connection</h3>
+            <p class="offline-message">
+                You're currently offline. Please check your internet connection and try again.
+                <br><br>
+                <small>Some features may not work properly while offline.</small>
+            </p>
+            <button class="reload-button" onclick="checkInternetAndReload()">
+                <i class="fas fa-sync-alt"></i> Retry Connection
+            </button>
+        </div>
+    </div>
+
+    <!-- ✅ OFFLINE NOTIFICATION -->
+    <div id="offlineNotification" class="offline-notification">
+        <i class="fas fa-wifi-slash"></i> You are offline
+    </div>
+
+    <!-- ✅ ONLINE NOTIFICATION -->
+    <div id="onlineNotification" class="online-notification">
+        <i class="fas fa-wifi"></i> You are back online
+    </div>
+
     <!-- Login/Signup Screen -->
     <div id="authScreen">
         <div class="auth-container">
@@ -2851,8 +2983,8 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         
-        // ✅ AUTH PERSISTENCE
-        auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+        // ✅ FIX 1: AUTO LOGOUT FIX - Use LOCAL persistence instead of SESSION
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
         // ✅ DYNAMIC SHOPS - WILL BE POPULATED FROM FIREBASE
         let SHOPS = {};
@@ -3195,6 +3327,10 @@
             outForDelivery: 0
         };
 
+        // ✅ INTERNET CONNECTION STATE
+        let isOnline = navigator.onLine;
+        let offlineCheckInterval = null;
+
         // DOM Elements
         const authScreen = document.getElementById('authScreen');
         const appScreen = document.getElementById('appScreen');
@@ -3469,6 +3605,93 @@
             return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         }
 
+        // ✅ INITIALIZE OFFLINE DETECTION
+        function setupOfflineDetection() {
+            // Initial check
+            checkInternetConnection();
+            
+            // Listen for online/offline events
+            window.addEventListener('online', handleOnlineStatus);
+            window.addEventListener('offline', handleOfflineStatus);
+            
+            // Set up periodic check
+            offlineCheckInterval = setInterval(checkInternetConnection, 30000); // Check every 30 seconds
+            
+            console.log('📶 Offline detection initialized');
+        }
+        
+        // ✅ CHECK INTERNET CONNECTION
+        function checkInternetConnection() {
+            const wasOnline = isOnline;
+            isOnline = navigator.onLine;
+            
+            if (wasOnline !== isOnline) {
+                if (isOnline) {
+                    handleOnlineStatus();
+                } else {
+                    handleOfflineStatus();
+                }
+            }
+        }
+        
+        // ✅ HANDLE ONLINE STATUS
+        function handleOnlineStatus() {
+            isOnline = true;
+            console.log('✅ Internet connection restored');
+            
+            // Hide offline notification
+            document.getElementById('offlineNotification').style.display = 'none';
+            document.getElementById('offlineOverlay').style.display = 'none';
+            
+            // Show online notification
+            const onlineNotification = document.getElementById('onlineNotification');
+            onlineNotification.style.display = 'block';
+            onlineNotification.innerHTML = '<i class="fas fa-wifi"></i> You are back online';
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                onlineNotification.style.display = 'none';
+            }, 3000);
+            
+            // Reload data if needed
+            if (currentUser) {
+                loadProductsFromFirebase();
+                loadOrderHistory();
+            }
+        }
+        
+        // ✅ HANDLE OFFLINE STATUS
+        function handleOfflineStatus() {
+            isOnline = false;
+            console.log('❌ Internet connection lost');
+            
+            // Show offline notification
+            const offlineNotification = document.getElementById('offlineNotification');
+            offlineNotification.style.display = 'block';
+            offlineNotification.innerHTML = '<i class="fas fa-wifi-slash"></i> You are offline';
+            
+            // Show toast message
+            showToast('You are offline. Some features may not work.', 'warning');
+            
+            // Don't show overlay if user is in auth screen
+            if (appScreen.style.display !== 'none') {
+                setTimeout(() => {
+                    if (!isOnline) {
+                        document.getElementById('offlineOverlay').style.display = 'flex';
+                    }
+                }, 5000);
+            }
+        }
+        
+        // ✅ CHECK INTERNET AND RELOAD
+        function checkInternetAndReload() {
+            if (navigator.onLine) {
+                window.location.reload();
+            } else {
+                showToast('Still offline. Please check your connection.', 'error');
+            }
+        }
+
         // Initialize App
         function initApp() {
     setupEventListeners();
@@ -3480,6 +3703,9 @@
     renderOrders();
     renderAddresses();
     setupSorting();
+    
+    // ✅ SETUP OFFLINE DETECTION
+    setupOfflineDetection();
     
     // ✅ FIX: START REAL-TIME ORDER LISTENER
     startRealTimeOrderListener();
