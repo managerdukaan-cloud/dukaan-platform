@@ -239,13 +239,14 @@
             text-align: center;
             line-height: 1.2;
         }
-        /* Product Detail Page Styles */
+        /* Product Detail Page Styles - UPDATED */
         .product-detail-container {
             background: white;
             border-radius: 20px;
             padding: 0;
             overflow: hidden;
             box-shadow: var(--shadow);
+            margin-bottom: 30px;
         }
         .product-detail-image {
             width: 100%;
@@ -257,6 +258,8 @@
         }
         .product-detail-header {
             margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
         }
         .product-detail-title {
             font-size: 1.8rem;
@@ -295,6 +298,7 @@
             display: flex;
             gap: 15px;
             margin-bottom: 30px;
+            align-items: center;
         }
         .btn-quantity {
             display: flex;
@@ -315,6 +319,57 @@
             font-weight: 600;
             min-width: 30px;
             text-align: center;
+        }
+        /* ✅ NEW: Product Specifications Section */
+        .specifications-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+        }
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        .spec-label {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        .spec-value {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .return-policy-section {
+            background: var(--neutral);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 4px solid var(--accent);
+        }
+        .return-policy-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+        }
+        .return-policy-list li {
+            padding: 8px 0;
+            color: var(--text-light);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .return-policy-list li i {
+            color: var(--success);
+            margin-top: 3px;
         }
         /* Reviews Section Styles */
         .reviews-section {
@@ -1764,6 +1819,16 @@
                 height: 30px !important;
                 font-size: 12px !important;
             }
+            
+            /* Mobile product detail adjustments */
+            .specifications-section,
+            .return-policy-section {
+                padding: 15px !important;
+            }
+            
+            .specs-grid {
+                grid-template-columns: 1fr !important;
+            }
         }
         /* Header Layout Fix */
         .app-header .header-container {
@@ -1947,6 +2012,30 @@
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* ✅ NEW: Search bar active state */
+        .search-container.active .search-bar {
+            box-shadow: 0 4px 20px rgba(58, 142, 246, 0.4);
+        }
+        
+        /* ✅ NEW: Product Description Section */
+        .product-description {
+            margin: 25px 0;
+            padding: 20px;
+            background: var(--neutral);
+            border-radius: 15px;
+        }
+        
+        .product-description h4 {
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            font-size: 1.2rem;
+        }
+        
+        .product-description p {
+            line-height: 1.6;
+            color: var(--text-light);
         }
     </style>
 </head>
@@ -2173,19 +2262,11 @@
                         <div class="d-flex gap-3 flex-wrap" style="flex: 1;">
                             <select id="shopFilter" class="category-filter">
                                 <option value="">All Shops</option>
-                                <option value="freshmart">FreshMart</option>
-                                <option value="cosmeticstore">CosmeticStore</option>
-                                <option value="fashionhub">FashionHub</option>
-                                <option value="veggieking">VeggieKing</option>
-                                <option value="gadgetzone">GadgetZone</option>
+                                <!-- Shops will be loaded dynamically -->
                             </select>
                             <select id="categoryFilter" class="category-filter">
                                 <option value="">All Categories</option>
-                                <option value="groceries">Groceries</option>
-                                <option value="cosmetics">Cosmetics</option>
-                                <option value="clothing">Clothing</option>
-                                <option value="vegetables">Vegetables</option>
-                                <option value="electronics">Electronics</option>
+                                <!-- Categories will be loaded dynamically -->
                             </select>
                         </div>
                         
@@ -2231,7 +2312,7 @@
                 </div>
             </div>
 
-            <!-- Product Detail Page -->
+            <!-- Product Detail Page - UPDATED WITH SPECIFICATIONS -->
             <div id="productDetailPage" class="product-detail-page">
                 <div class="product-detail-container">
                     <img id="productDetailImage" src="" alt="" class="product-detail-image">
@@ -2246,7 +2327,13 @@
                             </div>
                         </div>
                         
-                        <!-- CORRECTED PRODUCT DETAIL ACTIONS - NO DUPLICATES -->
+                        <!-- Product Description -->
+                        <div class="product-description" id="productDescriptionSection">
+                            <h4>Product Description</h4>
+                            <p id="productDetailDescription">Loading description...</p>
+                        </div>
+                        
+                        <!-- ✅ UPDATED PRODUCT DETAIL ACTIONS -->
                         <div class="product-detail-actions">
                             <div class="quantity-cart-container">
                                 <div class="btn-quantity">
@@ -2268,6 +2355,29 @@
                             <button id="wishlistDetailBtn" class="wishlist-btn" onclick="toggleWishlistFromDetail()">
                                 <i class="fas fa-heart"></i>
                             </button>
+                        </div>
+                        
+                        <!-- ✅ NEW: Product Specifications Section -->
+                        <div class="specifications-section">
+                            <h4 class="section-title">
+                                <i class="fas fa-list-alt"></i>
+                                Product Specifications
+                            </h4>
+                            <div class="specs-grid" id="productSpecifications">
+                                <!-- Specifications will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- ✅ NEW: Return/Replacement Policy Section -->
+                        <div class="return-policy-section">
+                            <h4 class="section-title">
+                                <i class="fas fa-undo-alt"></i>
+                                Return & Replacement Policy
+                            </h4>
+                            <p>We want you to be completely satisfied with your purchase.</p>
+                            <ul class="return-policy-list" id="returnPolicyList">
+                                <!-- Return policy points will be loaded here -->
+                            </ul>
                         </div>
                         
                         <!-- Reviews Section -->
@@ -2991,13 +3101,20 @@
 
         let PRODUCTS = [];
 
-        // Firebase se real products load karne ka function
+        // ✅ FIX 5: DYNAMIC CATEGORIES FROM FIREBASE
+        let ALL_CATEGORIES = new Set();
+
+        // Firebase se real products load karne ka function - UPDATED
         async function loadProductsFromFirebase() {
             try {
+                console.log('📦 Loading products from Firebase...');
+                
                 // ✅ SIMPLE QUERY - NO FILTERS
                 const productsSnapshot = await db.collection('products').get();
                 
                 PRODUCTS = [];
+                ALL_CATEGORIES.clear();
+                
                 productsSnapshot.forEach(doc => {
                     const firebaseProduct = doc.data();
                     
@@ -3020,7 +3137,7 @@
                         name: firebaseProduct.name,
                         price: firebaseProduct.price,
                         mrp: firebaseProduct.mrp,
-                        category: firebaseProduct.category,
+                        category: firebaseProduct.category || 'Uncategorized',
                         shopId: firebaseProduct.shopId || firebaseProduct.shop,
                         shopName: firebaseProduct.shopName || firebaseProduct.shop,
                         image: firebaseProduct.image,
@@ -3028,18 +3145,28 @@
                         description: firebaseProduct.description || '',
                         isAvailable: firebaseProduct.isAvailable !== false,
                         status: firebaseProduct.status || 'active',
-                        deliveryTime: firebaseProduct.deliveryTime || '10-15 min'
+                        deliveryTime: firebaseProduct.deliveryTime || '10-15 min',
+                        specifications: firebaseProduct.specifications || {},
+                        returnPolicy: firebaseProduct.returnPolicy || 'No returns. Contact shopkeeper for any issues.',
+                        brand: firebaseProduct.brand || 'Generic',
+                        features: firebaseProduct.features || []
                     };
                     
                     PRODUCTS.push(mappedProduct);
+                    
+                    // ✅ ADD CATEGORY TO DYNAMIC SET
+                    if (firebaseProduct.category) {
+                        ALL_CATEGORIES.add(firebaseProduct.category);
+                    }
                 });
                 
                 console.log('📦 Products loaded:', PRODUCTS.length);
+                console.log('📋 Categories found:', Array.from(ALL_CATEGORIES));
                 
                 // ✅ UPDATE DYNAMIC SHOPS FROM PRODUCTS
                 updateDynamicShops();
                 
-                // ✅ UPDATE FILTER DROPDOWNS
+                // ✅ UPDATE FILTER DROPDOWNS WITH DYNAMIC DATA
                 updateShopAndCategoryFilters();
                 
                 if (typeof renderProducts === 'function') {
@@ -3079,7 +3206,7 @@
             console.log('🛍️ Dynamic shops updated:', Object.keys(SHOPS).length, 'shops');
         }
 
-        // ✅ UPDATE SHOP AND CATEGORY FILTERS
+        // ✅ UPDATED: UPDATE SHOP AND CATEGORY FILTERS WITH DYNAMIC DATA
         function updateShopAndCategoryFilters() {
             // Shop Filter
             const shopFilter = document.getElementById('shopFilter');
@@ -3091,17 +3218,21 @@
                     const shop = SHOPS[shopId];
                     shopFilter.innerHTML += `<option value="${shopId}">${shop.name}</option>`;
                 });
-                console.log('✅ Shop filter updated');
+                console.log('✅ Shop filter updated with', Object.keys(SHOPS).length, 'shops');
             }
             
             // Category Filter
             if (categoryFilter) {
-                const categories = [...new Set(PRODUCTS.map(p => p.category).filter(Boolean))];
                 categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                
+                // ✅ ADD DYNAMIC CATEGORIES FROM ALL_CATEGORIES SET
+                const categories = Array.from(ALL_CATEGORIES).sort();
                 categories.forEach(category => {
-                    categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+                    if (category && category.trim() !== '') {
+                        categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+                    }
                 });
-                console.log('✅ Category filter updated:', categories.length, 'categories');
+                console.log('✅ Category filter updated:', categories.length, 'dynamic categories');
             }
         }
 
@@ -3286,6 +3417,25 @@
             { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" }
         ];
 
+        // ✅ FIX 2: SHOPKEEPER COUPON SETTINGS
+        let SHOP_COUPON_SETTINGS = {
+            couponEnabled: true, // Default: coupons enabled
+            activeCoupons: ['WELCOME10', 'FLAT50'] // Default active coupons
+        };
+
+        // Load shop coupon settings from Firebase
+        async function loadShopCouponSettings() {
+            try {
+                const settingsDoc = await db.collection('settings').doc('couponSettings').get();
+                if (settingsDoc.exists) {
+                    SHOP_COUPON_SETTINGS = settingsDoc.data();
+                    console.log('✅ Shop coupon settings loaded:', SHOP_COUPON_SETTINGS);
+                }
+            } catch (error) {
+                console.error('Error loading coupon settings:', error);
+            }
+        }
+
         // REVIEWS SYSTEM
         const REVIEW_RULES = {
             minRating: 1,
@@ -3380,6 +3530,36 @@
         const ordersNavBadge = document.getElementById('ordersNavBadge');
         const ordersBadge = document.getElementById('ordersBadge');
 
+        // ✅ FIX 1: UPDATED ADDRESS SAVING FOR SHOPKEEPER APP
+        async function saveAddressForShopkeeper(addressData) {
+            if (!currentUser) return addressData.id || generateId();
+            
+            try {
+                const addressWithUser = {
+                    ...addressData,
+                    customerId: currentUser.uid,
+                    customerEmail: currentUser.email,
+                    customerName: currentUser.name
+                };
+                
+                // Save to user's addresses collection
+                const docRef = await db.collection('users').doc(currentUser.uid).collection('addresses').add(addressWithUser);
+                
+                // Also save to main addresses collection for shopkeeper access
+                await db.collection('addresses').doc(docRef.id).set({
+                    ...addressWithUser,
+                    addressId: docRef.id
+                });
+                
+                console.log('✅ Address saved for shopkeeper access:', docRef.id);
+                return docRef.id;
+                
+            } catch (error) {
+                console.error('Error saving address for shopkeeper:', error);
+                return addressData.id || generateId();
+            }
+        }
+
         // ✅ NEW: Get selected shop function
         function getSelectedShop() {
             if (!cart || cart.length === 0) {
@@ -3420,7 +3600,7 @@
             updateCartUI();
         }
 
-        // ✅ UPDATED: Complete placeOrder() function with UNIFIED ORDER ID
+        // ✅ UPDATED: Complete placeOrder() function with FIXED ADDRESS
         async function placeOrder() {
             try {
                 console.log('🛒 Place order called');
@@ -3494,20 +3674,57 @@
                     return;
                 }
                 
+                // ✅ FIX 1: GET FULL ADDRESS DETAILS
+                let addressData = selectedAddress;
+                if (typeof selectedAddress === 'string') {
+                    addressData = addresses.find(addr => addr.id === selectedAddress) || selectedAddress;
+                }
+                
+                // ✅ FIX 1: ENSURE ADDRESS HAS ALL REQUIRED FIELDS
+                const completeAddress = {
+                    id: addressData.id || generateId(),
+                    fullName: addressData.fullName || user.displayName || 'Customer',
+                    phone: addressData.phone || phone,
+                    details: addressData.details || addressData.address || 'Address not specified',
+                    city: addressData.city || 'City not specified',
+                    pincode: addressData.pincode || '000000',
+                    landmark: addressData.landmark || '',
+                    type: addressData.type || 'home',
+                    // ✅ ADD THESE FOR SHOPKEEPER APP
+                    customerId: user.uid,
+                    customerName: user.displayName || 'Customer',
+                    customerEmail: user.email,
+                    customerPhone: phone
+                };
+                
+                // ✅ FIX 1: SAVE ADDRESS FOR SHOPKEEPER ACCESS
+                const savedAddressId = await saveAddressForShopkeeper(completeAddress);
+                completeAddress.addressId = savedAddressId;
+                
                 // Calculate totals
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const deliveryCharge = 40; // Example delivery charge
                 let discount = 0;
                 let total = subtotal + deliveryCharge;
                 
-                // Apply coupon if any
+                // ✅ FIX 2: CHECK COUPON SETTINGS BEFORE APPLYING
+                let couponApplied = false;
                 if (appliedCoupon) {
-                    if (appliedCoupon.type === 'percentage') {
-                        discount = (subtotal * appliedCoupon.value) / 100;
+                    if (!SHOP_COUPON_SETTINGS.couponEnabled) {
+                        showToast('Coupons are currently disabled by shopkeeper', 'warning');
+                        appliedCoupon = null;
+                    } else if (!SHOP_COUPON_SETTINGS.activeCoupons.includes(appliedCoupon.code)) {
+                        showToast('This coupon is no longer active', 'warning');
+                        appliedCoupon = null;
                     } else {
-                        discount = appliedCoupon.value;
+                        couponApplied = true;
+                        if (appliedCoupon.type === 'percentage') {
+                            discount = (subtotal * appliedCoupon.value) / 100;
+                        } else {
+                            discount = appliedCoupon.value;
+                        }
+                        total = subtotal + deliveryCharge - discount;
                     }
-                    total = subtotal + deliveryCharge - discount;
                 }
                 
                 // Prepare order items
@@ -3525,7 +3742,7 @@
                 const unifiedOrderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9).toUpperCase();
                 console.log('✅ Generated Unified Order ID:', unifiedOrderId);
                 
-                // Create order data WITH UNIFIED ORDER ID
+                // Create order data WITH COMPLETE ADDRESS
                 const orderData = {
                     // ✅ CRITICAL: Use the same orderId for both apps
                     orderId: unifiedOrderId,
@@ -3540,7 +3757,7 @@
                     discount: discount,
                     total: total,
                     totalAmount: total,
-                    address: selectedAddress,
+                    address: completeAddress, // ✅ FIX 1: COMPLETE ADDRESS
                     deliveryType: 'delivery',
                     status: 'pending',
                     paymentMethod: selectedPaymentMethod,
@@ -3548,7 +3765,13 @@
                     shopId: selectedShop.id,
                     shopName: selectedShop.name,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    // ✅ ADD THESE FOR SHOPKEEPER APP
+                    customerAddress: completeAddress.details,
+                    customerCity: completeAddress.city,
+                    customerPincode: completeAddress.pincode,
+                    customerLandmark: completeAddress.landmark,
+                    customerAddressType: completeAddress.type
                 };
                 
                 // Add UTR number if QR payment
@@ -3557,12 +3780,12 @@
                 }
                 
                 // Add coupon if applied
-                if (appliedCoupon) {
+                if (appliedCoupon && couponApplied) {
                     orderData.couponCode = appliedCoupon.code;
                     orderData.couponDiscount = discount;
                 }
                 
-                console.log('📦 Creating order with unified ID:', unifiedOrderId);
+                console.log('📦 Creating order with complete address:', completeAddress);
                 
                 // 1️⃣ First, add order to Firestore with unified orderId
                 const docRef = await db.collection('orders').add(orderData);
@@ -3574,7 +3797,7 @@
                     firestoreId: firestoreDocId // Store firestore ID separately
                 });
                 
-                console.log('✅ Order created with Unified Order ID:', unifiedOrderId);
+                console.log('✅ Order created with Complete Address');
                 
                 // 3️⃣ Clear cart after successful order
                 clearCart();
@@ -3657,6 +3880,7 @@
             if (currentUser) {
                 loadProductsFromFirebase();
                 loadOrderHistory();
+                loadShopCouponSettings(); // ✅ Load coupon settings
             }
         }
         
@@ -3712,6 +3936,9 @@
     
     // ✅ NEW: START REFUND LISTENER
     setupPartialOrderRefundSystem();
+    
+    // ✅ LOAD SHOP COUPON SETTINGS
+    loadShopCouponSettings();
 }
 
         // ✅ UPDATED: Real-time Order Listener with UNIFIED ORDER ID
@@ -4532,8 +4759,18 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             document.getElementById('showSignup').addEventListener('click', showSignupForm);
             document.getElementById('showLogin').addEventListener('click', showLoginForm);
 
-            // Search and filter listeners
+            // ✅ FIX 3: UPDATED SEARCH EVENT LISTENERS
             searchInput.addEventListener('input', handleSearch);
+            searchInput.addEventListener('focus', function() {
+                document.querySelector('.search-container').classList.add('active');
+            });
+            searchInput.addEventListener('blur', function() {
+                setTimeout(() => {
+                    document.querySelector('.search-container').classList.remove('active');
+                }, 200);
+            });
+            
+            // ✅ FIX 5: UPDATED FILTER LISTENERS
             shopFilter.addEventListener('change', applyFilters);
             categoryFilter.addEventListener('change', applyFilters);
 
@@ -4632,6 +4869,93 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
         }
 
+        // ✅ FIX 3: UPDATED SEARCH FUNCTIONALITY
+        function handleSearch() {
+            const query = searchInput.value.trim();
+            if (query.length === 0) {
+                searchResults.style.display = 'none';
+                renderProducts(PRODUCTS);
+                return;
+            }
+            
+            performSearch(query);
+        }
+
+        // ✅ FIX 3: IMPROVED SEARCH FUNCTION
+        function performSearch(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            const filteredProducts = PRODUCTS.filter(product => 
+                product.name.toLowerCase().includes(lowerQuery) ||
+                (product.category && product.category.toLowerCase().includes(lowerQuery)) ||
+                (product.description && product.description.toLowerCase().includes(lowerQuery)) ||
+                (product.brand && product.brand.toLowerCase().includes(lowerQuery))
+            );
+            
+            // Show search results
+            showSearchResults(filteredProducts, query);
+            
+            // Also update main grid
+            renderProducts(filteredProducts);
+            
+            if (filteredProducts.length === 0) {
+                showToast(`No products found for "${query}"`);
+            } else {
+                showToast(`Found ${filteredProducts.length} products for "${query}"`);
+            }
+        }
+
+        // ✅ FIX 3: SHOW SEARCH RESULTS
+        function showSearchResults(products, query) {
+            searchResults.innerHTML = '';
+            
+            if (products.length === 0) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            // Show limited results in dropdown
+            const limitedResults = products.slice(0, 5);
+            
+            limitedResults.forEach(product => {
+                const searchItem = document.createElement('div');
+                searchItem.className = 'search-result-item';
+                searchItem.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="search-result-image">
+                    <div class="search-result-info">
+                        <div class="search-result-name">${product.name}</div>
+                        <div class="search-result-category">${product.category} • ${product.shopName}</div>
+                    </div>
+                    <div class="search-result-price">₹${product.price}</div>
+                `;
+                searchItem.addEventListener('click', () => {
+                    searchInput.value = product.name;
+                    showProductDetail(product.id);
+                    searchResults.style.display = 'none';
+                });
+                searchResults.appendChild(searchItem);
+            });
+            
+            // Show "View all results" option
+            if (products.length > 5) {
+                const viewAllItem = document.createElement('div');
+                viewAllItem.className = 'search-result-item';
+                viewAllItem.style.justifyContent = 'center';
+                viewAllItem.innerHTML = `
+                    <div style="color: var(--accent); font-weight: 600;">
+                        View all ${products.length} results for "${query}"
+                    </div>
+                `;
+                viewAllItem.addEventListener('click', () => {
+                    searchResults.style.display = 'none';
+                    renderProducts(products);
+                });
+                searchResults.appendChild(viewAllItem);
+            }
+            
+            searchResults.style.display = 'block';
+        }
+
         // Product Rendering - FIXED
         function renderProducts(products) {
             productGrid.innerHTML = '';
@@ -4678,10 +5002,6 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         }
         
         // Enhanced Search Functionality - PHASE 2
-        function handleSearch() {
-            openEnhancedSearch();
-        }
-
         function openEnhancedSearch() {
             document.getElementById('searchOverlay').style.display = 'block';
             document.getElementById('searchModal').style.display = 'block';
@@ -4948,22 +5268,38 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             document.getElementById('priceRange').value = this.value;
         });
 
-        // Filter Functionality
+        // ✅ FIX 5: UPDATED FILTER FUNCTIONALITY
         function applyFilters() {
             const shopValue = shopFilter.value;
             const categoryValue = categoryFilter.value;
+            const sortValue = document.getElementById('sortSelect').value;
+            
+            console.log('🔄 Applying filters - Shop:', shopValue, 'Category:', categoryValue);
             
             let filteredProducts = PRODUCTS;
             
+            // ✅ FIX 5: PROPER SHOP FILTERING
             if (shopValue) {
-                filteredProducts = filteredProducts.filter(product => product.shop === shopValue);
+                filteredProducts = filteredProducts.filter(product => {
+                    const matchesShop = product.shopId === shopValue;
+                    console.log(`Product ${product.name}: shopId=${product.shopId}, matches=${matchesShop}`);
+                    return matchesShop;
+                });
+                console.log(`✅ Filtered by shop ${shopValue}: ${filteredProducts.length} products`);
             }
             
+            // ✅ FIX 5: PROPER CATEGORY FILTERING
             if (categoryValue) {
-                filteredProducts = filteredProducts.filter(product => product.category === categoryValue);
+                filteredProducts = filteredProducts.filter(product => {
+                    const matchesCategory = product.category === categoryValue;
+                    console.log(`Product ${product.name}: category=${product.category}, matches=${matchesCategory}`);
+                    return matchesCategory;
+                });
+                console.log(`✅ Filtered by category ${categoryValue}: ${filteredProducts.length} products`);
             }
             
-            renderProducts(filteredProducts);
+            // Apply sorting to filtered products
+            applySortingToProducts(filteredProducts, sortValue);
         }
 
         // Sorting Functionality - PHASE 2.1
@@ -4995,25 +5331,6 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
             
             renderProducts(productsToSort);
-        }
-
-        function applyFilters() {
-            const shopValue = shopFilter.value;
-            const categoryValue = categoryFilter.value;
-            const sortValue = document.getElementById('sortSelect').value;
-            
-            let filteredProducts = PRODUCTS;
-            
-            if (shopValue) {
-                filteredProducts = filteredProducts.filter(product => product.shop === shopValue);
-            }
-            
-            if (categoryValue) {
-                filteredProducts = filteredProducts.filter(product => product.category === categoryValue);
-            }
-            
-            // Apply sorting to filtered products
-            applySortingToProducts(filteredProducts, sortValue);
         }
 
         function applySortingToProducts(products, sortType) {
@@ -5304,7 +5621,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             });
         }
 
-        // Product Detail Page
+        // ✅ FIX 4: UPDATED PRODUCT DETAIL PAGE WITH SPECIFICATIONS
         function showProductDetail(productId) {
             const product = PRODUCTS.find(p => p.id === productId);
             if (!product) return;
@@ -5322,6 +5639,15 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             document.getElementById('productDetailOriginal').textContent = `₹${product.mrp}`;
             document.getElementById('productDetailDiscount').textContent = `${discount}% OFF`;
             
+            // ✅ FIX 4: Update product description
+            document.getElementById('productDetailDescription').textContent = product.description || 'No description available';
+            
+            // ✅ FIX 4: Load product specifications
+            loadProductSpecifications(product);
+            
+            // ✅ FIX 4: Load return policy
+            loadReturnPolicy(product);
+            
             // Update wishlist button
             const wishlistBtn = document.getElementById('wishlistDetailBtn');
             wishlistBtn.classList.toggle('active', isInWishlist);
@@ -5338,6 +5664,70 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             
             // Update navigation
             navItems.forEach(item => item.classList.remove('active'));
+        }
+
+        // ✅ FIX 4: LOAD PRODUCT SPECIFICATIONS
+        function loadProductSpecifications(product) {
+            const specsContainer = document.getElementById('productSpecifications');
+            specsContainer.innerHTML = '';
+            
+            // Default specifications
+            const defaultSpecs = {
+                'Brand': product.brand || 'Generic',
+                'Category': product.category || 'Uncategorized',
+                'Delivery Time': product.deliveryTime || '10-15 min',
+                'Stock': product.stock > 0 ? 'In Stock' : 'Out of Stock',
+                'Shop': product.shopName || 'Unknown Shop'
+            };
+            
+            // Merge with product specifications
+            const specifications = { ...defaultSpecs, ...product.specifications };
+            
+            // Create specification items
+            Object.entries(specifications).forEach(([key, value]) => {
+                if (value) {
+                    const specItem = document.createElement('div');
+                    specItem.className = 'spec-item';
+                    specItem.innerHTML = `
+                        <span class="spec-label">${key}:</span>
+                        <span class="spec-value">${value}</span>
+                    `;
+                    specsContainer.appendChild(specItem);
+                }
+            });
+            
+            // If no specifications, show message
+            if (specsContainer.children.length === 0) {
+                specsContainer.innerHTML = '<p class="text-muted">No specifications available for this product.</p>';
+            }
+        }
+
+        // ✅ FIX 4: LOAD RETURN POLICY
+        function loadReturnPolicy(product) {
+            const policyList = document.getElementById('returnPolicyList');
+            policyList.innerHTML = '';
+            
+            // Default return policy points
+            const defaultPolicy = [
+                'Items must be returned within 7 days of delivery',
+                'Products must be unused and in original packaging',
+                'Provide proof of purchase (order details)',
+                'Contact shopkeeper directly for returns/replacements',
+                'Refunds will be processed within 5-7 business days'
+            ];
+            
+            // Add custom return policy if available
+            let policyPoints = defaultPolicy;
+            if (product.returnPolicy && product.returnPolicy !== 'No returns. Contact shopkeeper for any issues.') {
+                policyPoints = [product.returnPolicy, ...defaultPolicy];
+            }
+            
+            // Create policy list items
+            policyPoints.forEach(point => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-check"></i> ${point}`;
+                policyList.appendChild(li);
+            });
         }
 
         function closeProductDetail() {
@@ -5745,10 +6135,20 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
         }
 
-        // Coupon System - FIXED: Optional coupon, not required
+        // ✅ FIX 2: UPDATED COUPON SYSTEM WITH SHOPKEEPER SETTINGS
         function applyCoupon() {
             if (!currentUser) {
                 showToast('Please login to apply coupons');
+                return;
+            }
+            
+            // ✅ FIX 2: CHECK IF COUPONS ARE ENABLED
+            if (!SHOP_COUPON_SETTINGS.couponEnabled) {
+                showToast('Coupons are currently disabled by shopkeeper', 'warning');
+                couponMessage.textContent = 'Coupons are currently disabled';
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
                 return;
             }
             
@@ -5767,6 +6167,15 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             
             if (!coupon) {
                 couponMessage.textContent = 'Invalid coupon code';
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
+            
+            // ✅ FIX 2: CHECK IF COUPON IS ACTIVE
+            if (!SHOP_COUPON_SETTINGS.activeCoupons.includes(couponCode)) {
+                couponMessage.textContent = 'This coupon is no longer active';
                 couponMessage.className = 'coupon-error';
                 appliedCoupon = null;
                 updateOrderSummary();
@@ -6738,16 +7147,22 @@ Track your order: ${window.location.href}
             return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
         }
 
-                function showToast(message) {
+        function showToast(message, type = 'info') {
             // Create toast element
             const toast = document.createElement('div');
             toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3';
             toast.style.zIndex = '9999';
+            
+            let bgColor = 'var(--accent)';
+            if (type === 'error') bgColor = 'var(--danger)';
+            if (type === 'success') bgColor = 'var(--success)';
+            if (type === 'warning') bgColor = 'var(--warning)';
+            
             toast.innerHTML = `
-                <div class="toast show" role="alert">
+                <div class="toast show" role="alert" style="background: ${bgColor}; color: white; border: none;">
                     <div class="toast-body d-flex justify-content-between align-items-center">
                         <span>${message}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
                     </div>
                 </div>
             `;
@@ -6760,131 +7175,131 @@ Track your order: ${window.location.href}
             }, 3000);
         }
 
-// ✅ ADD THESE POLICY FUNCTIONS HERE:
-function openPrivacyPolicy() {
-    closeHamburgerMenu();
-    showPolicyModal('Privacy Policy');
-}
+        // ✅ ADD THESE POLICY FUNCTIONS HERE:
+        function openPrivacyPolicy() {
+            closeHamburgerMenu();
+            showPolicyModal('Privacy Policy');
+        }
 
-function openTermsConditions() {
-    closeHamburgerMenu();
-    showPolicyModal('Terms & Conditions');
-}
+        function openTermsConditions() {
+            closeHamburgerMenu();
+            showPolicyModal('Terms & Conditions');
+        }
 
-function openRefundPolicy() {
-    closeHamburgerMenu();
-    showPolicyModal('Refund Policy');
-}
+        function openRefundPolicy() {
+            closeHamburgerMenu();
+            showPolicyModal('Refund Policy');
+        }
 
-// ✅ SHOW POLICY MODAL
-function showPolicyModal(title) {
-    const modalHTML = `
-        <div class="modal-overlay active" id="policyModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">${title}</h3>
-                    <button class="modal-close" onclick="closePolicyModal()">&times;</button>
+        // ✅ SHOW POLICY MODAL
+        function showPolicyModal(title) {
+            const modalHTML = `
+                <div class="modal-overlay active" id="policyModal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">${title}</h3>
+                            <button class="modal-close" onclick="closePolicyModal()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            ${getPolicyContent(title)}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-outline" onclick="closePolicyModal()">
+                                <i class="fas fa-times"></i> Close
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    ${getPolicyContent(title)}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-outline" onclick="closePolicyModal()">
-                        <i class="fas fa-times"></i> Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
 
-// ✅ POLICY CONTENT
-function getPolicyContent(title) {
-    if (title === 'Privacy Policy') {
-        return `
-            <div style="padding: 1rem; line-height: 1.6;">
-                <h4 style="color: var(--primary); margin-bottom: 1rem;">Privacy Policy</h4>
-                <p>This Privacy Policy describes how Dukaan collects, uses, and protects your personal information.</p>
-                
-                <h5>Information We Collect</h5>
-                <ul>
-                    <li>Personal details (name, email, phone)</li>
-                    <li>Delivery addresses</li>
-                    <li>Order history</li>
-                    <li>Payment information (securely processed)</li>
-                </ul>
-                
-                <h5>Data Protection</h5>
-                <p>We implement security measures to protect your data from unauthorized access.</p>
-                
-                <h5>Contact Us</h5>
-                <p>For privacy concerns: support@dukaan.com</p>
-            </div>
-        `;
-    }
-    
-    if (title === 'Terms & Conditions') {
-        return `
-            <div style="padding: 1rem; line-height: 1.6;">
-                <h4 style="color: var(--primary); margin-bottom: 1rem;">Terms & Conditions</h4>
-                <p>Welcome to Dukaan! By using our platform, you agree to these terms.</p>
-                
-                <h5>1. User Accounts</h5>
-                <p>You must provide accurate information and keep your login credentials secure.</p>
-                
-                <h5>2. Orders & Payments</h5>
-                <ul>
-                    <li>Orders are subject to availability</li>
-                    <li>Prices may change without notice</li>
-                    <li>Payments are processed securely</li>
-                </ul>
-                
-                <h5>3. Delivery</h5>
-                <p>Delivery times are estimates. We deliver to addresses provided during checkout.</p>
-                
-                <h5>4. Contact</h5>
-                <p>Questions? Contact: support@dukaan.com</p>
-            </div>
-        `;
-    }
-    
-    if (title === 'Refund Policy') {
-        return `
-            <div style="padding: 1rem; line-height: 1.6;">
-                <h4 style="color: var(--primary); margin-bottom: 1rem;">Refund Policy</h4>
-                <p>Our refund policy ensures fair treatment for all customers.</p>
-                
-                <h5>1. Return Eligibility</h5>
-                <ul>
-                    <li>Items must be returned within 7 days</li>
-                    <li>Products must be unused and in original packaging</li>
-                    <li>Provide proof of purchase</li>
-                </ul>
-                
-                <h5>2. Refund Process</h5>
-                <ol>
-                    <li>Contact customer support</li>
-                    <li>Return the product</li>
-                    <li>Inspection (3-5 business days)</li>
-                    <li>Refund processed to original payment method</li>
-                </ol>
-                
-                <h5>3. Contact</h5>
-                <p>Refund requests: support@dukaan.com</p>
-            </div>
-        `;
-    }
-    
-    return `<p>Content not available</p>`;
-}
+        // ✅ POLICY CONTENT
+        function getPolicyContent(title) {
+            if (title === 'Privacy Policy') {
+                return `
+                    <div style="padding: 1rem; line-height: 1.6;">
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Privacy Policy</h4>
+                        <p>This Privacy Policy describes how Dukaan collects, uses, and protects your personal information.</p>
+                        
+                        <h5>Information We Collect</h5>
+                        <ul>
+                            <li>Personal details (name, email, phone)</li>
+                            <li>Delivery addresses</li>
+                            <li>Order history</li>
+                            <li>Payment information (securely processed)</li>
+                        </ul>
+                        
+                        <h5>Data Protection</h5>
+                        <p>We implement security measures to protect your data from unauthorized access.</p>
+                        
+                        <h5>Contact Us</h5>
+                        <p>For privacy concerns: support@dukaan.com</p>
+                    </div>
+                `;
+            }
+            
+            if (title === 'Terms & Conditions') {
+                return `
+                    <div style="padding: 1rem; line-height: 1.6;">
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Terms & Conditions</h4>
+                        <p>Welcome to Dukaan! By using our platform, you agree to these terms.</p>
+                        
+                        <h5>1. User Accounts</h5>
+                        <p>You must provide accurate information and keep your login credentials secure.</p>
+                        
+                        <h5>2. Orders & Payments</h5>
+                        <ul>
+                            <li>Orders are subject to availability</li>
+                            <li>Prices may change without notice</li>
+                            <li>Payments are processed securely</li>
+                        </ul>
+                        
+                        <h5>3. Delivery</h5>
+                        <p>Delivery times are estimates. We deliver to addresses provided during checkout.</p>
+                        
+                        <h5>4. Contact</h5>
+                        <p>Questions? Contact: support@dukaan.com</p>
+                    </div>
+                `;
+            }
+            
+            if (title === 'Refund Policy') {
+                return `
+                    <div style="padding: 1rem; line-height: 1.6;">
+                        <h4 style="color: var(--primary); margin-bottom: 1rem;">Refund Policy</h4>
+                        <p>Our refund policy ensures fair treatment for all customers.</p>
+                        
+                        <h5>1. Return Eligibility</h5>
+                        <ul>
+                            <li>Items must be returned within 7 days</li>
+                            <li>Products must be unused and in original packaging</li>
+                            <li>Provide proof of purchase</li>
+                        </ul>
+                        
+                        <h5>2. Refund Process</h5>
+                        <ol>
+                            <li>Contact customer support</li>
+                            <li>Return the product</li>
+                            <li>Inspection (3-5 business days)</li>
+                            <li>Refund processed to original payment method</li>
+                        </ol>
+                        
+                        <h5>3. Contact</h5>
+                        <p>Refund requests: support@dukaan.com</p>
+                    </div>
+                `;
+            }
+            
+            return `<p>Content not available</p>`;
+        }
 
-// ✅ CLOSE POLICY MODAL
-function closePolicyModal() {
-    const modal = document.getElementById('policyModal');
-    if (modal) modal.remove();
-}
+        // ✅ CLOSE POLICY MODAL
+        function closePolicyModal() {
+            const modal = document.getElementById('policyModal');
+            if (modal) modal.remove();
+        }
 
         // SOCIAL SHARE FUNCTIONALITY - PHASE 5.2
         function shareProduct(productId) {
@@ -6995,10 +7410,39 @@ function closePolicyModal() {
             }
         }
 
+        // ✅ FIX 5: DYNAMIC CATEGORY UPDATES LISTENER
+        function setupDynamicCategoryListener() {
+            // Listen for new categories from shopkeeper
+            db.collection('products').onSnapshot((snapshot) => {
+                console.log('🔄 Checking for new categories...');
+                
+                const newCategories = new Set();
+                snapshot.forEach(doc => {
+                    const product = doc.data();
+                    if (product.category && product.status === 'active') {
+                        newCategories.add(product.category);
+                    }
+                });
+                
+                // Update ALL_CATEGORIES if new categories found
+                const oldSize = ALL_CATEGORIES.size;
+                newCategories.forEach(cat => ALL_CATEGORIES.add(cat));
+                
+                if (ALL_CATEGORIES.size > oldSize) {
+                    console.log('✅ New categories detected, updating filter...');
+                    updateShopAndCategoryFilters();
+                }
+            });
+        }
+
         // App load hone par products load karo
         document.addEventListener('DOMContentLoaded', function() {
             initApp();
             loadProductsFromFirebase();
+            // ✅ FIX 5: SETUP DYNAMIC CATEGORY LISTENER
+            setTimeout(() => {
+                setupDynamicCategoryListener();
+            }, 3000);
         });
     
 </script>
