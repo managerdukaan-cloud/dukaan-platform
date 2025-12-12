@@ -7906,13 +7906,13 @@
                 const addressCard = document.createElement('div');
                 addressCard.className = `address-card ${isSelected ? 'selected' : ''}`;
                 addressCard.innerHTML = `
-                    <div class="address-title">
-                        ${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}
-                        ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
-                    </div>
-                    <div class="address-details">${address.name} • ${address.address}</div>
-                    <div class="address-phone">${address.phone} • ${address.city} - ${address.pincode}</div>
-                `;
+    <div class="address-title">
+        ${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}
+        ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
+    </div>
+    <div class="address-details">${address.name || address.fullName || 'Customer'} • ${address.address}</div>
+    <div class="address-phone">${address.phone} • ${address.city} - ${address.pincode}</div>
+`;
                 addressCard.onclick = () => {
                     selectedAddress = address.id;
                     renderAddresses();
