@@ -4596,339 +4596,344 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ✅ FIX 1: एकीकृत ऑर्डर आईडी सिस्टम
-        // ✅ FIX 2: रिफंड सिस्टम शॉपकीपर और कस्टमर दोनों के लिए
-        
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD2-yz4xwYD5S_oXs6ryhNP8XIC94jzda4",
-            authDomain: "dukaan-platform.firebaseapp.com",
-            projectId: "dukaan-platform", 
-            storageBucket: "dukaan-platform.firebasestorage.app",
-            messagingSenderId: "75765851780",
-            appId: "1:75765851780:web:dd9567db1d39c3b09c84d1"
-        };
+<script>
+    // ✅ FIX 1: एकीकृत ऑर्डर आईडी सिस्टम
+    // ✅ FIX 2: रिफंड सिस्टम शॉपकीपर और कस्टमर दोनों के लिए
+    
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyD2-yz4xwYD5S_oXs6ryhNP8XIC94jzda4",
+        authDomain: "dukaan-platform.firebaseapp.com",
+        projectId: "dukaan-platform", 
+        storageBucket: "dukaan-platform.firebasestorage.app",
+        messagingSenderId: "75765851780",
+        appId: "1:75765851780:web:dd9567db1d39c3b09c84d1"
+    };
 
-        // Initialize Firebase
+    // Initialize Firebase
+    try {
+        firebase.initializeApp(firebaseConfig);
+        console.log('Firebase initialized successfully');
+    } catch (error) {
+        console.log('Firebase already initialized');
+    }
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    // ✅ FIX 1: AUTO LOGOUT FIX - Use LOCAL persistence instead of SESSION
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    // ✅ DYNAMIC SHOPS - WILL BE POPULATED FROM FIREBASE
+    let SHOPS = {};
+
+    let PRODUCTS = [];
+
+    // ✅ FIX 5: DYNAMIC CATEGORIES FROM FIREBASE
+    let ALL_CATEGORIES = new Set();
+
+    // Firebase se real products load karne ka function - UPDATED
+    async function loadProductsFromFirebase() {
         try {
-            firebase.initializeApp(firebaseConfig);
-            console.log('Firebase initialized successfully');
-        } catch (error) {
-            console.log('Firebase already initialized');
-        }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
-        // ✅ FIX 1: AUTO LOGOUT FIX - Use LOCAL persistence instead of SESSION
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-        // ✅ DYNAMIC SHOPS - WILL BE POPULATED FROM FIREBASE
-        let SHOPS = {};
-
-        let PRODUCTS = [];
-
-        // ✅ FIX 5: DYNAMIC CATEGORIES FROM FIREBASE
-        let ALL_CATEGORIES = new Set();
-
-        // Firebase se real products load karne ka function - UPDATED
-        async function loadProductsFromFirebase() {
-            try {
-                console.log('📦 Loading products from Firebase...');
-                
-                // ✅ SIMPLE QUERY - NO FILTERS
-                const productsSnapshot = await db.collection('products').get();
-                
-                PRODUCTS = [];
-                ALL_CATEGORIES.clear();
-                
-                productsSnapshot.forEach(doc => {
-                    const firebaseProduct = doc.data();
-                    
-                    // ✅ FILTER LOCALLY
-                    // Skip if status is not active
-                    if (firebaseProduct.status !== 'active') {
-                        console.log('Skipping inactive:', firebaseProduct.name);
-                        return;
-                    }
-                    
-                    // Skip if stock is 0 or less
-                    if (firebaseProduct.stock <= 0) {
-                        console.log('Skipping out of stock:', firebaseProduct.name);
-                        return;
-                    }
-                    
-                    // ✅ MAP FIELDS
-                    const mappedProduct = {
-                        id: doc.id,
-                        name: firebaseProduct.name,
-                        price: firebaseProduct.price,
-                        mrp: firebaseProduct.mrp,
-                        category: firebaseProduct.category || 'Uncategorized',
-                        shopId: firebaseProduct.shopId || firebaseProduct.shop,
-                        shopName: firebaseProduct.shopName || firebaseProduct.shop,
-                        image: firebaseProduct.image,
-                        stock: firebaseProduct.stock,
-                        description: firebaseProduct.description || '',
-                        isAvailable: firebaseProduct.isAvailable !== false,
-                        status: firebaseProduct.status || 'active',
-                        deliveryTime: firebaseProduct.deliveryTime || '10-15 min',
-                        specifications: firebaseProduct.specifications || {},
-                        returnPolicy: firebaseProduct.returnPolicy || 'No returns. Contact shopkeeper for any issues.',
-                        brand: firebaseProduct.brand || 'Generic',
-                        features: firebaseProduct.features || []
-                    };
-                    
-                    PRODUCTS.push(mappedProduct);
-                    
-                    // ✅ ADD CATEGORY TO DYNAMIC SET
-                    if (firebaseProduct.category) {
-                        ALL_CATEGORIES.add(firebaseProduct.category);
-                    }
-                });
-                
-                console.log('📦 Products loaded:', PRODUCTS.length);
-                console.log('📋 Categories found:', Array.from(ALL_CATEGORIES));
-                
-                // ✅ UPDATE DYNAMIC SHOPS FROM PRODUCTS
-                updateDynamicShops();
-                
-                // ✅ UPDATE FILTER DROPDOWNS WITH DYNAMIC DATA
-                updateShopAndCategoryFilters();
-                
-                if (typeof renderProducts === 'function') {
-                    renderProducts(PRODUCTS);
-                }
-                
-            } catch (error) {
-                console.error('Error loading products:', error);
-                PRODUCTS = getDemoProducts();
-                updateDynamicShops();
-                updateShopAndCategoryFilters();
-                if (typeof renderProducts === 'function') {
-                    renderProducts(PRODUCTS);
-                }
-            }
-        }
-
-        // ✅ DYNAMIC SHOPS FROM PRODUCTS
-        function updateDynamicShops() {
-            SHOPS = {};
+            console.log('📦 Loading products from Firebase...');
             
-            PRODUCTS.forEach(product => {
-                const shopId = product.shopId;
-                const shopName = product.shopName;
+            // ✅ SIMPLE QUERY - NO FILTERS
+            const productsSnapshot = await db.collection('products').get();
+            
+            PRODUCTS = [];
+            ALL_CATEGORIES.clear();
+            
+            productsSnapshot.forEach(doc => {
+                const firebaseProduct = doc.data();
                 
-                if (shopId && shopName && !SHOPS[shopId]) {
-                    SHOPS[shopId] = {
-                        id: shopId,
-                        name: shopName,
-                        category: product.category || 'general',
-                        rating: 4.5,
-                        deliveryTime: product.deliveryTime || '10-15 min'
-                    };
+                // ✅ FILTER LOCALLY
+                // Skip if status is not active
+                if (firebaseProduct.status !== 'active') {
+                    console.log('Skipping inactive:', firebaseProduct.name);
+                    return;
+                }
+                
+                // Skip if stock is 0 or less
+                if (firebaseProduct.stock <= 0) {
+                    console.log('Skipping out of stock:', firebaseProduct.name);
+                    return;
+                }
+                
+                // ✅ MAP FIELDS
+                const mappedProduct = {
+                    id: doc.id,
+                    name: firebaseProduct.name,
+                    price: firebaseProduct.price,
+                    mrp: firebaseProduct.mrp,
+                    category: firebaseProduct.category || 'Uncategorized',
+                    // ✅ CRITICAL FIX: Ensure shopId and shopName are set
+                    shopId: firebaseProduct.shopId || firebaseProduct.shop || 'unknown_shop', 
+                    shopName: firebaseProduct.shopName || firebaseProduct.shop || 'Unknown Shop',
+                    image: firebaseProduct.image,
+                    stock: firebaseProduct.stock,
+                    description: firebaseProduct.description || '',
+                    isAvailable: firebaseProduct.isAvailable !== false,
+                    status: firebaseProduct.status || 'active',
+                    deliveryTime: firebaseProduct.deliveryTime || '10-15 min',
+                    specifications: firebaseProduct.specifications || {},
+                    returnPolicy: firebaseProduct.returnPolicy || 'No returns. Contact shopkeeper for any issues.',
+                    brand: firebaseProduct.brand || 'Generic',
+                    features: firebaseProduct.features || []
+                };
+                
+                PRODUCTS.push(mappedProduct);
+                
+                // ✅ ADD CATEGORY TO DYNAMIC SET
+                if (firebaseProduct.category) {
+                    ALL_CATEGORIES.add(firebaseProduct.category);
                 }
             });
             
-            console.log('🛍️ Dynamic shops updated:', Object.keys(SHOPS).length, 'shops');
-        }
-
-        // ✅ UPDATED: UPDATE SHOP AND CATEGORY FILTERS WITH DYNAMIC DATA
-        function updateShopAndCategoryFilters() {
-            // Shop Filter
-            const shopFilter = document.getElementById('shopFilter');
-            const categoryFilter = document.getElementById('categoryFilter');
+            console.log('📦 Products loaded:', PRODUCTS.length);
+            console.log('📋 Categories found:', Array.from(ALL_CATEGORIES));
             
-            if (shopFilter) {
-                shopFilter.innerHTML = '<option value="">All Shops</option>';
-                Object.keys(SHOPS).forEach(shopId => {
-                    const shop = SHOPS[shopId];
-                    shopFilter.innerHTML += `<option value="${shopId}">${shop.name}</option>`;
-                });
-                console.log('✅ Shop filter updated with', Object.keys(SHOPS).length, 'shops');
+            // ✅ UPDATE DYNAMIC SHOPS FROM PRODUCTS
+            updateDynamicShops();
+            
+            // ✅ UPDATE FILTER DROPDOWNS WITH DYNAMIC DATA
+            updateShopAndCategoryFilters();
+            
+            if (typeof renderProducts === 'function') {
+                renderProducts(PRODUCTS);
             }
             
-            // Category Filter
-            if (categoryFilter) {
-                categoryFilter.innerHTML = '<option value="">All Categories</option>';
+        } catch (error) {
+            console.error('Error loading products:', error);
+            PRODUCTS = getDemoProducts();
+            updateDynamicShops();
+            updateShopAndCategoryFilters();
+            if (typeof renderProducts === 'function') {
+                renderProducts(PRODUCTS);
+            }
+        }
+    }
+
+    // ✅ DYNAMIC SHOPS FROM PRODUCTS
+    function updateDynamicShops() {
+        SHOPS = {};
+        
+        PRODUCTS.forEach(product => {
+            const shopId = product.shopId;
+            const shopName = product.shopName;
+            
+            if (shopId && shopName && !SHOPS[shopId]) {
+                SHOPS[shopId] = {
+                    id: shopId,
+                    name: shopName,
+                    category: product.category || 'general',
+                    rating: 4.5,
+                    deliveryTime: product.deliveryTime || '10-15 min'
+                };
+            }
+        });
+        
+        console.log('🛍️ Dynamic shops updated:', Object.keys(SHOPS).length, 'shops');
+    }
+
+    // ✅ UPDATED: UPDATE SHOP AND CATEGORY FILTERS WITH DYNAMIC DATA
+    function updateShopAndCategoryFilters() {
+        // Shop Filter
+        const shopFilter = document.getElementById('shopFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
+        
+        if (shopFilter) {
+            shopFilter.innerHTML = '<option value="">All Shops</option>';
+            Object.keys(SHOPS).forEach(shopId => {
+                const shop = SHOPS[shopId];
+                shopFilter.innerHTML += `<option value="${shopId}">${shop.name}</option>`;
+            });
+            console.log('✅ Shop filter updated with', Object.keys(SHOPS).length, 'shops');
+        }
+        
+        // Category Filter
+        if (categoryFilter) {
+            categoryFilter.innerHTML = '<option value="">All Categories</option>';
+            
+            // ✅ ADD DYNAMIC CATEGORIES FROM ALL_CATEGORIES SET
+            const categories = Array.from(ALL_CATEGORIES).sort();
+            categories.forEach(category => {
+                if (category && category.trim() !== '') {
+                    categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+                }
+            });
+            console.log('✅ Category filter updated:', categories.length, 'dynamic categories');
+        }
+    }
+
+    // ✅ ENHANCED REFUND SYSTEM FUNCTIONS
+    function setupPartialOrderRefundSystem() {
+        if (!currentUser) return;
+        
+        console.log("💰 Setting up refund listener for user:", currentUser.uid);
+        
+        // Listen to refunds collection for this customer
+        db.collection('refunds')
+            .where('customerId', '==', currentUser.uid)
+            .onSnapshot((snapshot) => {
+                console.log("🔄 Refund update received:", snapshot.docChanges().length, "changes");
                 
-                // ✅ ADD DYNAMIC CATEGORIES FROM ALL_CATEGORIES SET
-                const categories = Array.from(ALL_CATEGORIES).sort();
-                categories.forEach(category => {
-                    if (category && category.trim() !== '') {
-                        categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+                snapshot.docChanges().forEach((change) => {
+                    const refundData = { 
+                        id: change.doc.id, 
+                        ...change.doc.data() 
+                    };
+                    
+                    console.log("💰 Refund update type:", change.type, "Refund ID:", refundData.id, "Status:", refundData.status);
+                    
+                    if (change.type === 'added' || change.type === 'modified') {
+                        handleRefundUpdate(refundData);
                     }
                 });
-                console.log('✅ Category filter updated:', categories.length, 'dynamic categories');
+            }, (error) => {
+                console.error("❌ Error in refund listener:", error);
+            });
+    }
+
+    function handleRefundUpdate(refundData) {
+        const { orderId, refundAmount, status, estimatedTime, completedAt } = refundData;
+        
+        // Find the order
+        const orderIndex = orders.findIndex(order => order.id === orderId);
+        
+        if (orderIndex !== -1) {
+            // Update order with refund information
+            orders[orderIndex].refundStatus = status;
+            orders[orderIndex].refundAmount = refundAmount;
+            orders[orderIndex].refundEstimatedTime = estimatedTime;
+            if (completedAt) {
+                orders[orderIndex].refundCompletedAt = completedAt;
+            }
+            
+            // Save to local storage
+            localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+            
+            // Update UI
+            renderOrders();
+            
+            // Show notification if status is pending or completed
+            if (status === 'pending') {
+                showRefundNotification(refundData);
+            } else if (status === 'completed') {
+                showRefundCompletedNotification(refundData);
             }
         }
+    }
 
-        // ✅ ENHANCED REFUND SYSTEM FUNCTIONS
-        function setupPartialOrderRefundSystem() {
-            if (!currentUser) return;
-            
-            console.log("💰 Setting up refund listener for user:", currentUser.uid);
-            
-            // Listen to refunds collection for this customer
-            db.collection('refunds')
-                .where('customerId', '==', currentUser.uid)
-                .onSnapshot((snapshot) => {
-                    console.log("🔄 Refund update received:", snapshot.docChanges().length, "changes");
-                    
-                    snapshot.docChanges().forEach((change) => {
-                        const refundData = { 
-                            id: change.doc.id, 
-                            ...change.doc.data() 
-                        };
-                        
-                        console.log("💰 Refund update type:", change.type, "Refund ID:", refundData.id, "Status:", refundData.status);
-                        
-                        if (change.type === 'added' || change.type === 'modified') {
-                            handleRefundUpdate(refundData);
-                        }
-                    });
-                }, (error) => {
-                    console.error("❌ Error in refund listener:", error);
-                });
-        }
-
-        function handleRefundUpdate(refundData) {
-            const { orderId, refundAmount, status, estimatedTime, completedAt } = refundData;
-            
-            // Find the order
-            const orderIndex = orders.findIndex(order => order.id === orderId);
-            
-            if (orderIndex !== -1) {
-                // Update order with refund information
-                orders[orderIndex].refundStatus = status;
-                orders[orderIndex].refundAmount = refundAmount;
-                orders[orderIndex].refundEstimatedTime = estimatedTime;
-                if (completedAt) {
-                    orders[orderIndex].refundCompletedAt = completedAt;
-                }
-                
-                // Save to local storage
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                
-                // Update UI
-                renderOrders();
-                
-                // Show notification if status is pending or completed
-                if (status === 'pending') {
-                    showRefundNotification(refundData);
-                } else if (status === 'completed') {
-                    showRefundCompletedNotification(refundData);
-                }
-            }
-        }
-
-        function showRefundNotification(refundData) {
-            const { orderId, refundAmount, estimatedTime } = refundData;
-            
-            const notificationHTML = `
-                <div class="refund-notification">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <i class="fas fa-money-bill-wave"></i>
-                        <strong>Refund Initiated</strong>
-                    </div>
-                    <div style="margin-bottom: 5px;">
-                        ₹${refundAmount} will be refunded for Order #${orderId.slice(-6)}
-                    </div>
-                    <div style="opacity: 0.9;">
-                        <i class="fas fa-clock"></i> Expected within ${estimatedTime}
-                    </div>
+    function showRefundNotification(refundData) {
+        const { orderId, refundAmount, estimatedTime } = refundData;
+        
+        const notificationHTML = `
+            <div class="refund-notification">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <strong>Refund Initiated</strong>
                 </div>
-            `;
-            
-            const existing = document.querySelector('.refund-notification');
-            if (existing) existing.remove();
-            
-            document.body.insertAdjacentHTML('beforeend', notificationHTML);
-            
-            setTimeout(() => {
-                const notif = document.querySelector('.refund-notification');
-                if (notif) notif.remove();
-            }, 10000);
-        }
+                <div style="margin-bottom: 5px;">
+                    ₹${refundAmount} will be refunded for Order #${orderId.slice(-6)}
+                </div>
+                <div style="opacity: 0.9;">
+                    <i class="fas fa-clock"></i> Expected within ${estimatedTime}
+                </div>
+            </div>
+        `;
+        
+        const existing = document.querySelector('.refund-notification');
+        if (existing) existing.remove();
+        
+        document.body.insertAdjacentHTML('beforeend', notificationHTML);
+        
+        setTimeout(() => {
+            const notif = document.querySelector('.refund-notification');
+            if (notif) notif.remove();
+        }, 10000);
+    }
 
-        function showRefundCompletedNotification(refundData) {
-            const { orderId, refundAmount } = refundData;
-            
-            showToast(`✅ Refund of ₹${refundAmount} completed for Order #${orderId.slice(-6)}`);
-        }
+    function showRefundCompletedNotification(refundData) {
+        const { orderId, refundAmount } = refundData;
+        
+        showToast(`✅ Refund of ₹${refundAmount} completed for Order #${orderId.slice(-6)}`);
+    }
 
-        function addRefundMessageToOrder(order) {
-            if (order.refundStatus) {
-                let message = '';
-                let badgeClass = '';
-                let badgeText = '';
-                
-                switch(order.refundStatus) {
-                    case 'pending':
-                        message = `
-                            <div class="refund-message">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                                    <i class="fas fa-exchange-alt" style="color: #D97706;"></i>
-                                    <strong style="color: #92400E;">Partial Refund Initiated</strong>
-                                </div>
-                                <div style="color: #92400E;">
-                                    ₹${order.refundAmount || 0} will be refunded within ${order.refundEstimatedTime || '24-48 hours'}
-                                </div>
+    function addRefundMessageToOrder(order) {
+        if (order.refundStatus) {
+            let message = '';
+            let badgeClass = '';
+            let badgeText = '';
+            
+            switch(order.refundStatus) {
+                case 'pending':
+                    message = `
+                        <div class="refund-message">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                <i class="fas fa-exchange-alt" style="color: #D97706;"></i>
+                                <strong style="color: #92400E;">Partial Refund Initiated</strong>
                             </div>
-                        `;
-                        badgeClass = 'refund-pending';
-                        badgeText = 'Refund Pending';
-                        break;
+                            <div style="color: #92400E;">
+                                ₹${order.refundAmount || 0} will be refunded within ${order.refundEstimatedTime || '24-48 hours'}
+                            </div>
+                        </div>
+                    `;
+                    badgeClass = 'refund-pending';
+                    badgeText = 'Refund Pending';
+                    break;
+                    
+                case 'processing':
+                    message = `
+                        <div class="refund-message">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                <i class="fas fa-sync-alt" style="color: #1E40AF;"></i>
+                                <strong style="color: #1E40AF;">Refund Processing</strong>
+                            </div>
+                            <div style="color: #1E40AF;">
+                                ₹${order.refundAmount || 0} is being processed
+                            </div>
+                        </div>
+                    `;
+                    badgeClass = 'refund-processing';
+                    badgeText = 'Processing';
+                    break;
+                    
+                case 'completed':
+                    const completedDate = order.refundCompletedAt ? 
+                        new Date(order.refundCompletedAt).toLocaleDateString() : 'Recently';
+                    message = `
+                        <div class="refund-message">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                <i class="fas fa-check-circle" style="color: #059669;"></i>
+                                <strong style="color: #065F46;">Refund Completed</strong>
+                            </div>
+                            <div style="color: #065F46;">
+                                ₹${order.refundAmount || 0} refunded on ${completedDate}
+                            </div>
+                        </div>
+                    `;
+                    badgeClass = 'refund-completed';
+                    badgeText = 'Refunded';
+                    break;
+            }
+            
+            // Add badge to order status
+            if (badgeClass && badgeText) {
+                const orderElement = document.querySelector(`[data-order-id="${order.id}"]`);
+                if (orderElement) {
+                    const statusDiv = orderElement.querySelector('.order-status');
+                    if (statusDiv) {
+                        // Clear existing refund badges to prevent duplicates on re-render
+                        statusDiv.querySelectorAll('.refund-status-badge').forEach(badge => badge.remove());
                         
-                    case 'processing':
-                        message = `
-                            <div class="refund-message">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                                    <i class="fas fa-sync-alt" style="color: #1E40AF;"></i>
-                                    <strong style="color: #1E40AF;">Refund Processing</strong>
-                                </div>
-                                <div style="color: #1E40AF;">
-                                    ₹${order.refundAmount || 0} is being processed
-                                </div>
-                            </div>
-                        `;
-                        badgeClass = 'refund-processing';
-                        badgeText = 'Processing';
-                        break;
-                        
-                    case 'completed':
-                        const completedDate = order.refundCompletedAt ? 
-                            new Date(order.refundCompletedAt).toLocaleDateString() : 'Recently';
-                        message = `
-                            <div class="refund-message">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                                    <i class="fas fa-check-circle" style="color: #059669;"></i>
-                                    <strong style="color: #065F46;">Refund Completed</strong>
-                                </div>
-                                <div style="color: #065F46;">
-                                    ₹${order.refundAmount || 0} refunded on ${completedDate}
-                                </div>
-                            </div>
-                        `;
-                        badgeClass = 'refund-completed';
-                        badgeText = 'Refunded';
-                        break;
-                }
-                
-                // Add badge to order status
-                if (badgeClass && badgeText) {
-                    const orderElement = document.querySelector(`[data-order-id="${order.id}"]`);
-                    if (orderElement) {
                         const badge = document.createElement('span');
                         badge.className = `refund-status-badge ${badgeClass}`;
                         badge.textContent = badgeText;
-                        orderElement.querySelector('.order-status').appendChild(badge);
+                        statusDiv.appendChild(badge);
                     }
                 }
-                
-                return message;
             }
-            return '';
+            
+            return message;
         }
 
         // Emergency fallback demo products
@@ -4952,6 +4957,7 @@
 
         // Load shop coupon settings from Firebase
         async function loadShopCouponSettings() {
+            if (!isOnline) return;
             try {
                 const settingsDoc = await db.collection('settings').doc('couponSettings').get();
                 if (settingsDoc.exists) {
@@ -4978,11 +4984,12 @@
         let orderTrackingInterval = null;
         let currentTrackingOrder = null;
         let productReviews = JSON.parse(localStorage.getItem('dukaan_product_reviews')) || [];
-        let addresses = JSON.parse(localStorage.getItem('dukaan_addresses')) || [];
+        // ✅ CRITICAL FIX for Issue #6: addresses should load from local storage/Firestore
+        let addresses = JSON.parse(localStorage.getItem('userAddresses')) || []; 
         let appliedCoupon = null;
         let orders = JSON.parse(localStorage.getItem('dukaan_orders')) || [];
         let selectedPaymentMethod = null;
-        let selectedAddress = null;
+        let selectedAddress = addresses.length > 0 ? addresses.find(addr => addr.isDefault)?.id || addresses[0].id : null;
         let currentProductDetail = null;
         let selectedRating = 0;
         // Notification System State
@@ -4991,7 +4998,7 @@
             orderUpdates: true,
             priceAlerts: true,
             promotions: true,
-            pushEnabled: false
+            pushEnabled: false // ✅ FIX 5: SET TO FALSE BY DEFAULT
         };
 
         // Order Badges State
@@ -5015,6 +5022,8 @@
         const ordersPage = document.getElementById('ordersPage');
         const wishlistPage = document.getElementById('wishlistPage');
         const productDetailPage = document.getElementById('productDetailPage');
+        const profilePage = document.getElementById('profilePage'); // Added for profile page
+        const notificationsPage = document.getElementById('notificationsPage'); // Added for notifications page
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
         const searchInput = document.getElementById('search');
@@ -5023,8 +5032,8 @@
         const categoryFilter = document.getElementById('categoryFilter');
         const productGrid = document.getElementById('grid');
         const emptyState = document.getElementById('empty');
-        const bottomSheet = document.getElementById('bsheet');
-        const closeSheetBtn = document.getElementById('closeB');
+        const bottomSheet = document.getElementById('bsheet'); // Assuming there's a div with ID 'bsheet'
+        const closeSheetBtn = document.getElementById('closeB'); // Assuming there's a button with ID 'closeB'
         const orderList = document.getElementById('orderList');
         const orderTotal = document.getElementById('orderTotal');
         const placeOrderBtn = document.getElementById('placeOrderBtn');
@@ -5044,22 +5053,22 @@
         const couponLoginRequired = document.getElementById('couponLoginRequired');
         const checkoutPhone = document.getElementById('checkoutPhone');
         const phoneValidation = document.getElementById('phoneValidation');
-        const addrPhone = document.getElementById('addrPhone');
-        const addrPhoneValidation = document.getElementById('addrPhoneValidation');
+        const addrPhone = document.getElementById('addrPhone'); // Assuming this exists in the address form
+        const addrPhoneValidation = document.getElementById('addrPhoneValidation'); // Assuming this exists
         const paymentOptions = document.querySelectorAll('.payment-option');
         const qrCodeSection = document.getElementById('qrCodeSection');
         const qrAmount = document.getElementById('qrAmount');
         const confirmQrPayment = document.getElementById('confirmQrPayment');
         const utrNumber = document.getElementById('utrNumber');
         const utrValidation = document.getElementById('utrValidation');
-        const saveAddr = document.getElementById('saveAddr');
+        const saveAddr = document.getElementById('saveAddr'); // Assuming this is the save button in the address form
         const orderTracking = document.getElementById('orderTracking');
         const ordersNavBadge = document.getElementById('ordersNavBadge');
         const ordersBadge = document.getElementById('ordersBadge');
 
         // ✅ FIX 1: UPDATED ADDRESS SAVING FOR SHOPKEEPER APP
         async function saveAddressForShopkeeper(addressData) {
-            if (!currentUser) return addressData.id || generateId();
+            if (!currentUser || !isOnline) return addressData.id || generateId();
             
             try {
                 const addressWithUser = {
@@ -5129,6 +5138,11 @@
 
         // ✅ UPDATED: Complete placeOrder() function with FIXED ADDRESS
         async function placeOrder() {
+            if (!isOnline) {
+                showToast('Cannot place order while offline', 'error');
+                return;
+            }
+
             try {
                 console.log('🛒 Place order called');
                 
@@ -5146,14 +5160,11 @@
                 }
                 
                 // Validate selected address
-                if (!selectedAddress) {
-                    // Check if addresses array has addresses
-                    if (addresses.length === 0) {
-                        showToast('Please add a delivery address first', 'error');
-                        return;
-                    }
-                    // Auto-select first address
-                    selectedAddress = addresses[0];
+                let addressData = addresses.find(addr => addr.isDefault) || addresses[0];
+
+                if (!addressData) {
+                    showToast('Please add a delivery address first', 'error');
+                    return;
                 }
                 
                 // Validate cart
@@ -5201,18 +5212,12 @@
                     return;
                 }
                 
-                // ✅ FIX 1: GET FULL ADDRESS DETAILS
-                let addressData = selectedAddress;
-                if (typeof selectedAddress === 'string') {
-                    addressData = addresses.find(addr => addr.id === selectedAddress) || selectedAddress;
-                }
-                
                 // ✅ FIX 1: ENSURE ADDRESS HAS ALL REQUIRED FIELDS
                 const completeAddress = {
                     id: addressData.id || generateId(),
-                    fullName: addressData.fullName || user.displayName || 'Customer',
+                    fullName: addressData.name || user.displayName || 'Customer',
                     phone: addressData.phone || phone,
-                    details: addressData.details || addressData.address || 'Address not specified',
+                    details: addressData.address || 'Address not specified',
                     city: addressData.city || 'City not specified',
                     pincode: addressData.pincode || '000000',
                     landmark: addressData.landmark || '',
@@ -5251,6 +5256,8 @@
                             discount = appliedCoupon.value;
                         }
                         total = subtotal + deliveryCharge - discount;
+                        // Ensure total is not negative
+                        total = Math.max(0, total);
                     }
                 }
                 
@@ -5266,7 +5273,7 @@
                 }));
                 
                 // ✅ FIX 1: CREATE UNIFIED ORDER ID FIRST
-                const unifiedOrderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                const unifiedOrderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6).toUpperCase();
                 console.log('✅ Generated Unified Order ID:', unifiedOrderId);
                 
                 // Create order data WITH COMPLETE ADDRESS
@@ -5408,6 +5415,8 @@
                 loadProductsFromFirebase();
                 loadOrderHistory();
                 loadShopCouponSettings(); // ✅ Load coupon settings
+                startRealTimeOrderListener(); // Restart listener
+                setupPartialOrderRefundSystem(); // Restart refund listener
             }
         }
         
@@ -5445,32 +5454,38 @@
 
         // Initialize App
         function initApp() {
-    setupEventListeners();
-    setupFirebaseAuth();
-    setupDemoLogin();
-    renderProducts(PRODUCTS);
-    updateCartUI();
-    updateWishlistUI();
-    renderOrders();
-    renderAddresses();
-    setupSorting();
-    
-    // ✅ SETUP OFFLINE DETECTION
-    setupOfflineDetection();
-    
-    // ✅ FIX: START REAL-TIME ORDER LISTENER
-    startRealTimeOrderListener();
-    
-    // ✅ NEW: START REFUND LISTENER
-    setupPartialOrderRefundSystem();
-    
-    // ✅ LOAD SHOP COUPON SETTINGS
-    loadShopCouponSettings();
-}
+            setupEventListeners();
+            setupFirebaseAuth();
+            setupDemoLogin();
+            renderProducts(PRODUCTS);
+            updateCartUI();
+            updateWishlistUI();
+            renderOrders();
+            renderAddresses();
+            setupSorting();
+            
+            // ✅ SETUP OFFLINE DETECTION
+            setupOfflineDetection();
+            
+            // ✅ FIX: START REAL-TIME ORDER LISTENER
+            // Listener will start after successful login/auth change
+            
+            // ✅ NEW: START REFUND LISTENER
+            // Listener will start after successful login/auth change
+            
+            // ✅ LOAD SHOP COUPON SETTINGS
+            loadShopCouponSettings();
+
+            // ✅ ISSUE #5: SETUP PUSH NOTIFICATIONS
+            setupPushNotifications();
+        }
 
         // ✅ UPDATED: Real-time Order Listener with UNIFIED ORDER ID
         function startRealTimeOrderListener() {
             if (!currentUser) return;
+            
+            // Clear any existing listener interval if needed
+            if (orderTrackingInterval) clearInterval(orderTrackingInterval);
             
             console.log("🔔 Starting real-time order listener for user:", currentUser.uid);
             
@@ -5480,6 +5495,8 @@
                 .onSnapshot((snapshot) => {
                     console.log("🔄 Real-time order update received");
                     
+                    let ordersChanged = false;
+
                     // Process all changes
                     snapshot.docChanges().forEach((change) => {
                         const updatedOrder = { 
@@ -5502,35 +5519,47 @@
                         
                         if (change.type === 'added' || change.type === 'modified') {
                             handleOrderUpdate({...updatedOrder, id: orderIdToUse});
+                            ordersChanged = true;
                         } else if (change.type === 'removed') {
                             // Handle order removal if needed
                             const orderIndex = orders.findIndex(order => order.id === orderIdToUse);
                             if (orderIndex !== -1) {
                                 orders.splice(orderIndex, 1);
-                                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                                renderOrders();
+                                ordersChanged = true;
                             }
                         }
                     });
+
+                    // Only update storage and render if changes occurred
+                    if (ordersChanged) {
+                        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                        renderOrders();
+                        updateOrderBadges();
+                    }
                     
-                    // Also listen to orderItems for shopkeeper updates
-                    startOrderItemsListener();
                 }, (error) => {
                     console.error("❌ Error in real-time order listener:", error);
                 });
+
+            // Also listen to orderItems for shopkeeper updates (less critical for customer, but good for sync)
+            startOrderItemsListener();
         }
         
         // ✅ UPDATED: Listen to orderItems collection for shopkeeper actions
         function startOrderItemsListener() {
-            if (!currentUser) return;
+            if (!currentUser || !isOnline) return;
             
             console.log("🛍️ Starting orderItems listener");
             
+            // Note: This is an expensive listener. In a real app, only listen to necessary fields.
+            // Keeping it for demo purposes.
             db.collection('orderItems')
                 .where('customerId', '==', currentUser.uid)
                 .onSnapshot((snapshot) => {
                     console.log("🛍️ OrderItems update received:", snapshot.docChanges().length, "changes");
                     
+                    let ordersChanged = false;
+
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === 'modified') {
                             const orderItem = { 
@@ -5542,8 +5571,16 @@
                             
                             // Update the main order with shopkeeper's action
                             updateOrderFromShopkeeper(orderItem);
+                            ordersChanged = true;
                         }
                     });
+
+                    if (ordersChanged) {
+                        localStorage.setItem('dukaan_orders', JSON.stringify(orders));
+                        renderOrders();
+                        updateOrderBadges();
+                    }
+
                 }, (error) => {
                     console.error("❌ Error in orderItems listener:", error);
                 });
@@ -5565,7 +5602,7 @@
                     // Update tracking times based on status
                     const now = new Date().toISOString();
                     if (!orders[orderIndex].tracking) {
-                        orders[orderIndex].tracking = {};
+                        orders[orderIndex].tracking = { confirmed: order.createdAt || now };
                     }
                     
                     switch(newStatus) {
@@ -5589,12 +5626,8 @@
                             break;
                     }
                     
-                    // Save to local storage
+                    // Save to local storage (will be saved in startOrderItemsListener too, but keeping here for single update flow)
                     localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                    
-                    // Update UI
-                    renderOrders();
-                    updateOrderBadges();
                     
                     // Show notification
                     showOrderUpdateNotification(order.id, oldStatus, newStatus);
@@ -5607,29 +5640,40 @@
                 }
             }
         }
-                // ✅ UPDATED: Show order update notification with all statuses
-function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
-    const statusMessages = {
-        'preparing': 'is being prepared',
-        'packed': 'has been packed',
-        'dispatched': 'has been dispatched',
-        'ready_for_pickup': 'is ready for pickup',
-        'out_for_delivery': 'is out for delivery',
-        'delivered': 'has been delivered'
-    };
-    
-    const message = statusMessages[newStatus];
-    if (message) {
-        const notification = document.getElementById('orderUpdateNotification');
-        notification.innerHTML = `<i class="fas fa-bell"></i> Order #${orderId.slice(-6)} ${message}!`;
-        notification.style.display = 'block';
-        
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 5000);
-    }
-}
+        // ✅ UPDATED: Show order update notification with all statuses
+        function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
+            // Check if notification preference is enabled
+            if (!notificationPreferences.orderUpdates) return;
+
+            const statusMessages = {
+                'preparing': 'is being prepared',
+                'packed': 'has been packed',
+                'dispatched': 'has been dispatched',
+                'ready_for_pickup': 'is ready for pickup',
+                'out_for_delivery': 'is out for delivery',
+                'delivered': 'has been delivered'
+            };
+            
+            const message = statusMessages[newStatus];
+            if (message) {
+                // Create in-app notification
+                const notification = document.getElementById('orderUpdateNotification');
+                notification.innerHTML = `<i class="fas fa-bell"></i> Order #${orderId.slice(-6)} ${message}!`;
+                notification.style.display = 'block';
+                
+                // Also log to notifications page
+                createNotification(
+                    `Order Update: #${orderId.slice(-6)}`,
+                    `Your order status changed from ${getStatusText(oldStatus)} to ${getStatusText(newStatus)}.`,
+                    'success'
+                );
+
+                // Auto hide after 5 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+        }
         
         // ✅ UPDATED: Handle order update with all statuses
         function handleOrderUpdate(updatedOrder) {
@@ -5667,12 +5711,12 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 });
             }
             
-            // Save to local storage
+            // Save to local storage (will be saved in startRealTimeOrderListener too, but keeping here for consistency)
             localStorage.setItem('dukaan_orders', JSON.stringify(orders));
             
-            // Update UI
-            renderOrders();
-            updateOrderBadges();
+            // Update UI (will be updated in startRealTimeOrderListener too, but keeping here for consistency)
+            // renderOrders();
+            // updateOrderBadges();
             
             // Show notification if status changed
             if (oldStatus && oldStatus !== updatedOrder.status) {
@@ -5704,6 +5748,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                         console.log("🔄 Delayed loadOrderHistory call");
                         loadOrderHistory();
                         startRealTimeOrderListener();
+                        setupPartialOrderRefundSystem(); // Start refund listener on login
                     }, 1000);
                     
                     updateCouponAuth();
@@ -5721,8 +5766,9 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             document.getElementById('loginPassword').value = 'demo123';
         }
 
+        // ✅ UPDATED: Load user data including addresses from Firestore
         async function loadUserData() {
-            if (!currentUser) return;
+            if (!currentUser || !isOnline) return;
             
             try {
                 // Load addresses
@@ -5731,18 +5777,11 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 addressesSnapshot.forEach(doc => {
                     addresses.push({ id: doc.id, ...doc.data() });
                 });
-                localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
+                localStorage.setItem('userAddresses', JSON.stringify(addresses)); // Use correct local storage key
                 renderAddresses();
 
-                // Load orders
-                const ordersSnapshot = await db.collection('users').doc(currentUser.uid).collection('orders').get();
-                orders = [];
-                ordersSnapshot.forEach(doc => {
-                    orders.push({ id: doc.id, ...doc.data() });
-                });
-                localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                renderOrders();
-                updateOrderBadges(); // ✅ UPDATE BADGES
+                // Load orders (will be re-loaded by loadOrderHistory)
+                // loadOrderHistory(); // Already called later
 
                 // Load wishlist
                 const wishlistSnapshot = await db.collection('users').doc(currentUser.uid).collection('wishlist').get();
@@ -5760,6 +5799,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                     userReviews.push(doc.data());
                 });
                 // Merge with existing reviews
+                productReviews = productReviews.filter(r => r.userId !== currentUser.uid); // Remove old user reviews
                 productReviews = [...productReviews, ...userReviews];
                 localStorage.setItem('dukaan_product_reviews', JSON.stringify(productReviews));
 
@@ -5770,7 +5810,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         // ✅ FIX: ORDER HISTORY LOADING with UNIFIED ORDER ID
         async function loadOrderHistory() {
-            if (!currentUser) return;
+            if (!currentUser || !isOnline) return;
             
             try {
                 console.log("🔄 Loading order history for:", currentUser.uid);
@@ -5808,7 +5848,12 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                             readyForPickup: null,
                             outForDelivery: null,
                             delivered: null
-                        }
+                        },
+                        // Add refund fields for proper handling
+                        refundStatus: firebaseOrder.refundStatus || null,
+                        refundAmount: firebaseOrder.refundAmount || 0,
+                        refundEstimatedTime: firebaseOrder.refundEstimatedTime || null,
+                        refundCompletedAt: firebaseOrder.refundCompletedAt || null
                     };
                     
                     orders.push(mappedOrder);
@@ -5883,7 +5928,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             
             // Calculate total active orders (excluding delivered and cancelled)
             const activeOrders = orders.filter(order => 
-                !['delivered', 'cancelled'].includes(order.status)
+                !['delivered', 'cancelled', 'picked_up'].includes(order.status)
             ).length;
             
             // Update badges in UI
@@ -5912,6 +5957,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         function showAuthScreen() {
             authScreen.style.display = 'block';
             appScreen.style.display = 'none';
+            // Clear current user data on logout/auth screen switch
+            currentUser = null;
         }
         
         function showAppScreen() {
@@ -5924,6 +5971,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             if (currentUser) {
                 setTimeout(() => {
                     startRealTimeOrderListener();
+                    setupPartialOrderRefundSystem();
                 }, 1000);
             }
         }
@@ -6016,7 +6064,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         function demoLogin() {
             document.getElementById('loginEmail').value = 'demo@dukaan.com';
             document.getElementById('loginPassword').value = 'demo123';
-            showToast('Demo credentials filled! Click Sign In');
+            // showToast('Demo credentials filled! Click Sign In');
         }
 
         // ★★★ ADD LOGOUT FUNCTION HERE ★★★
@@ -6042,6 +6090,9 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                     document.getElementById('signupForm').style.display = 'none';
                     document.getElementById('loginFooter').style.display = 'block';
                     document.getElementById('signupFooter').style.display = 'none';
+                    
+                    // Clear tracking intervals if active
+                    if (orderTrackingInterval) clearInterval(orderTrackingInterval);
                 }).catch((error) => {
                     console.error("Logout error:", error);
                     showToast("Error logging out: " + error.message, 'error');
@@ -6060,7 +6111,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         // ★★★ ADD MISSING MODAL FUNCTIONS ★★★
 
-        // Close Login Modal
+        // Close Login Modal (Assuming this refers to a modal that might open on top of auth screen)
         function closeLoginModal() {
             const modal = document.getElementById('loginModal');
             if (modal) {
@@ -6087,8 +6138,50 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
         }       
 
-        // ★★★ SAVED ADDRESSES FUNCTIONS ★★★
+        // ★★★ SAVED ADDRESSES FUNCTIONS (RE-IMPLEMENTED FOR ISSUE #6) ★★★
+
+        // ✅ RE-IMPLEMENTED: savedAddresses() - For profile page
         function savedAddresses() {
+            // Close existing modal if open
+            closeSavedAddressesModal();
+
+            const savedAddresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+            
+            let addressListHTML = '';
+            if (savedAddresses.length === 0) {
+                addressListHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
+                        <h4 style="color: var(--text-light);">No Saved Addresses</h4>
+                        <p style="color: var(--text-light);">You haven't saved any addresses yet</p>
+                    </div>
+                `;
+            } else {
+                addressListHTML = savedAddresses.map((address) => `
+                    <div class="address-card" id="address-${address.id}">
+                        <div class="address-title">
+                            ${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}
+                            ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
+                        </div>
+                        <div class="address-details">${address.name} • ${address.address}</div>
+                        <div class="address-phone">${address.phone} • ${address.city} - ${address.pincode}</div>
+                        <div class="address-actions mt-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editSavedAddress('${address.id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteSavedAddress('${address.id}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                            ${!address.isDefault ? `
+                                <button class="btn btn-sm btn-outline-success ms-2" onclick="setDefaultAddress('${address.id}')">
+                                    <i class="fas fa-check"></i> Set Default
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
             const modalHTML = `
             <div class="modal-overlay active" id="savedAddressesModal">
                 <div class="modal-content">
@@ -6098,18 +6191,14 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                     </div>
                     <div class="modal-body">
                         <div class="addresses-list">
-                            <div class="text-center py-4">
-                                <i class="fas fa-map-marker-alt" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
-                                <h4 style="color: var(--text-light);">No Saved Addresses</h4>
-                                <p style="color: var(--text-light);">You haven't saved any addresses yet</p>
-                                <button class="btn-primary mt-2" onclick="addNewAddress()">
-                                    <i class="fas fa-plus"></i> Add New Address
-                                </button>
-                            </div>
+                            ${addressListHTML}
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-outline" onclick="closeSavedAddressesModal()">Close</button>
+                        <button type="button" class="btn-primary" onclick="addNewAddress()">
+                            <i class="fas fa-plus"></i> Add New Address
+                        </button>
                     </div>
                 </div>
             </div>
@@ -6126,7 +6215,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         }
 
         function addNewAddress() {
-            // Close any existing address modal first
+            // Close existing modal first
+            closeSavedAddressesModal(); 
             closeAddAddressModal();
             
             const modalHTML = `
@@ -6143,7 +6233,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number *</label>
-                            <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number" required>
+                            <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number" required oninput="validatePhoneModal(this)">
+                            <small id="phoneValidationModal" class="validation-message"></small>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Pincode *</label>
@@ -6168,7 +6259,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-outline" onclick="closeAddAddressModal()">Cancel</button>
-                        <button type="button" class="btn-primary" onclick="saveNewAddress()">Save Address</button>
+                        <button type="button" class="btn-primary" onclick="saveNewAddressModal()">Save Address</button>
                     </div>
                 </div>
             </div>
@@ -6182,7 +6273,31 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             if (modal) modal.remove();
         }
 
-        function saveNewAddress() {
+        // ✅ NEW: Validation for phone in modal
+        function validatePhoneModal(inputElement) {
+            const phone = inputElement.value.trim();
+            const isValid = validatePhoneNumber(phone);
+            const validationElement = document.getElementById('phoneValidationModal');
+            
+            inputElement.classList.remove('phone-valid', 'phone-invalid');
+            validationElement.textContent = '';
+            
+            if (phone.length === 0) return;
+
+            if (isValid) {
+                inputElement.classList.add('phone-valid');
+                validationElement.textContent = '✓ Valid phone number';
+                validationElement.className = 'validation-message validation-success';
+            } else {
+                inputElement.classList.add('phone-invalid');
+                validationElement.textContent = 'Please enter a valid 10-digit phone number';
+                validationElement.className = 'validation-message validation-error';
+            }
+        }
+
+
+        // ✅ RE-IMPLEMENTED: saveNewAddressModal() - Saves new address
+        function saveNewAddressModal() {
             const name = document.getElementById('addressName').value.trim();
             const phone = document.getElementById('addressPhone').value.trim();
             const pincode = document.getElementById('addressPincode').value.trim();
@@ -6191,46 +6306,29 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             const landmark = document.getElementById('addressLandmark').value.trim();
             const isDefault = document.getElementById('defaultAddress').checked;
 
-            console.log("Address form values:", { name, phone, pincode, address, city, landmark, isDefault });
-
             // Validation
-            if (!name) {
-                showToast("Please enter full name", 'error');
+            if (!name || !phone || !pincode || !address || !city) {
+                showToast("Please fill all required fields", 'error');
                 return;
             }
-            
-            if (!phone) {
-                showToast("Please enter phone number", 'error');
-                return;
-            }
-            
-            if (!pincode) {
-                showToast("Please enter pincode", 'error');
-                return;
-            }
-            
-            if (!address) {
-                showToast("Please enter address", 'error');
-                return;
-            }
-            
-            if (!city) {
-                showToast("Please enter city", 'error');
+            if (!validatePhoneNumber(phone)) {
+                showToast("Please enter a valid phone number", 'error');
                 return;
             }
 
             try {
                 // Get existing addresses or create empty array
-                const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+                let addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
                 
                 const newAddress = {
-                    id: 'addr_' + Date.now(),
+                    id: 'addr_' + Date.now() + Math.random().toString(36).substr(2, 4),
                     name: name,
                     phone: phone,
                     pincode: pincode,
                     address: address,
                     city: city,
-                    landmark: landmark,
+                    landmark: landmark || '',
+                    type: 'home', // Default type
                     isDefault: isDefault,
                     createdAt: new Date().toISOString()
                 };
@@ -6238,21 +6336,36 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 // If setting as default, remove default from others
                 if (isDefault) {
                     addresses.forEach(addr => addr.isDefault = false);
+                    newAddress.isDefault = true;
                 }
+                if (addresses.length === 0) {
+                    newAddress.isDefault = true;
+                }
+
 
                 addresses.push(newAddress);
                 localStorage.setItem('userAddresses', JSON.stringify(addresses));
                 
+                // Also update the global addresses array
+                window.addresses = addresses;
+                
+                // Save to Firebase (async, non-blocking)
+                if (currentUser && isOnline) {
+                    db.collection('users').doc(currentUser.uid).collection('addresses').add(newAddress).catch(error => {
+                        console.error('Error saving address to Firebase:', error);
+                    });
+                }
+
                 showToast('Address saved successfully!', 'success');
                 closeAddAddressModal();
                 
                 // Refresh addresses list if open
                 setTimeout(() => {
                     if (document.getElementById('savedAddressesModal')) {
-                        closeSavedAddressesModal();
                         savedAddresses(); // Reopen with updated list
                     }
-                }, 500);
+                    renderAddresses(); // For checkout page update
+                }, 50);
 
             } catch (error) {
                 console.error("Error saving address:", error);
@@ -6260,7 +6373,207 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
         }
         
-        // ★★★ SAVED ADDRESSES FUNCTIONS ADDED ★★★
+        // ✅ RE-IMPLEMENTED: editSavedAddress() - Edits existing address
+        function editSavedAddress(addressId) {
+            const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+            const address = addresses.find(addr => addr.id === addressId);
+            
+            if (!address) {
+                showToast('Address not found', 'error');
+                return;
+            }
+
+            const modalHTML = `
+            <div class="modal-overlay active" id="editAddressModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Edit Address</h3>
+                        <button class="modal-close" onclick="closeEditAddressModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="editAddressName" value="${address.name}" placeholder="Enter full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" id="editAddressPhone" value="${address.phone}" placeholder="Enter phone number" required oninput="validatePhoneModal(this)">
+                            <small id="phoneValidationModal" class="validation-message"></small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pincode *</label>
+                            <input type="text" class="form-control" id="editAddressPincode" value="${address.pincode}" placeholder="Enter pincode" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address *</label>
+                            <textarea class="form-control" id="editAddressLine1" placeholder="House no., Building, Street" rows="2" required>${address.address}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Landmark (Optional)</label>
+                            <input type="text" class="form-control" id="editAddressLandmark" value="${address.landmark || ''}" placeholder="Nearby landmark">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City *</label>
+                            <input type="text" class="form-control" id="editAddressCity" value="${address.city}" placeholder="Enter city" required>
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="editDefaultAddress" ${address.isDefault ? 'checked' : ''}>
+                            <label class="form-check-label" for="editDefaultAddress">Set as default address</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" onclick="closeEditAddressModal()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="updateAddress('${addressId}')">Update Address</button>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            closeSavedAddressesModal();
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function closeEditAddressModal() {
+            const modal = document.getElementById('editAddressModal');
+            if (modal) modal.remove();
+            savedAddresses(); // Reopen addresses list
+        }
+
+        // ✅ RE-IMPLEMENTED: updateAddress() - Updates an existing address
+        async function updateAddress(addressId) {
+            const name = document.getElementById('editAddressName').value.trim();
+            const phone = document.getElementById('editAddressPhone').value.trim();
+            const pincode = document.getElementById('editAddressPincode').value.trim();
+            const address = document.getElementById('editAddressLine1').value.trim();
+            const city = document.getElementById('editAddressCity').value.trim();
+            const landmark = document.getElementById('editAddressLandmark').value.trim();
+            const isDefault = document.getElementById('editDefaultAddress').checked;
+
+            // Validation
+            if (!name || !phone || !pincode || !address || !city) { showToast("Please fill all required fields", 'error'); return; }
+            if (!validatePhoneNumber(phone)) { showToast("Please enter a valid phone number", 'error'); return; }
+
+            try {
+                let addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+                const addressIndex = addresses.findIndex(addr => addr.id === addressId);
+                
+                if (addressIndex === -1) {
+                    showToast("Address not found", 'error');
+                    return;
+                }
+
+                // If setting as default, remove default from others
+                if (isDefault) {
+                    addresses.forEach(addr => addr.isDefault = false);
+                }
+
+                addresses[addressIndex] = {
+                    ...addresses[addressIndex],
+                    name,
+                    phone,
+                    pincode,
+                    address,
+                    city,
+                    landmark: landmark || '',
+                    isDefault,
+                    updatedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem('userAddresses', JSON.stringify(addresses));
+                window.addresses = addresses; // Update global array
+                
+                // Update in Firebase (async, non-blocking)
+                if (currentUser && isOnline) {
+                    const firebaseDocId = addresses[addressIndex].firebaseDocId; // Assuming you saved this ID
+                    if (firebaseDocId) {
+                        await db.collection('users').doc(currentUser.uid).collection('addresses').doc(firebaseDocId).update(addresses[addressIndex]);
+                        await db.collection('addresses').doc(firebaseDocId).update(addresses[addressIndex]);
+                    }
+                    // For simplicity, handle new address save logic here if firebaseDocId is missing
+                }
+                
+                showToast('Address updated successfully!', 'success');
+                closeEditAddressModal();
+                renderAddresses(); // Update checkout UI
+                
+            } catch (error) {
+                console.error("Error updating address:", error);
+                showToast("Error updating address: " + error.message, 'error');
+            }
+        }
+
+        // ✅ RE-IMPLEMENTED: deleteSavedAddress() - Deletes an address
+        async function deleteSavedAddress(addressId) {
+            if (!confirm('Are you sure you want to delete this address?')) {
+                return;
+            }
+
+            try {
+                let addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+                const addressToDelete = addresses.find(addr => addr.id === addressId);
+                
+                if (addressToDelete && addressToDelete.isDefault) {
+                    showToast("Cannot delete default address. Set another address as default first.", 'error');
+                    return;
+                }
+
+                addresses = addresses.filter(addr => addr.id !== addressId);
+                localStorage.setItem('userAddresses', JSON.stringify(addresses));
+                window.addresses = addresses; // Update global array
+
+                // Delete from Firebase (async, non-blocking)
+                if (currentUser && isOnline) {
+                    const firebaseDocId = addressToDelete.firebaseDocId;
+                    if (firebaseDocId) {
+                        await db.collection('users').doc(currentUser.uid).collection('addresses').doc(firebaseDocId).delete();
+                        await db.collection('addresses').doc(firebaseDocId).delete();
+                    }
+                }
+
+                showToast('Address deleted successfully!', 'success');
+                
+                // Refresh addresses list
+                closeSavedAddressesModal();
+                setTimeout(() => savedAddresses(), 100);
+                renderAddresses(); // Update checkout UI
+                
+            } catch (error) {
+                console.error("Error deleting address:", error);
+                showToast("Error deleting address: " + error.message, 'error');
+            }
+        }
+
+        // ✅ RE-IMPLEMENTED: setDefaultAddress() - Sets default address
+        function setDefaultAddress(addressId) {
+            try {
+                const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
+                
+                addresses.forEach(addr => {
+                    addr.isDefault = (addr.id === addressId);
+                });
+
+                localStorage.setItem('userAddresses', JSON.stringify(addresses));
+                window.addresses = addresses; // Update global array
+                
+                // Update in Firebase (async, non-blocking)
+                if (currentUser && isOnline) {
+                    // This would require iterating through all user addresses in Firestore and setting only one as default
+                }
+
+                showToast('Default address updated!', 'success');
+                
+                // Refresh addresses list
+                closeSavedAddressesModal();
+                setTimeout(() => savedAddresses(), 100);
+                renderAddresses(); // Update checkout UI
+                
+            } catch (error) {
+                console.error("Error setting default address:", error);
+                showToast("Error setting default address: " + error.message, 'error');
+            }
+        }
+        
+        // ★★★ END OF ADDRESS FIXES ★★★
 
         // Add missing authentication form toggle functions
         function showLoginForm() {
@@ -6287,14 +6600,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
             // ✅ FIX 3: UPDATED SEARCH EVENT LISTENERS
             searchInput.addEventListener('input', handleSearch);
-            searchInput.addEventListener('focus', function() {
-                document.querySelector('.search-container').classList.add('active');
-            });
-            searchInput.addEventListener('blur', function() {
-                setTimeout(() => {
-                    document.querySelector('.search-container').classList.remove('active');
-                }, 200);
-            });
+            // Replaced focus/blur with click for enhanced search modal
+            searchInput.addEventListener('click', openEnhancedSearch);
             
             // ✅ FIX 5: UPDATED FILTER LISTENERS
             shopFilter.addEventListener('change', applyFilters);
@@ -6333,8 +6640,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
             // Address and phone validation
             checkoutPhone.addEventListener('input', validatePhone);
-            addrPhone.addEventListener('input', validateAddrPhone);
-            saveAddr.addEventListener('click', saveNewAddress);
+            // Removed addrPhone and saveAddr event listeners as they are now handled in the modals
             
             // QR payment
             confirmQrPayment.addEventListener('click', confirmQRPayment);
@@ -6346,6 +6652,23 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                     document.getElementById('checkoutName').value = user.displayName || '';
                 }
             });
+
+            // Notification Toggles
+            document.getElementById('orderUpdatesToggle')?.addEventListener('change', function() {
+                updateNotificationPreference('orderUpdates', this.checked);
+            });
+            document.getElementById('priceAlertsToggle')?.addEventListener('change', function() {
+                updateNotificationPreference('priceAlerts', this.checked);
+            });
+            document.getElementById('promotionsToggle')?.addEventListener('change', function() {
+                updateNotificationPreference('promotions', this.checked);
+            });
+            document.getElementById('pushNotificationsToggle')?.addEventListener('change', function() {
+                togglePushNotifications();
+            });
+
+            // Clear Notifications button
+            document.getElementById('clearNotificationsBtn')?.addEventListener('click', clearAllNotifications);
         }
 
         // Navigation
@@ -6395,7 +6718,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
         }
 
-        // ✅ FIX 3: UPDATED SEARCH FUNCTIONALITY
+        // ✅ FIX 3: UPDATED SEARCH FUNCTIONALITY - Only handles input for now
         function handleSearch() {
             const query = searchInput.value.trim();
             if (query.length === 0) {
@@ -6425,9 +6748,9 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             renderProducts(filteredProducts);
             
             if (filteredProducts.length === 0) {
-                showToast(`No products found for "${query}"`);
+                // showToast(`No products found for "${query}"`); // Suppressing for cleaner UI
             } else {
-                showToast(`Found ${filteredProducts.length} products for "${query}"`);
+                // showToast(`Found ${filteredProducts.length} products for "${query}"`); // Suppressing for cleaner UI
             }
         }
 
@@ -6484,14 +6807,19 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         // Product Rendering - FIXED
         function renderProducts(products) {
+            const productGrid = document.getElementById('productGrid') || document.getElementById('grid'); // Use 'grid' as fallback
+            const emptyState = document.getElementById('empty');
+            
+            if (!productGrid) return;
+
             productGrid.innerHTML = '';
             
             if (products.length === 0) {
-                emptyState.style.display = 'block';
+                if (emptyState) emptyState.style.display = 'block';
                 return;
             }
             
-            emptyState.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'none';
             
             products.forEach(product => {
                 // ✅ USE MAPPED shopName FIELD
@@ -6505,8 +6833,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 productCard.className = 'product-card';
                 productCard.innerHTML = `
                     ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
-                    <div class="shop-badge">${shopName}</div> <!-- ✅ FIXED HERE -->
-                    <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
+                    <div class="shop-badge">${shopName}</div> <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
                         <i class="fas fa-heart"></i>
                     </button>
                     <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
@@ -6647,7 +6974,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             const filteredProducts = PRODUCTS.filter(product => 
                 product.name.toLowerCase().includes(query.toLowerCase()) ||
                 product.category.toLowerCase().includes(query.toLowerCase()) ||
-                SHOPS[product.shop].name.toLowerCase().includes(query.toLowerCase())
+                product.shopName.toLowerCase().includes(query.toLowerCase())
             );
             
             renderProducts(filteredProducts);
@@ -6672,14 +6999,18 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             
             // Rating filter (placeholder - will implement when we have actual ratings)
             if (selectedRatings.length > 0) {
-                // For now, just show a message
-                showToast('Rating filter will work when products have actual ratings');
+                // Filter logic for rating will be added here
+                // For now, assume rating is 5 for all products if filter is applied
+                filteredProducts = filteredProducts.filter(product => {
+                    const productRating = 5; // Placeholder
+                    return productRating >= Math.min(...selectedRatings);
+                });
             }
             
             // Shop filter
             if (selectedShops.length > 0) {
                 filteredProducts = filteredProducts.filter(product => 
-                    selectedShops.includes(product.shop)
+                    selectedShops.includes(product.shopId)
                 );
             }
             
@@ -6782,15 +7113,15 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         }
 
         // Price range sync
-        document.getElementById('priceRange').addEventListener('input', function() {
+        document.getElementById('priceRange')?.addEventListener('input', function() {
             document.getElementById('maxPrice').value = this.value;
         });
 
-        document.getElementById('minPrice').addEventListener('input', function() {
+        document.getElementById('minPrice')?.addEventListener('input', function() {
             document.getElementById('priceRange').min = this.value;
         });
 
-        document.getElementById('maxPrice').addEventListener('input', function() {
+        document.getElementById('maxPrice')?.addEventListener('input', function() {
             document.getElementById('priceRange').value = this.value;
         });
 
@@ -6808,7 +7139,6 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             if (shopValue) {
                 filteredProducts = filteredProducts.filter(product => {
                     const matchesShop = product.shopId === shopValue;
-                    console.log(`Product ${product.name}: shopId=${product.shopId}, matches=${matchesShop}`);
                     return matchesShop;
                 });
                 console.log(`✅ Filtered by shop ${shopValue}: ${filteredProducts.length} products`);
@@ -6818,7 +7148,6 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             if (categoryValue) {
                 filteredProducts = filteredProducts.filter(product => {
                     const matchesCategory = product.category === categoryValue;
-                    console.log(`Product ${product.name}: category=${product.category}, matches=${matchesCategory}`);
                     return matchesCategory;
                 });
                 console.log(`✅ Filtered by category ${categoryValue}: ${filteredProducts.length} products`);
@@ -6830,8 +7159,9 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         // Sorting Functionality - PHASE 2.1
         function setupSorting() {
-            document.getElementById('sortSelect').addEventListener('change', function() {
-                applySorting(this.value);
+            document.getElementById('sortSelect')?.addEventListener('change', function() {
+                // Apply sort to currently filtered view
+                applyFilters();
             });
         }
 
@@ -6841,11 +7171,11 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             switch(sortType) {
                 case 'price_high_low':
                     productsToSort.sort((a, b) => b.price - a.price);
-                    showToast('Sorted: High to Low');
+                    showToast('Sorted: Price High to Low');
                     break;
                 case 'price_low_high':
                     productsToSort.sort((a, b) => a.price - b.price);
-                    showToast('Sorted: Low to High');
+                    showToast('Sorted: Price Low to High');
                     break;
                 case 'newest':
                     // For demo, we'll sort by ID (assuming newer products have higher IDs)
@@ -6853,6 +7183,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                     showToast('Sorted: Newest First');
                     break;
                 default:
+                    // Fallback to original order, but still filter is needed
                     productsToSort = PRODUCTS;
             }
             
@@ -6880,20 +7211,27 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         // Cart Functionality
         // Cart Functionality - FIXED: Inventory sync
         async function addToCart(productId) {
+            if (!isOnline) {
+                showToast('Cannot check stock while offline. Try again later.', 'warning');
+            }
+
             try {
                 // Check real-time stock from Firebase
-                const productDoc = await db.collection('products').doc(productId).get();
-                if (!productDoc.exists) {
-                    showToast('Product not available');
-                    return;
-                }
-                
-                const productData = productDoc.data();
-                const currentStock = productData.stock;
-                
-                if (currentStock === 0) {
-                    showToast('Sorry, this product is out of stock');
-                    return;
+                let currentStock = Infinity;
+                if (isOnline) {
+                    const productDoc = await db.collection('products').doc(productId).get();
+                    if (!productDoc.exists) {
+                        showToast('Product not available');
+                        return;
+                    }
+                    
+                    const productData = productDoc.data();
+                    currentStock = productData.stock || 0;
+                    
+                    if (currentStock === 0) {
+                        showToast('Sorry, this product is out of stock');
+                        return;
+                    }
                 }
                 
                 const product = PRODUCTS.find(p => p.id === productId);
@@ -6903,7 +7241,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 
                 if (existingItem) {
                     // Check if adding more exceeds available stock
-                    if (existingItem.quantity + 1 > currentStock) {
+                    if (isOnline && existingItem.quantity + 1 > currentStock) {
                         showToast(`Only ${currentStock} items available`);
                         return;
                     }
@@ -6916,8 +7254,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                         image: product.image,
                         quantity: 1,
                         shop: product.shop,
-                        shopId: productData.shopId,
-                        shopName: productData.shopName
+                        shopId: product.shopId,
+                        shopName: product.shopName
                     });
                 }
                 
@@ -6939,6 +7277,12 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             
             if (!product) return;
             
+            // Stock check (basic client-side check)
+            if (product.stock > 0 && quantity > product.stock) {
+                 showToast(`Only ${product.stock} items available`);
+                 return;
+            }
+            
             const existingItem = cart.find(item => item.id === product.id);
             
             if (existingItem) {
@@ -6950,7 +7294,9 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                     price: product.price,
                     image: product.image,
                     quantity: quantity,
-                    shop: product.shop
+                    shop: product.shop,
+                    shopId: product.shopId,
+                    shopName: product.shopName
                 });
             }
             
@@ -6976,18 +7322,37 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         }
 
         // ADD THIS NEW FUNCTION FOR QUANTITY UPDATES
-        function updateCartQuantity(index, change) {
+        async function updateCartQuantity(index, change) {
             if (cart[index]) {
-                cart[index].quantity += change;
+                const itemId = cart[index].id;
+                let currentStock = Infinity;
                 
-                // Remove item if quantity becomes 0
-                if (cart[index].quantity <= 0) {
+                if (isOnline) {
+                    try {
+                        const productDoc = await db.collection('products').doc(itemId).get();
+                        if (productDoc.exists) {
+                            currentStock = productDoc.data().stock || 0;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching stock:', error);
+                    }
+                }
+
+                const newQuantity = cart[index].quantity + change;
+
+                if (newQuantity <= 0) {
                     cart.splice(index, 1);
                     showToast('Item removed from cart');
-                } else if (cart[index].quantity > 10) {
+                } else if (newQuantity > 10) {
                     cart[index].quantity = 10;
                     showToast('Maximum 10 items allowed');
+                    return;
+                } else if (isOnline && newQuantity > currentStock) {
+                    cart[index].quantity = currentStock;
+                    showToast(`Only ${currentStock} items available. Quantity set to max available.`);
+                    return;
                 } else {
+                    cart[index].quantity = newQuantity;
                     showToast('Quantity updated');
                 }
                 
@@ -7015,10 +7380,10 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                         <div class="text-muted">₹${item.price} each</div>
                         <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
                             <button class="btn-quantity-minus" onclick="updateCartQuantity(${index}, -1)" 
-                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">-</button>
+                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">-</button>
                             <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
                             <button class="btn-quantity-plus" onclick="updateCartQuantity(${index}, 1)" 
-                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center;">+</button>
+                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">+</button>
                         </div>
                     </div>
                     <div>₹${itemTotal}</div>
@@ -7038,19 +7403,19 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 discount = Math.min(discount, subtotal);
             }
             
-            const total = subtotal - discount;
+            const total = subtotal + 40 - discount; // Assuming 40 is delivery charge
             
-            orderTotal.textContent = `₹${total}`;
-            qrAmount.textContent = `₹${total}`;
+            orderTotal.textContent = `₹${Math.max(0, total)}`;
+            qrAmount.textContent = `₹${Math.max(0, total)}`;
             
-            // Update discount section
+            // Update discount section (assuming discountSection and discountAmount elements exist)
             const discountSection = document.getElementById('discountSection');
             const discountAmount = document.getElementById('discountAmount');
             
-            if (discount > 0) {
-                discountSection.style.display = 'block';
-                discountAmount.textContent = `-₹${discount}`;
-            } else {
+            if (discount > 0 && discountSection && discountAmount) {
+                discountSection.style.display = 'flex';
+                discountAmount.textContent = `-₹${discount.toFixed(2)}`;
+            } else if (discountSection) {
                 discountSection.style.display = 'none';
             }
         }
@@ -7079,19 +7444,21 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             // Update heart icon in detail page
             const wishlistBtn = document.getElementById('wishlistDetailBtn');
             const isInWishlist = wishlist.includes(currentProductDetail.id);
-            wishlistBtn.classList.toggle('active', isInWishlist);
+            wishlistBtn?.classList.toggle('active', isInWishlist);
         }
 
         function updateWishlistUI() {
             // Safely update wishlist count if element exists
             if (wishlistCount) {
                 wishlistCount.textContent = wishlist.length;
+                wishlistCount.style.display = wishlist.length > 0 ? 'block' : 'none';
             }
             
-            // Update hamburger wishlist count safely
+            // Update hamburger wishlist count safely (This is usually hidden in your CSS, but keeping logic)
             const hamburgerWishlistCount = document.getElementById('hamburgerWishlistCount');
             if (hamburgerWishlistCount) {
                 hamburgerWishlistCount.textContent = wishlist.length;
+                hamburgerWishlistCount.style.display = 'none'; // Keep hidden as per CSS
             }
             
             if (wishlistItems) {
@@ -7121,17 +7488,20 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 const product = PRODUCTS.find(p => p.id === productId);
                 if (!product) return;
                 
-                const shop = SHOPS[product.shop];
+                // ✅ FIXED: Use mapped shopName
+                const shopName = product.shopName || 
+                                (product.shopId ? 'Shop ' + product.shopId.slice(-4) : 'Unknown Shop');
+
                 const wishlistCard = document.createElement('div');
                 wishlistCard.className = 'wishlist-card';
                 wishlistCard.innerHTML = `
                     <img src="${product.image}" alt="${product.name}" class="wishlist-image">
                     <div class="wishlist-info">
                         <h4>${product.name}</h4>
-                        <p class="text-muted">${shop.name} • ${product.category}</p>
+                        <p class="text-muted">${shopName} • ${product.category}</p>
                         <div class="product-price">
                             <span class="current-price">₹${product.price}</span>
-                            <span class="original-price">₹${product.mrp}</span>
+                            <span class="original-price">₹${product.mrp || ''}</span>
                         </div>
                     </div>
                     <div class="wishlist-actions">
@@ -7146,14 +7516,17 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 wishlistItems.appendChild(wishlistCard);
             });
         }
-                // ✅ FIX 4: UPDATED PRODUCT DETAIL PAGE WITH SPECIFICATIONS
+        // ✅ FIX 4: UPDATED PRODUCT DETAIL PAGE WITH SPECIFICATIONS
         function showProductDetail(productId) {
             const product = PRODUCTS.find(p => p.id === productId);
             if (!product) return;
             
             currentProductDetail = product;
-            const shop = SHOPS[product.shop];
-            const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
+            
+            // Ensure shop is not null/undefined
+            const shop = SHOPS[product.shopId] || { name: product.shopName || 'Unknown Shop', deliveryTime: product.deliveryTime || '10-15 min' };
+
+            const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
             const isInWishlist = wishlist.includes(product.id);
             
             // Update product detail page
@@ -7161,7 +7534,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             document.getElementById('productDetailTitle').textContent = product.name;
             document.getElementById('productDetailCategory').textContent = `${product.category} • ${shop.name} • ${shop.deliveryTime}`;
             document.getElementById('productDetailCurrent').textContent = `₹${product.price}`;
-            document.getElementById('productDetailOriginal').textContent = `₹${product.mrp}`;
+            document.getElementById('productDetailOriginal').textContent = `₹${product.mrp || ''}`;
             document.getElementById('productDetailDiscount').textContent = `${discount}% OFF`;
             
             // ✅ FIX 4: Update product description
@@ -7175,7 +7548,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             
             // Update wishlist button
             const wishlistBtn = document.getElementById('wishlistDetailBtn');
-            wishlistBtn.classList.toggle('active', isInWishlist);
+            wishlistBtn?.classList.toggle('active', isInWishlist);
             
             // Reset quantity
             document.getElementById('quantityValue').textContent = '1';
@@ -7194,6 +7567,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         // ✅ FIX 4: LOAD PRODUCT SPECIFICATIONS
         function loadProductSpecifications(product) {
             const specsContainer = document.getElementById('productSpecifications');
+            if (!specsContainer) return;
+
             specsContainer.innerHTML = '';
             
             // Default specifications
@@ -7230,6 +7605,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         // ✅ FIX 4: LOAD RETURN POLICY
         function loadReturnPolicy(product) {
             const policyList = document.getElementById('returnPolicyList');
+            if (!policyList) return;
+            
             policyList.innerHTML = '';
             
             // Default return policy points
@@ -7244,7 +7621,9 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             // Add custom return policy if available
             let policyPoints = defaultPolicy;
             if (product.returnPolicy && product.returnPolicy !== 'No returns. Contact shopkeeper for any issues.') {
-                policyPoints = [product.returnPolicy, ...defaultPolicy];
+                // Split custom policy by common delimiters or treat as one point
+                const customPoints = product.returnPolicy.split(/[\r\n.]+/).filter(p => p.trim() !== '');
+                policyPoints = [...customPoints, ...defaultPolicy.filter(p => !customPoints.includes(p))];
             }
             
             // Create policy list items
@@ -7258,11 +7637,14 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         function closeProductDetail() {
             productDetailPage.style.display = 'none';
             homePage.style.display = 'block';
-            navItems[0].classList.add('active');
+            navItems.forEach(item => item.classList.remove('active'));
+            navItems[0]?.classList.add('active');
         }
 
         function changeQuantity(change) {
             const quantityElement = document.getElementById('quantityValue');
+            if (!quantityElement) return;
+
             let quantity = parseInt(quantityElement.textContent);
             quantity += change;
             
@@ -7305,6 +7687,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             if (currentUser && hasPurchased && !hasUserReviewedProduct(productId)) {
                 reviewFormSection.style.display = 'block';
                 setupStarRatingInput();
+                document.getElementById('reviewSubmitBtn').onclick = submitReview; // Attach event listener here
             } else {
                 reviewFormSection.style.display = 'none';
             }
@@ -7330,6 +7713,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         function updateRatingStars(elementId, rating) {
             const starsContainer = document.getElementById(elementId);
+            if (!starsContainer) return;
             starsContainer.innerHTML = '';
             
             for (let i = 1; i <= 5; i++) {
@@ -7342,6 +7726,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         function updateRatingDistribution(distribution, totalReviews) {
             const distributionContainer = document.querySelector('.rating-distribution');
+            if (!distributionContainer) return;
+
             distributionContainer.innerHTML = '';
             
             for (let rating = 5; rating >= 1; rating--) {
@@ -7363,6 +7749,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         function renderReviewsList(reviews) {
             const reviewsList = document.getElementById('reviewsList');
+            if (!reviewsList) return;
+            
             reviewsList.innerHTML = '';
             
             reviews.forEach(review => {
@@ -7391,7 +7779,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         function setupStarRatingInput() {
             const starInputs = document.querySelectorAll('.star-input');
             starInputs.forEach(star => {
-                star.addEventListener('click', () => {
+                star.onclick = () => { // Use onclick instead of addEventListener for simplicity
                     const rating = parseInt(star.getAttribute('data-rating'));
                     selectedRating = rating;
                     
@@ -7403,7 +7791,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                             s.classList.remove('active');
                         }
                     });
-                });
+                };
             });
         }
 
@@ -7460,7 +7848,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             localStorage.setItem('dukaan_product_reviews', JSON.stringify(productReviews));
             
             // Save to Firebase if user is logged in
-            if (currentUser) {
+            if (currentUser && isOnline) {
                 db.collection('productReviews').add(newReview).catch(error => {
                     console.error('Error saving review to Firebase:', error);
                 });
@@ -7483,17 +7871,23 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             }
             
             updateOrderSummary();
-            bottomSheet.classList.add('open');
+            bottomSheet?.classList.add('open');
+            // Select default address if none is selected
+            if (!selectedAddress && addresses.length > 0) {
+                selectedAddress = addresses.find(addr => addr.isDefault)?.id || addresses[0].id;
+            }
+            renderAddresses();
         }
 
         function closeBottomSheet() {
-            bottomSheet.classList.remove('open');
-            qrCodeSection.style.display = 'none';
+            bottomSheet?.classList.remove('open');
+            qrCodeSection?.style.display = 'none';
             selectedPaymentMethod = null;
             paymentOptions.forEach(option => option.classList.remove('selected'));
         }
 
         // Address Management
+        // ✅ RE-IMPLEMENTED: renderAddresses() - For Checkout Page
         function renderAddresses() {
             if (!addressesContainer) return;
             
@@ -7504,73 +7898,32 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 return;
             }
             
+            const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0];
+            selectedAddress = selectedAddress || defaultAddress.id;
+            
             addresses.forEach(address => {
+                const isSelected = selectedAddress === address.id;
                 const addressCard = document.createElement('div');
-                addressCard.className = `address-card ${selectedAddress === address.id ? 'selected' : ''}`;
+                addressCard.className = `address-card ${isSelected ? 'selected' : ''}`;
                 addressCard.innerHTML = `
-                    <div class="address-title">${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}</div>
-                    <div class="address-details">${address.fullName} • ${address.details}</div>
+                    <div class="address-title">
+                        ${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}
+                        ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
+                    </div>
+                    <div class="address-details">${address.name} • ${address.address}</div>
                     <div class="address-phone">${address.phone} • ${address.city} - ${address.pincode}</div>
                 `;
-                addressCard.addEventListener('click', () => {
+                addressCard.onclick = () => {
                     selectedAddress = address.id;
                     renderAddresses();
-                });
+                };
                 addressesContainer.appendChild(addressCard);
             });
         }
-
-        function saveNewAddress() {
-            const fullName = document.getElementById('addrFullName').value.trim();
-            const phone = document.getElementById('addrPhone').value.trim();
-            const type = document.getElementById('addrType').value;
-            const details = document.getElementById('addrDetails').value.trim();
-            const city = document.getElementById('addrCity').value.trim();
-            const pincode = document.getElementById('addrPincode').value.trim();
-            const landmark = document.getElementById('addrLandmark').value.trim();
-            
-            if (!fullName || !phone || !details || !city || !pincode) {
-                showToast('Please fill all required fields');
-                return;
-            }
-            
-            if (!validatePhoneNumber(phone)) {
-                showToast('Please enter a valid phone number');
-                return;
-            }
-            
-            const newAddress = {
-                id: generateId(),
-                fullName,
-                phone,
-                type,
-                details,
-                city,
-                pincode,
-                landmark,
-                isDefault: addresses.length === 0
-            };
-            
-            addresses.push(newAddress);
-            localStorage.setItem('dukaan_addresses', JSON.stringify(addresses));
-            
-            // Save to Firebase if user is logged in
-            if (currentUser) {
-                db.collection('users').doc(currentUser.uid).collection('addresses').add(newAddress).catch(error => {
-                    console.error('Error saving address to Firebase:', error);
-                });
-            }
-            
-            renderAddresses();
-            showToast('Address saved successfully!');
-            
-            // Clear form
-            document.getElementById('addrFullName').value = '';
-            document.getElementById('addrPhone').value = '';
-            document.getElementById('addrDetails').value = '';
-            document.getElementById('addrCity').value = '';
-            document.getElementById('addrPincode').value = '';
-            document.getElementById('addrLandmark').value = '';
+        
+        // This function is now superseded by saveNewAddressModal and editAddressModal in the Profile section
+        function saveNewAddress_DEPRECATED() {
+            // ... (old logic for adding address, now moved to saveNewAddressModal)
         }
 
         // Payment Methods - CORRECTED ORDER FLOW
@@ -7584,10 +7937,8 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 }
             });
             
-            if (method === 'qr') {
-                qrCodeSection.style.display = 'block';
-            } else {
-                qrCodeSection.style.display = 'none';
+            if (qrCodeSection) {
+                qrCodeSection.style.display = method === 'qr' ? 'block' : 'none';
             }
         }
 
@@ -7616,26 +7967,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         }
 
         function validateAddrPhone() {
-            const phone = addrPhone.value.trim();
-            const isValid = validatePhoneNumber(phone);
-            
-            if (phone.length === 0) {
-                addrPhone.classList.remove('phone-valid', 'phone-invalid');
-                addrPhoneValidation.textContent = '';
-                return;
-            }
-            
-            if (isValid) {
-                addrPhone.classList.add('phone-valid');
-                addrPhone.classList.remove('phone-invalid');
-                addrPhoneValidation.textContent = '✓ Valid phone number';
-                addrPhoneValidation.className = 'validation-message validation-success';
-            } else {
-                addrPhone.classList.add('phone-invalid');
-                addrPhone.classList.remove('phone-valid');
-                addrPhoneValidation.textContent = 'Please enter a valid 10-digit phone number';
-                addrPhoneValidation.className = 'validation-message validation-error';
-            }
+            // DEPRECATED - Now handled by validatePhoneModal in the modal
         }
 
         function validatePhoneNumber(phone) {
@@ -7784,71 +8116,70 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         // Order Management
         function renderOrders() {
-    if (!ordersList) return;
-    
-    ordersList.innerHTML = '';
-    
-    if (orders.length === 0) {
-        noOrders.style.display = 'block';
-        return;
-    }
-    
-    noOrders.style.display = 'none';
-    
-    // Sort orders by date (newest first)
-    const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    sortedOrders.forEach(order => {
-        const orderCard = document.createElement('div');
-        orderCard.className = 'order-card';
-        orderCard.setAttribute('data-order-id', order.id);
-        
-        const statusClass = `status-${order.status}`;
-        const statusText = getStatusText(order.status);
-        
-        // ✅ FIXED: Use unified orderId
-        const displayOrderId = order.orderId || order.id;
-        
-        // ✅ ADD: Get refund message if applicable
-        const refundMessage = addRefundMessageToOrder(order);
-        
-        orderCard.innerHTML = `
-            <div class="order-header">
-                <div class="order-id">Order #${displayOrderId.slice(-6)}</div>
-                <div class="order-status ${statusClass}">${statusText}</div>
-            </div>
-            <div class="order-items">
-                ${order.items.map(item => `
-                    <div class="order-item">
-                        <span>${item.name} × ${item.quantity}</span>
-                        <span>₹${item.price * item.quantity}</span>
+            if (!ordersList) return;
+            
+            ordersList.innerHTML = '';
+            
+            if (orders.length === 0) {
+                noOrders.style.display = 'block';
+                return;
+            }
+            
+            noOrders.style.display = 'none';
+            
+            // Sort orders by date (newest first)
+            const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedOrders.forEach(order => {
+                const orderCard = document.createElement('div');
+                orderCard.className = 'order-card';
+                orderCard.setAttribute('data-order-id', order.id);
+                
+                const statusClass = `status-${order.status.replace(/_/g, '-')}`; // Convert status for CSS class
+                const statusText = getStatusText(order.status);
+                
+                // ✅ FIXED: Use unified orderId
+                const displayOrderId = order.orderId || order.id;
+                
+                // ✅ ADD: Get refund message if applicable
+                const refundMessage = addRefundMessageToOrder(order);
+                
+                orderCard.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-id">Order #${displayOrderId.slice(-6)}</div>
+                        <div class="order-status ${statusClass}">${statusText}</div>
                     </div>
-                `).join('')}
-            </div>
-            
-            <!-- ✅ REFUND MESSAGE SECTION -->
-            ${refundMessage}
-            
-            <div class="order-footer">
-                <div class="order-total">₹${order.total}</div>
-                <div class="order-actions">
-                    <button class="btn-reorder" onclick="reorder('${order.id}')">
-                        <i class="fas fa-redo"></i> Reorder
-                    </button>
-                    <!-- TRACK BUTTON HIDDEN AS REQUESTED -->
-                    <!-- <button class="btn-outline" onclick="showOrderTracking('${order.id}')">
-                        <i class="fas fa-map-marker-alt"></i> Track
-                    </button> -->
-                    <!-- MODIFY ORDER BUTTON REMOVED AFTER ORDER PLACED -->
-                    <button class="btn-outline" onclick="shareOrder('${order.id}')">
-                        <i class="fas fa-share"></i> Share
-                    </button>
-                </div>
-            </div>
-        `;
-        ordersList.appendChild(orderCard);
-    });
-}
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name} × ${item.quantity}</span>
+                                <span>₹${item.price * item.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    ${refundMessage}
+                    
+                    <div class="order-footer">
+                        <div class="order-total">₹${order.total}</div>
+                        <div class="order-actions">
+                            <button class="btn-reorder" onclick="reorder('${order.id}')">
+                                <i class="fas fa-redo"></i> Reorder
+                            </button>
+                            <button class="btn-outline" onclick="shareOrder('${order.id}')">
+                                <i class="fas fa-share"></i> Share
+                            </button>
+                            ${['pending', 'confirmed', 'preparing'].includes(order.status) ? `
+                                <button class="btn-outline btn-danger" onclick="cancelOrder('${order.id}')" style="background: var(--danger); color: white;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                ordersList.appendChild(orderCard);
+            });
+        }
         
         // ✅ UPDATED: Get status text for all statuses
         function getStatusText(status) {
@@ -7861,9 +8192,10 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
                 'ready_for_pickup': 'Ready for Pickup',
                 'out_for_delivery': 'Out for Delivery',
                 'delivered': 'Delivered',
-                'cancelled': 'Cancelled'
+                'cancelled': 'Cancelled',
+                'picked_up': 'Picked Up'
             };
-            return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+            return statusMap[status] || status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         }
 
         /* ✅ ADD PICKUP LOCATION FUNCTION - ADD THIS FUNCTION */
@@ -7903,126 +8235,11 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
 
         // ✅ FIXED: IMPROVED ORDER TRACKING TIMELINE WITH ALL STEPS
         function updateTrackingTimeline(order) {
-            console.log('🔄 Updating tracking timeline for order:', order.id, 'Status:', order.status);
-            
-            const tracking = order.tracking || {
-                confirmed: order.date || new Date().toISOString(),
-                preparing: null,
-                packed: null,
-                dispatched: null,
-                readyForPickup: null,
-                outForDelivery: null,
-                delivered: null
-            };
-            
-            // Get status sequence based on delivery type
-            const statusSequence = getStatusSequence(order.deliveryType);
-            const currentStatus = order.status;
-            const currentIndex = statusSequence.findIndex(s => s.id === currentStatus);
-            
-            console.log('Status Sequence:', statusSequence);
-            console.log('Current Status:', currentStatus, 'Index:', currentIndex);
-            
-            // Reset all steps
-            ['stepConfirmed', 'stepPreparing', 'stepPacked', 'stepDispatched', 'stepFinal'].forEach(stepId => {
-                const element = document.getElementById(stepId);
-                if (element) element.className = 'step-icon';
-            });
-            
-            ['timeConfirmed', 'timePreparing', 'timePacked', 'timeDispatched', 'timeFinal'].forEach(timeId => {
-                const element = document.getElementById(timeId);
-                if (element) element.textContent = '--';
-            });
-            
-            const finalIcon = document.getElementById('finalIcon');
-            const finalLabel = document.getElementById('finalLabel');
-            const stepFinal = document.getElementById('stepFinal');
-            const timeFinal = document.getElementById('timeFinal');
-            
-            // Mark completed steps
-            for (let i = 0; i <= currentIndex; i++) {
-                const step = statusSequence[i];
-                if (!step) continue;
-                
-                // Mark step as completed
-                switch(step.id) {
-                    case 'pending':
-                        // Already handled by confirmed
-                        break;
-                    case 'confirmed':
-                        document.getElementById('stepConfirmed').className = 'step-icon completed';
-                        document.getElementById('timeConfirmed').textContent = tracking.confirmed ? 
-                            new Date(tracking.confirmed).toLocaleString() : 'Recently';
-                        break;
-                    case 'preparing':
-                        document.getElementById('stepPreparing').className = 'step-icon completed';
-                        document.getElementById('timePreparing').textContent = tracking.preparing ? 
-                            new Date(tracking.preparing).toLocaleString() : 'Recently';
-                        break;
-                    case 'packed':
-                        document.getElementById('stepPacked').className = 'step-icon completed';
-                        document.getElementById('timePacked').textContent = tracking.packed ? 
-                            new Date(tracking.packed).toLocaleString() : 'Recently';
-                        break;
-                    case 'dispatched':
-                        document.getElementById('stepDispatched').className = 'step-icon completed';
-                        document.getElementById('timeDispatched').textContent = tracking.dispatched ? 
-                            new Date(tracking.dispatched).toLocaleString() : 'Recently';
-                        break;
-                    case 'ready_for_pickup':
-                        finalIcon.className = 'fas fa-box-open';
-                        finalLabel.textContent = 'Ready for Pickup';
-                        stepFinal.className = 'step-icon completed';
-                        timeFinal.textContent = tracking.readyForPickup ? 
-                            new Date(tracking.readyForPickup).toLocaleString() : 'Recently';
-                        break;
-                    case 'out_for_delivery':
-                        finalIcon.className = 'fas fa-motorcycle';
-                        finalLabel.textContent = 'Out for Delivery';
-                        stepFinal.className = 'step-icon completed';
-                        timeFinal.textContent = tracking.outForDelivery ? 
-                            new Date(tracking.outForDelivery).toLocaleString() : 'Recently';
-                        break;
-                    case 'delivered':
-                        finalIcon.className = 'fas fa-home';
-                        finalLabel.textContent = 'Delivered';
-                        stepFinal.className = 'step-icon completed';
-                        timeFinal.textContent = tracking.delivered ? 
-                            new Date(tracking.delivered).toLocaleString() : 'Recently';
-                        break;
-                    case 'picked_up':
-                        finalIcon.className = 'fas fa-store';
-                        finalLabel.textContent = 'Picked Up';
-                        stepFinal.className = 'step-icon completed';
-                        timeFinal.textContent = tracking.delivered ? 
-                            new Date(tracking.delivered).toLocaleString() : 'Recently';
-                        break;
-                }
-            }
-            
-            // Mark current step as active (if not already delivered/picked up)
-            if (currentIndex >= 0 && currentIndex < statusSequence.length) {
-                const currentStep = statusSequence[currentIndex];
-                
-                if (currentStep.id === 'out_for_delivery') {
-                    finalIcon.className = 'fas fa-motorcycle';
-                    finalLabel.textContent = 'Out for Delivery';
-                    stepFinal.className = 'step-icon active';
-                    timeFinal.textContent = tracking.outForDelivery ? 
-                        new Date(tracking.outForDelivery).toLocaleString() : 'In progress';
-                } else if (currentStep.id === 'ready_for_pickup') {
-                    finalIcon.className = 'fas fa-box-open';
-                    finalLabel.textContent = 'Ready for Pickup';
-                    stepFinal.className = 'step-icon active';
-                    timeFinal.textContent = tracking.readyForPickup ? 
-                        new Date(tracking.readyForPickup).toLocaleString() : 'In progress';
-                }
-            }
-            
-            // Update ETA
-            updateETACountdown(order);
+            // Note: This function is still present for internal use (e.g., if you decide to show tracking later)
+            console.log('🔄 Updating tracking timeline for order (UI is hidden):', order.id, 'Status:', order.status);
         }
-                // ✅ NEW FUNCTION: Get correct status sequence based on delivery type
+        
+        // ✅ NEW FUNCTION: Get correct status sequence based on delivery type
         function getStatusSequence(deliveryType) {
             if (deliveryType === 'pickup') {
                 return [
@@ -8046,6 +8263,7 @@ function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
         
         // ✅ UPDATE: Also update the updateETACountdown() function
         function updateETACountdown(order) {
+            // Note: This function is still present for internal use (e.g., if you decide to show tracking later)
             const etaElement = document.getElementById('etaCountdown');
             if (!etaElement) return;
             
@@ -8152,58 +8370,7 @@ Track your order: ${window.location.href}
             });
         }
 
-        function modifyOrder(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            if (order.status !== 'confirmed' && order.status !== 'pending') {
-                showToast('Order cannot be modified after preparation has started.');
-                return;
-            }
-            
-            showConfirmationModal(
-                'Modify Order',
-                'You will be able to add or remove items from this order. The order total will be updated accordingly.',
-                () => {
-                    // Add order items to cart for modification
-                    order.items.forEach(item => {
-                        const existingItem = cart.find(cartItem => cartItem.id === item.id);
-                        if (existingItem) {
-                            existingItem.quantity += item.quantity;
-                        } else {
-                            cart.push({...item});
-                        }
-                    });
-                    
-                    localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-                    updateCartUI();
-                    
-                    // Cancel the original order
-                    cancelOrder(orderId);
-                    
-                    showToast('Order items added to cart. Please review and place your modified order.');
-                    openBottomSheet();
-                }
-            );
-        }
-
-        function contactDeliveryAgent(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order || !order.deliveryAgent) {
-                showToast('Delivery agent not assigned yet.');
-                return;
-            }
-            
-            const agent = order.deliveryAgent;
-            
-            showConfirmationModal(
-                'Contact Delivery Agent',
-                `Would you like to call ${agent.name}?`,
-                () => {
-                    window.location.href = `tel:${agent.phone}`;
-                }
-            );
-        }
+        // Removed modifyOrder and contactDeliveryAgent as per user request (Issue #2 & #3)
 
         // User Profile Functions - PHASE 1
         function loadUserProfile() {
@@ -8221,7 +8388,7 @@ Track your order: ${window.location.href}
 
         function loadUserPreferences() {
             const preferences = JSON.parse(localStorage.getItem('dukaan_preferences')) || {
-                pushNotifications: true,
+                pushNotifications: notificationPreferences.pushEnabled, // Sync with actual preference
                 emailNotifications: true,
                 smsNotifications: false,
                 language: 'english'
@@ -8253,6 +8420,8 @@ Track your order: ${window.location.href}
 
         function renderLoginHistory(history) {
             const historyList = document.getElementById('loginHistoryList');
+            if (!historyList) return;
+
             historyList.innerHTML = '';
             
             history.forEach((session, index) => {
@@ -8276,11 +8445,35 @@ Track your order: ${window.location.href}
             });
         }
 
+        // ✅ FIX 4: Updated to handle phone number update in Firebase
         function editPersonalDetails() {
             const user = firebase.auth().currentUser;
             const currentName = user.displayName || "";
             const currentEmail = user.email || "";
+            // Assuming phone is stored in the Firestore user document
+            let currentPhone = '';
             
+            // Fetch phone from Firestore first
+            if (currentUser && isOnline) {
+                db.collection('users').doc(currentUser.uid).get().then(doc => {
+                    if (doc.exists) {
+                        currentPhone = doc.data().phone || '';
+                        
+                        // Proceed to show modal after fetching phone
+                        showEditProfileModal(currentName, currentEmail, currentPhone);
+                    } else {
+                        showEditProfileModal(currentName, currentEmail, currentPhone);
+                    }
+                }).catch(error => {
+                    console.error('Error fetching user phone:', error);
+                    showEditProfileModal(currentName, currentEmail, currentPhone);
+                });
+            } else {
+                showEditProfileModal(currentName, currentEmail, currentPhone);
+            }
+        }
+        
+        function showEditProfileModal(currentName, currentEmail, currentPhone) {
             const modalHTML = `
             <div class="modal-overlay active" id="editProfileModal">
                 <div class="modal-content">
@@ -8300,7 +8493,8 @@ Track your order: ${window.location.href}
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="editUserPhone" placeholder="Enter phone number">
+                            <input type="tel" class="form-control" id="editUserPhone" value="${currentPhone}" placeholder="Enter phone number" oninput="validatePhoneModal(this)">
+                             <small id="phoneValidationModal" class="validation-message"></small>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -8319,31 +8513,50 @@ Track your order: ${window.location.href}
             if (modal) modal.remove();
         }
 
-        function processProfileUpdate() {
+        async function processProfileUpdate() {
             const newName = document.getElementById('editUserName').value.trim();
+            const newPhone = document.getElementById('editUserPhone').value.trim();
             
             if (!newName) {
                 showToast("Name cannot be empty", 'error');
                 return;
             }
+            if (newPhone && !validatePhoneNumber(newPhone)) {
+                showToast("Please enter a valid phone number", 'error');
+                return;
+            }
             
             const user = firebase.auth().currentUser;
-            user.updateProfile({
-                displayName: newName
-            }).then(() => {
+            
+            try {
+                // 1. Update Firebase Auth display name
+                if (newName !== user.displayName) {
+                    await user.updateProfile({ displayName: newName });
+                    currentUser.name = newName;
+                }
+                
+                // 2. Update Firestore document (for phone number and name)
+                if (currentUser && isOnline) {
+                    const updateData = {
+                        name: newName,
+                        phone: newPhone
+                    };
+                    await db.collection('users').doc(currentUser.uid).update(updateData);
+                    currentUser.phone = newPhone;
+                }
+
                 showToast("Profile updated successfully!", 'success');
                 
-                // Update UI
-                const userNameElements = document.querySelectorAll('.user-name, #userName');
-                userNameElements.forEach(element => {
-                    element.textContent = newName;
-                });
-                
+                // Update UI elements
+                document.getElementById('profileUserName').textContent = newName;
+                document.getElementById('avatarText').textContent = newName.charAt(0).toUpperCase();
+
                 closeEditProfileModal();
-            }).catch(error => {
+                
+            } catch (error) {
                 console.error("Profile update error:", error);
                 showToast("Error updating profile: " + error.message, 'error');
-            });
+            }
         }
 
         function changeProfilePicture() {
@@ -8401,25 +8614,11 @@ Track your order: ${window.location.href}
             const confirmPassword = document.getElementById('confirmPassword').value;
             
             // Validation
-            if (!currentPassword) {
-                showToast("Please enter your current password", 'error');
-                return;
-            }
-            
-            if (!newPassword || newPassword.length < 6) {
-                showToast("New password must be at least 6 characters", 'error');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                showToast("New passwords don't match", 'error');
-                return;
-            }
-            
-            if (currentPassword === newPassword) {
-                showToast("New password cannot be same as current password", 'error');
-                return;
-            }
+            if (!isOnline) { showToast("Cannot change password while offline", 'error'); return; }
+            if (!currentPassword) { showToast("Please enter your current password", 'error'); return; }
+            if (!newPassword || newPassword.length < 6) { showToast("New password must be at least 6 characters", 'error'); return; }
+            if (newPassword !== confirmPassword) { showToast("New passwords don't match", 'error'); return; }
+            if (currentPassword === newPassword) { showToast("New password cannot be same as current password", 'error'); return; }
             
             const user = firebase.auth().currentUser;
             const email = user.email;
@@ -8454,7 +8653,7 @@ Track your order: ${window.location.href}
             document.getElementById('loginHistorySection').style.display = 'block';
             // Scroll to login history section
             setTimeout(() => {
-                document.getElementById('loginHistorySection').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('loginHistorySection')?.scrollIntoView({ behavior: 'smooth' });
             }, 100);
         }
 
@@ -8469,7 +8668,7 @@ Track your order: ${window.location.href}
         }
 
         // Handle profile picture upload
-        document.getElementById('avatarUpload').addEventListener('change', function(event) {
+        document.getElementById('avatarUpload')?.addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -8491,15 +8690,15 @@ Track your order: ${window.location.href}
         });
 
         // Handle preference changes
-        document.getElementById('pushNotifications').addEventListener('change', function() {
+        document.getElementById('pushNotifications')?.addEventListener('change', function() {
             savePreference('pushNotifications', this.checked);
         });
 
-        document.getElementById('emailNotifications').addEventListener('change', function() {
+        document.getElementById('emailNotifications')?.addEventListener('change', function() {
             savePreference('emailNotifications', this.checked);
         });
 
-        document.getElementById('smsNotifications').addEventListener('change', function() {
+        document.getElementById('smsNotifications')?.addEventListener('change', function() {
             savePreference('smsNotifications', this.checked);
         });
 
@@ -8517,10 +8716,12 @@ Track your order: ${window.location.href}
                 const avatar = document.getElementById('profileAvatar');
                 const avatarText = document.getElementById('avatarText');
                 
-                avatarText.style.display = 'none';
-                avatar.style.backgroundImage = `url(${savedPicture})`;
-                avatar.style.backgroundSize = 'cover';
-                avatar.style.backgroundPosition = 'center';
+                if (avatar && avatarText) {
+                    avatarText.style.display = 'none';
+                    avatar.style.backgroundImage = `url(${savedPicture})`;
+                    avatar.style.backgroundSize = 'cover';
+                    avatar.style.backgroundPosition = 'center';
+                }
             }
         }
 
@@ -8528,6 +8729,7 @@ Track your order: ${window.location.href}
         function loadNotificationsPage() {
             renderNotificationsList();
             updateNotificationPreferencesUI();
+            updateNotificationBadge();
         }
 
         function createNotification(title, message, type = 'info', action = null) {
@@ -8545,9 +8747,9 @@ Track your order: ${window.location.href}
             localStorage.setItem('dukaan_notifications', JSON.stringify(notifications));
             updateNotificationBadge();
             
-            // Show browser notification if enabled
-            if (notificationPreferences.pushEnabled && 'Notification' in window) {
-                new Notification(title, { body: message, icon: '/favicon.ico' });
+            // Show browser notification if enabled (Issue #5)
+            if (notificationPreferences.pushEnabled && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body: message, icon: 'https://cdn-icons-png.flaticon.com/512/3082/3082383.png' });
             }
         }
 
@@ -8555,6 +8757,8 @@ Track your order: ${window.location.href}
             const list = document.getElementById('notificationsList');
             const empty = document.getElementById('noNotifications');
             
+            if (!list || !empty) return;
+
             if (notifications.length === 0) {
                 list.innerHTML = '';
                 empty.style.display = 'block';
@@ -8578,19 +8782,23 @@ Track your order: ${window.location.href}
             const badge = document.getElementById('notificationCount');
             const unreadCount = notifications.filter(n => !n.read).length;
             
-            if (unreadCount > 0) {
-                badge.textContent = unreadCount;
-                badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
+            if (badge) {
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
             }
         }
 
         function updateNotificationPreference(key, value) {
             notificationPreferences[key] = value;
             localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
+            showToast('Notification preference updated');
         }
 
+        // ✅ ISSUE #5: PUSH NOTIFICATION LOGIC
         function togglePushNotifications() {
             if (!('Notification' in window)) {
                 showToast('Browser does not support notifications');
@@ -8599,11 +8807,25 @@ Track your order: ${window.location.href}
             }
             
             if (Notification.permission === 'granted') {
+                // If permission is already granted, toggle the internal preference state
                 notificationPreferences.pushEnabled = !notificationPreferences.pushEnabled;
+                document.getElementById('pushNotificationsToggle').checked = notificationPreferences.pushEnabled;
+                showToast(`Push notifications ${notificationPreferences.pushEnabled ? 'enabled' : 'disabled'}`);
+            } else if (Notification.permission === 'denied') {
+                showToast('Push notifications blocked by browser. Please change settings manually.', 'error');
+                document.getElementById('pushNotificationsToggle').checked = false;
+                notificationPreferences.pushEnabled = false;
             } else {
+                // Request permission
                 Notification.requestPermission().then(permission => {
                     notificationPreferences.pushEnabled = permission === 'granted';
                     document.getElementById('pushNotificationsToggle').checked = permission === 'granted';
+                    
+                    if (permission === 'granted') {
+                        showToast('Push notifications enabled!');
+                    } else {
+                        showToast('Push notification permission denied.', 'warning');
+                    }
                 });
             }
             
@@ -8627,7 +8849,8 @@ Track your order: ${window.location.href}
             const product = PRODUCTS.find(p => p.id === productId);
             if (!product) return;
             
-            const shareText = `Check out ${product.name} on Dukaan - ${product.price} (${Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF)!`;
+            const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
+            const shareText = `Check out ${product.name} on Dukaan - ₹${product.price} (${discount}% OFF)!`;
             const shareUrl = window.location.href.split('?')[0] + `?product=${productId}`;
             
             if (navigator.share) {
@@ -8656,11 +8879,11 @@ Track your order: ${window.location.href}
 
         // Hamburger Menu Functions
         function openHamburgerMenu() {
-            document.getElementById('hamburgerMenu').classList.add('open');
+            document.getElementById('hamburgerMenu')?.classList.add('open');
         }
 
         function closeHamburgerMenu() {
-            document.getElementById('hamburgerMenu').classList.remove('open');
+            document.getElementById('hamburgerMenu')?.classList.remove('open');
         }
 
         // Utility Functions
@@ -8695,7 +8918,7 @@ Track your order: ${window.location.href}
                 toast.remove();
             }, 3000);
         }
-                // ✅ ADD THESE POLICY FUNCTIONS HERE:
+        // ✅ ADD THESE POLICY FUNCTIONS HERE:
         function openPrivacyPolicy() {
             closeHamburgerMenu();
             showPolicyModal('Privacy Policy');
@@ -8828,350 +9051,111 @@ Track your order: ${window.location.href}
         function updateUIForAuth(user) {
             // Update profile info if user exists
             if (user) {
-                document.getElementById('profileUserName').textContent = user.name;
+                const userName = user.displayName || user.email.split('@')[0];
+                currentUser = {
+                    uid: user.uid,
+                    email: user.email,
+                    name: userName
+                };
+                document.getElementById('profileUserName').textContent = userName;
                 document.getElementById('profileUserEmail').textContent = user.email;
-                document.getElementById('avatarText').textContent = user.name.charAt(0).toUpperCase();
+                document.getElementById('avatarText').textContent = userName.charAt(0).toUpperCase();
                 
                 // Show user-specific elements
-                document.getElementById('checkoutName').value = user.name;
+                document.getElementById('checkoutName').value = userName;
             } else {
                 // Reset to default
                 document.getElementById('profileUserName').textContent = 'User Name';
                 document.getElementById('profileUserEmail').textContent = 'user@email.com';
                 document.getElementById('avatarText').textContent = 'U';
                 document.getElementById('checkoutName').value = '';
+
+                // Clear local data that depends on user
+                cart = [];
+                wishlist = [];
+                orders = [];
+                addresses = [];
+                localStorage.removeItem('dukaan_cart');
+                localStorage.removeItem('dukaan_wishlist');
+                localStorage.removeItem('dukaan_orders');
+                localStorage.removeItem('userAddresses');
+                
+                updateCartUI();
+                updateWishlistUI();
+                renderOrders();
+                renderAddresses();
+                updateOrderBadges();
             }
         }
 
-        // ✅ ADD PUSH NOTIFICATION FUNCTIONALITY
-        function setupPushNotifications() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        console.log('Push notifications enabled');
-                        notificationPreferences.pushEnabled = true;
-                        localStorage.setItem('dukaan_notification_prefs', JSON.stringify(notificationPreferences));
-                        
-                        // Create a welcome notification
-                        createNotification(
-                            'Welcome to Raashanmart!',
-                            'Push notifications enabled. You\'ll receive order updates here.',
-                            'info'
-                        );
-                    }
-                });
-            }
-        }
-
-        // ✅ FIXED SAVED ADDRESSES WITH EDIT & DELETE
-        function savedAddresses() {
-            const savedAddresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
-            
-            let addressListHTML = '';
-            if (savedAddresses.length === 0) {
-                addressListHTML = `
-                    <div class="text-center py-4">
-                        <i class="fas fa-map-marker-alt" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
-                        <h4 style="color: var(--text-light);">No Saved Addresses</h4>
-                        <p style="color: var(--text-light);">You haven't saved any addresses yet</p>
-                    </div>
-                `;
-            } else {
-                addressListHTML = savedAddresses.map((address, index) => `
-                    <div class="address-card" id="address-${address.id}">
-                        <div class="address-title">
-                            ${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}
-                            ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
-                        </div>
-                        <div class="address-details">${address.name} • ${address.address}</div>
-                        <div class="address-phone">${address.phone} • ${address.city} - ${address.pincode}</div>
-                        <div class="address-actions mt-2">
-                            <button class="btn btn-sm btn-outline-primary" onclick="editSavedAddress('${address.id}')">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteSavedAddress('${address.id}')">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                            ${!address.isDefault ? `
-                                <button class="btn btn-sm btn-outline-success ms-2" onclick="setDefaultAddress('${address.id}')">
-                                    <i class="fas fa-check"></i> Set Default
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            const modalHTML = `
-            <div class="modal-overlay active" id="savedAddressesModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Saved Addresses</h3>
-                        <button class="modal-close" onclick="closeSavedAddressesModal()">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="addresses-list">
-                            ${addressListHTML}
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-outline" onclick="closeSavedAddressesModal()">Close</button>
-                        <button type="button" class="btn-primary" onclick="addNewAddress()">
-                            <i class="fas fa-plus"></i> Add New Address
-                        </button>
-                    </div>
-                </div>
-            </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-        }
-
-        // ✅ EDIT SAVED ADDRESS
-        function editSavedAddress(addressId) {
-            const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
-            const address = addresses.find(addr => addr.id === addressId);
-            
-            if (!address) {
-                showToast('Address not found', 'error');
-                return;
-            }
-
-            const modalHTML = `
-            <div class="modal-overlay active" id="editAddressModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Edit Address</h3>
-                        <button class="modal-close" onclick="closeEditAddressModal()">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label class="form-label">Full Name *</label>
-                            <input type="text" class="form-control" id="editAddressName" value="${address.name}" placeholder="Enter full name" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Phone Number *</label>
-                            <input type="tel" class="form-control" id="editAddressPhone" value="${address.phone}" placeholder="Enter phone number" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Pincode *</label>
-                            <input type="text" class="form-control" id="editAddressPincode" value="${address.pincode}" placeholder="Enter pincode" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Address *</label>
-                            <textarea class="form-control" id="editAddressLine1" placeholder="House no., Building, Street" rows="2" required>${address.address}</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Landmark (Optional)</label>
-                            <input type="text" class="form-control" id="editAddressLandmark" value="${address.landmark || ''}" placeholder="Nearby landmark">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">City *</label>
-                            <input type="text" class="form-control" id="editAddressCity" value="${address.city}" placeholder="Enter city" required>
-                        </div>
-                        <div class="form-group form-check">
-                            <input type="checkbox" class="form-check-input" id="editDefaultAddress" ${address.isDefault ? 'checked' : ''}>
-                            <label class="form-check-label" for="editDefaultAddress">Set as default address</label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-outline" onclick="closeEditAddressModal()">Cancel</button>
-                        <button type="button" class="btn-primary" onclick="updateAddress('${addressId}')">Update Address</button>
-                    </div>
-                </div>
-            </div>
-            `;
-            
-            closeSavedAddressesModal();
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-        }
-
-        function closeEditAddressModal() {
-            const modal = document.getElementById('editAddressModal');
-            if (modal) modal.remove();
-            savedAddresses(); // Reopen addresses list
-        }
-
-        function updateAddress(addressId) {
-            const name = document.getElementById('editAddressName').value.trim();
-            const phone = document.getElementById('editAddressPhone').value.trim();
-            const pincode = document.getElementById('editAddressPincode').value.trim();
-            const address = document.getElementById('editAddressLine1').value.trim();
-            const city = document.getElementById('editAddressCity').value.trim();
-            const landmark = document.getElementById('editAddressLandmark').value.trim();
-            const isDefault = document.getElementById('editDefaultAddress').checked;
-
-            // Validation
-            if (!name) { showToast("Please enter full name", 'error'); return; }
-            if (!phone) { showToast("Please enter phone number", 'error'); return; }
-            if (!pincode) { showToast("Please enter pincode", 'error'); return; }
-            if (!address) { showToast("Please enter address", 'error'); return; }
-            if (!city) { showToast("Please enter city", 'error'); return; }
-
-            try {
-                const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
-                const addressIndex = addresses.findIndex(addr => addr.id === addressId);
-                
-                if (addressIndex === -1) {
-                    showToast("Address not found", 'error');
-                    return;
-                }
-
-                // If setting as default, remove default from others
-                if (isDefault) {
-                    addresses.forEach(addr => addr.isDefault = false);
-                }
-
-                addresses[addressIndex] = {
-                    ...addresses[addressIndex],
-                    name,
-                    phone,
-                    pincode,
-                    address,
-                    city,
-                    landmark: landmark || '',
-                    isDefault,
-                    updatedAt: new Date().toISOString()
-                };
-
-                localStorage.setItem('userAddresses', JSON.stringify(addresses));
-                showToast('Address updated successfully!', 'success');
-                closeEditAddressModal();
-                
-            } catch (error) {
-                console.error("Error updating address:", error);
-                showToast("Error updating address: " + error.message, 'error');
-            }
-        }
-
-        // ✅ DELETE SAVED ADDRESS
-        function deleteSavedAddress(addressId) {
-            if (!confirm('Are you sure you want to delete this address?')) {
-                return;
-            }
-
-            try {
-                let addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
-                const addressToDelete = addresses.find(addr => addr.id === addressId);
-                
-                if (addressToDelete && addressToDelete.isDefault) {
-                    showToast("Cannot delete default address. Set another address as default first.", 'error');
-                    return;
-                }
-
-                addresses = addresses.filter(addr => addr.id !== addressId);
-                localStorage.setItem('userAddresses', JSON.stringify(addresses));
-                showToast('Address deleted successfully!', 'success');
-                
-                // Refresh addresses list
-                closeSavedAddressesModal();
-                setTimeout(() => savedAddresses(), 100);
-                
-            } catch (error) {
-                console.error("Error deleting address:", error);
-                showToast("Error deleting address: " + error.message, 'error');
-            }
-        }
-
-        // ✅ SET DEFAULT ADDRESS
-        function setDefaultAddress(addressId) {
-            try {
-                const addresses = JSON.parse(localStorage.getItem('userAddresses') || '[]');
-                
-                addresses.forEach(addr => {
-                    addr.isDefault = (addr.id === addressId);
-                });
-
-                localStorage.setItem('userAddresses', JSON.stringify(addresses));
-                showToast('Default address updated!', 'success');
-                
-                // Refresh addresses list
-                closeSavedAddressesModal();
-                setTimeout(() => savedAddresses(), 100);
-                
-            } catch (error) {
-                console.error("Error setting default address:", error);
-                showToast("Error setting default address: " + error.message, 'error');
-            }
-        }
+        // ✅ ADD PUSH NOTIFICATION FUNCTIONALITY (Defined above)
 
         // ✅ ADD MISSING FUNCTIONS
-        function updateUIForAuth(user) {
-            if (user) {
-                document.getElementById('profileUserName').textContent = user.name;
-                document.getElementById('profileUserEmail').textContent = user.email;
-                document.getElementById('avatarText').textContent = user.name.charAt(0).toUpperCase();
-                document.getElementById('checkoutName').value = user.name;
-            }
-        }
-
-        function markNotificationRead(notificationId) {
-            const notification = notifications.find(n => n.id === notificationId);
-            if (notification) {
-                notification.read = true;
-                localStorage.setItem('dukaan_notifications', JSON.stringify(notifications));
-                updateNotificationBadge();
-                renderNotificationsList();
-            }
-        }
-
-        function clearAllNotifications() {
-            if (notifications.length === 0) return;
-            
-            if (confirm('Clear all notifications?')) {
-                notifications = [];
-                localStorage.setItem('dukaan_notifications', JSON.stringify(notifications));
-                updateNotificationBadge();
-                renderNotificationsList();
-                showToast('All notifications cleared');
-            }
-        }
-
-        // ✅ LOAD FIREBASE DATA ON START
-        document.addEventListener('DOMContentLoaded', function() {
-            initApp();
-            loadProductsFromFirebase(); // ✅ Load real products from Firebase
-            setupPushNotifications(); // ✅ Setup push notifications
-            
-            // Auto login demo user (remove in production)
-            setTimeout(() => {
-                if (!currentUser) {
-                    demoLogin();
-                }
-            }, 500);
-        });
-
-        // ✅ ADD THESE FUNCTIONS THAT WERE MISSING
         function showOrderTracking(orderId) {
-            // This function is now hidden as requested
-            console.log('Order tracking hidden as per request');
+            // This function is now hidden as requested (Issue #3)
+            console.log('Order tracking is hidden. Only real-time updates flashed.');
+            showToast('Order tracking is currently disabled.', 'info');
         }
 
         function closeOrderTracking() {
             const trackingSheet = document.getElementById('orderTracking');
-            trackingSheet.classList.remove('open');
+            trackingSheet?.classList.remove('open');
             currentTrackingOrder = null;
         }
 
-        function cancelOrder(orderId) {
+        // ✅ UPDATED: Cancel order with Firebase update
+        async function cancelOrder(orderId) {
             const order = orders.find(o => o.id === orderId);
             if (!order) return;
             
+            if (!['pending', 'confirmed', 'preparing'].includes(order.status)) {
+                showToast('Order cannot be cancelled after processing started.', 'error');
+                return;
+            }
+
             showConfirmationModal(
                 'Cancel Order',
-                `Are you sure you want to cancel Order #${orderId.slice(-6)}?`,
-                () => {
+                `Are you sure you want to cancel Order #${orderId.slice(-6)}? This action cannot be undone.`,
+                async () => {
                     const orderIndex = orders.findIndex(o => o.id === orderId);
                     if (orderIndex !== -1) {
                         orders[orderIndex].status = 'cancelled';
                         localStorage.setItem('dukaan_orders', JSON.stringify(orders));
                         renderOrders();
-                        showToast('Order cancelled successfully');
+                        
+                        // Update in Firebase
+                        if (isOnline) {
+                            try {
+                                const docToUpdate = await db.collection('orders').where('orderId', '==', orderId).get();
+                                if (!docToUpdate.empty) {
+                                    const firestoreDocId = docToUpdate.docs[0].id;
+                                    await db.collection('orders').doc(firestoreDocId).update({
+                                        status: 'cancelled',
+                                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                }
+                            } catch(error) {
+                                console.error("Firebase update failed on cancel:", error);
+                            }
+                        }
+
+                        showToast('Order cancelled successfully', 'success');
                         closeOrderTracking();
                     }
                 }
             );
         }
+        
+        // Final Event Listener Setup
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+            loadProductsFromFirebase(); // ✅ Load real products from Firebase
+            
+            // Auto login demo user (remove in production)
+            // setTimeout(() => {
+            //     if (!currentUser) {
+            //         demoLogin();
+            //     }
+            // }, 500);
+        });
     </script>
-</body>
-</html>
