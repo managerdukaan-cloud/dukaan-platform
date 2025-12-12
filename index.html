@@ -12777,3 +12777,2160 @@
             initApp();
         });
     </script>
+    <script>
+        // ============================================
+        // PRODUCT RELATED FUNCTIONS
+        // ============================================
+        
+        function showProductDetail(productId) {
+            console.log(`Showing product detail for: ${productId}`);
+            
+            const product = appState.products.find(p => p.id === productId);
+            if (!product) {
+                showToast('Product not found', 'The requested product could not be loaded', 'error');
+                return;
+            }
+            
+            // Create product detail HTML
+            const productDetailHTML = `
+                <div class="product-detail-header">
+                    <div class="product-breadcrumb">
+                        <div class="breadcrumb">
+                            <div class="breadcrumb-item">
+                                <a href="#" onclick="showPage('homePage')">Home</a>
+                            </div>
+                            <div class="breadcrumb-divider">/</div>
+                            <div class="breadcrumb-item">
+                                <a href="#" onclick="showCategoryProducts('${product.category}')">${product.category}</a>
+                            </div>
+                            <div class="breadcrumb-divider">/</div>
+                            <div class="breadcrumb-item active">${product.name}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-main">
+                    <div class="product-images">
+                        <img src="${product.image}" alt="${product.name}" class="product-main-image" id="mainProductImage">
+                        <div class="product-thumbnails">
+                            ${product.images.map((img, index) => `
+                                <img src="${img}" alt="${product.name} - ${index + 1}" 
+                                     class="product-thumbnail ${index === 0 ? 'active' : ''}" 
+                                     onclick="changeProductImage('${img}', this)">
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="product-info">
+                        <div class="product-info-header">
+                            <h1 class="product-title-large">${product.name}</h1>
+                            <div class="product-sku">SKU: ${product.sku}</div>
+                            
+                            <div class="product-rating-large">
+                                <div class="product-rating-stars-large">
+                                    ${generateStarRating(product.rating)}
+                                </div>
+                                <div class="product-rating-value-large">${product.rating}</div>
+                                <div class="product-rating-count-large">(${product.reviewCount} ratings)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-price-large">
+                            <div class="product-current-price-large">₹${product.price}</div>
+                            ${product.originalPrice > product.price ? `
+                                <div class="product-original-price-large">₹${product.originalPrice}</div>
+                                <div class="product-discount-large">
+                                    <i class="fas fa-tag"></i>
+                                    Save ₹${product.originalPrice - product.price} (${Math.round((1 - product.price/product.originalPrice) * 100)}% OFF)
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="product-description-large">
+                            <h3 class="product-description-title">Description</h3>
+                            <div class="product-description-content">${product.description}</div>
+                        </div>
+                        
+                        <div class="product-attributes">
+                            <div class="product-attribute">
+                                <div class="product-attribute-label">Brand</div>
+                                <div class="product-attribute-value">${product.brand}</div>
+                            </div>
+                            <div class="product-attribute">
+                                <div class="product-attribute-label">Weight</div>
+                                <div class="product-attribute-value">${product.weight}</div>
+                            </div>
+                            <div class="product-attribute">
+                                <div class="product-attribute-label">Shop</div>
+                                <div class="product-attribute-value">
+                                    <a href="#" onclick="showShopDetail('${product.shop.id}')" style="color: var(--accent);">
+                                        ${product.shop.name}
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="product-attribute">
+                                <div class="product-attribute-label">Stock</div>
+                                <div class="product-attribute-value ${product.inStock ? 'text-success' : 'text-danger'}">
+                                    <i class="fas ${product.inStock ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                    ${product.inStock ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="product-variants" id="productVariants">
+                            <!-- Variants would be loaded here if available -->
+                        </div>
+                        
+                        <div class="product-quantity">
+                            <h4 class="product-quantity-title">Quantity</h4>
+                            <div class="quantity-selector">
+                                <button class="quantity-btn" id="decreaseQty" onclick="decreaseQuantity()">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" class="quantity-input" id="productQuantity" value="1" min="1" max="10" readonly>
+                                <button class="quantity-btn" id="increaseQty" onclick="increaseQuantity()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="product-actions-large">
+                            <button class="btn-buy-now" onclick="buyNow('${productId}')" ${!product.inStock ? 'disabled' : ''}>
+                                <i class="fas fa-bolt"></i>
+                                Buy Now
+                            </button>
+                            <button class="btn-add-to-cart-large" id="addToCartBtn" onclick="addToCartFromDetail('${productId}')" ${!product.inStock ? 'disabled' : ''}>
+                                <i class="fas fa-shopping-cart"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                        
+                        <div class="product-secondary-actions">
+                            <button class="btn-wishlist-large ${appState.wishlist.includes(productId) ? 'active' : ''}" 
+                                    onclick="toggleWishlist('${productId}')">
+                                <i class="fas fa-heart"></i>
+                                ${appState.wishlist.includes(productId) ? 'Added to Wishlist' : 'Add to Wishlist'}
+                            </button>
+                            <button class="btn-compare-large" onclick="addToCompare('${productId}')">
+                                <i class="fas fa-exchange-alt"></i>
+                                Compare
+                            </button>
+                            <button class="btn-share-large" onclick="shareProduct('${productId}')">
+                                <i class="fas fa-share-alt"></i>
+                                Share
+                            </button>
+                        </div>
+                        
+                        <div class="product-delivery-info">
+                            <h4 class="delivery-info-title">Delivery Information</h4>
+                            <div class="delivery-info-item">
+                                <i class="fas fa-shipping-fast delivery-info-icon"></i>
+                                <div class="delivery-info-text">
+                                    <strong>Free Delivery</strong> on orders above ₹299
+                                </div>
+                            </div>
+                            <div class="delivery-info-item">
+                                <i class="fas fa-clock delivery-info-icon"></i>
+                                <div class="delivery-info-text">
+                                    Delivery in <strong>30-40 minutes</strong> for this location
+                                </div>
+                            </div>
+                            <div class="delivery-info-item">
+                                <i class="fas fa-undo delivery-info-icon"></i>
+                                <div class="delivery-info-text">
+                                    <strong>Easy Returns</strong> within 24 hours for damaged or incorrect items
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-detail-tabs">
+                    <div class="product-tabs">
+                        <button class="product-tab-btn active" onclick="switchProductTab('specifications')">Specifications</button>
+                        <button class="product-tab-btn" onclick="switchProductTab('reviews')">Reviews</button>
+                        <button class="product-tab-btn" onclick="switchProductTab('faq')">FAQ</button>
+                    </div>
+                    
+                    <div class="product-tab-content active" id="specificationsTab">
+                        <table class="specifications-table">
+                            <tr>
+                                <td>Brand</td>
+                                <td>${product.brand}</td>
+                            </tr>
+                            <tr>
+                                <td>Weight</td>
+                                <td>${product.weight}</td>
+                            </tr>
+                            <tr>
+                                <td>Category</td>
+                                <td>${product.category}</td>
+                            </tr>
+                            <tr>
+                                <td>Subcategory</td>
+                                <td>${product.subcategory}</td>
+                            </tr>
+                            <tr>
+                                <td>Shelf Life</td>
+                                <td>7-10 days when stored properly</td>
+                            </tr>
+                            <tr>
+                                <td>Storage Instructions</td>
+                                <td>Store in a cool, dry place away from direct sunlight</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="product-tab-content" id="reviewsTab">
+                        <div class="reviews-summary">
+                            <div class="overall-rating">
+                                <div class="overall-rating-value">${product.rating}</div>
+                                <div class="overall-rating-stars">
+                                    ${generateStarRating(product.rating)}
+                                </div>
+                                <div class="overall-rating-count">${product.reviewCount} reviews</div>
+                            </div>
+                            
+                            <div class="rating-breakdown">
+                                <div class="rating-breakdown-item">
+                                    <div class="rating-label">5 Star</div>
+                                    <div class="rating-bar">
+                                        <div class="rating-progress" style="width: 70%;"></div>
+                                    </div>
+                                    <div class="rating-count">70%</div>
+                                </div>
+                                <div class="rating-breakdown-item">
+                                    <div class="rating-label">4 Star</div>
+                                    <div class="rating-bar">
+                                        <div class="rating-progress" style="width: 20%;"></div>
+                                    </div>
+                                    <div class="rating-count">20%</div>
+                                </div>
+                                <div class="rating-breakdown-item">
+                                    <div class="rating-label">3 Star</div>
+                                    <div class="rating-bar">
+                                        <div class="rating-progress" style="width: 5%;"></div>
+                                    </div>
+                                    <div class="rating-count">5%</div>
+                                </div>
+                                <div class="rating-breakdown-item">
+                                    <div class="rating-label">2 Star</div>
+                                    <div class="rating-bar">
+                                        <div class="rating-progress" style="width: 3%;"></div>
+                                    </div>
+                                    <div class="rating-count">3%</div>
+                                </div>
+                                <div class="rating-breakdown-item">
+                                    <div class="rating-label">1 Star</div>
+                                    <div class="rating-bar">
+                                        <div class="rating-progress" style="width: 2%;"></div>
+                                    </div>
+                                    <div class="rating-count">2%</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="reviews-list">
+                            <!-- Sample reviews -->
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="reviewer-info">
+                                        <div class="reviewer-avatar">R</div>
+                                        <div class="reviewer-details">
+                                            <div class="reviewer-name">Rahul Sharma</div>
+                                            <div class="review-date">2 days ago</div>
+                                        </div>
+                                    </div>
+                                    <div class="review-rating">
+                                        ${generateStarRating(5)}
+                                    </div>
+                                </div>
+                                <h4 class="review-title">Excellent Quality</h4>
+                                <div class="review-content">
+                                    The apples were fresh and juicy. Exactly as described. Will order again!
+                                </div>
+                            </div>
+                            
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="reviewer-info">
+                                        <div class="reviewer-avatar">P</div>
+                                        <div class="reviewer-details">
+                                            <div class="reviewer-name">Priya Patel</div>
+                                            <div class="review-date">1 week ago</div>
+                                        </div>
+                                    </div>
+                                    <div class="review-rating">
+                                        ${generateStarRating(4)}
+                                    </div>
+                                </div>
+                                <h4 class="review-title">Good Product</h4>
+                                <div class="review-content">
+                                    Fresh and good quality. Delivery was on time. Satisfied with the purchase.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="product-tab-content" id="faqTab">
+                        <div class="accordion">
+                            <div class="accordion-item">
+                                <button class="accordion-header" onclick="toggleAccordion('faq1')">
+                                    <span>Is this product fresh?</span>
+                                    <i class="fas fa-chevron-down accordion-icon"></i>
+                                </button>
+                                <div class="accordion-content" id="faq1">
+                                    <p>Yes, all our products are sourced fresh daily from trusted suppliers and delivered to you within hours.</p>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <button class="accordion-header" onclick="toggleAccordion('faq2')">
+                                    <span>What is the shelf life?</span>
+                                    <i class="fas fa-chevron-down accordion-icon"></i>
+                                </button>
+                                <div class="accordion-content" id="faq2">
+                                    <p>This product has a shelf life of 7-10 days when stored properly in a cool, dry place.</p>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <button class="accordion-header" onclick="toggleAccordion('faq3')">
+                                    <span>Can I return this product?</span>
+                                    <i class="fas fa-chevron-down accordion-icon"></i>
+                                </button>
+                                <div class="accordion-content" id="faq3">
+                                    <p>Yes, we accept returns within 24 hours of delivery if the product is damaged or incorrect.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Update the product detail container
+            const container = document.getElementById('productDetailContainer');
+            if (container) {
+                container.innerHTML = productDetailHTML;
+                
+                // Show the product detail page
+                showPage('productDetailPage');
+                
+                // Update quantity buttons state
+                updateQuantityButtons();
+                
+                // Load related products
+                loadRelatedProducts(productId);
+            }
+        }
+        
+        function changeProductImage(imageUrl, element) {
+            // Update main image
+            const mainImage = document.getElementById('mainProductImage');
+            if (mainImage) {
+                mainImage.src = imageUrl;
+            }
+            
+            // Update active thumbnail
+            document.querySelectorAll('.product-thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+        
+        function increaseQuantity() {
+            const quantityInput = document.getElementById('productQuantity');
+            if (quantityInput) {
+                let currentQty = parseInt(quantityInput.value);
+                if (currentQty < 10) {
+                    quantityInput.value = currentQty + 1;
+                    updateQuantityButtons();
+                }
+            }
+        }
+        
+        function decreaseQuantity() {
+            const quantityInput = document.getElementById('productQuantity');
+            if (quantityInput) {
+                let currentQty = parseInt(quantityInput.value);
+                if (currentQty > 1) {
+                    quantityInput.value = currentQty - 1;
+                    updateQuantityButtons();
+                }
+            }
+        }
+        
+        function updateQuantityButtons() {
+            const quantityInput = document.getElementById('productQuantity');
+            const decreaseBtn = document.getElementById('decreaseQty');
+            const increaseBtn = document.getElementById('increaseQty');
+            
+            if (quantityInput && decreaseBtn && increaseBtn) {
+                const currentQty = parseInt(quantityInput.value);
+                decreaseBtn.disabled = currentQty <= 1;
+                increaseBtn.disabled = currentQty >= 10;
+            }
+        }
+        
+        function switchProductTab(tabName) {
+            // Update active tab button
+            document.querySelectorAll('.product-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show selected tab content
+            document.querySelectorAll('.product-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const tabId = tabName + 'Tab';
+            const tabContent = document.getElementById(tabId);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+        }
+        
+        function loadRelatedProducts(productId) {
+            const currentProduct = appState.products.find(p => p.id === productId);
+            if (!currentProduct) return;
+            
+            // Find related products (same category, excluding current product)
+            const relatedProducts = appState.products.filter(product => 
+                product.id !== productId && 
+                (product.category === currentProduct.category || product.shop.id === currentProduct.shop.id)
+            ).slice(0, 4);
+            
+            const container = document.getElementById('relatedProducts');
+            if (container && relatedProducts.length > 0) {
+                container.innerHTML = relatedProducts.map(product => createProductCard(product)).join('');
+            }
+        }
+        
+        // ============================================
+        // CART FUNCTIONS
+        // ============================================
+        
+        function addToCart(productId, quantity = 1) {
+            console.log(`Adding product ${productId} to cart`);
+            
+            const product = appState.products.find(p => p.id === productId);
+            if (!product) {
+                showToast('Product not found', 'Could not add to cart', 'error');
+                return;
+            }
+            
+            if (!product.inStock) {
+                showToast('Out of Stock', 'This product is currently out of stock', 'error');
+                return;
+            }
+            
+            // Check if product is already in cart
+            const existingItemIndex = appState.cart.items.findIndex(item => item.id === productId);
+            
+            if (existingItemIndex !== -1) {
+                // Update quantity
+                appState.cart.items[existingItemIndex].quantity += quantity;
+                
+                showToast('Cart Updated', `${product.name} quantity updated`, 'success');
+            } else {
+                // Add new item
+                const cartItem = {
+                    id: product.id,
+                    name: product.name,
+                    quantity: quantity,
+                    price: product.price,
+                    image: product.image,
+                    variant: product.weight,
+                    shop: {
+                        id: product.shop.id,
+                        name: product.shop.name
+                    },
+                    inStock: product.inStock
+                };
+                
+                appState.cart.items.push(cartItem);
+                
+                showToast('Added to Cart', `${product.name} added to your cart`, 'success');
+            }
+            
+            // Update cart totals
+            calculateCartTotals();
+            
+            // Update cart badge
+            updateCartBadge();
+            
+            // If on cart page, reload it
+            if (appState.currentPage === 'cartPage') {
+                loadCartPage();
+            }
+            
+            // Update "Add to Cart" button text if on product detail page
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            if (addToCartBtn) {
+                addToCartBtn.innerHTML = '<i class="fas fa-check"></i> Added to Cart';
+                addToCartBtn.classList.add('added');
+                setTimeout(() => {
+                    addToCartBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+                    addToCartBtn.classList.remove('added');
+                }, 2000);
+            }
+        }
+        
+        function addToCartFromDetail(productId) {
+            const quantityInput = document.getElementById('productQuantity');
+            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+            addToCart(productId, quantity);
+        }
+        
+        function updateCartQuantity(productId, newQuantity) {
+            console.log(`Updating cart quantity for ${productId} to ${newQuantity}`);
+            
+            if (newQuantity < 1) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            if (newQuantity > 10) {
+                showToast('Maximum Quantity', 'You can only add up to 10 units of this product', 'warning');
+                return;
+            }
+            
+            const itemIndex = appState.cart.items.findIndex(item => item.id === productId);
+            if (itemIndex !== -1) {
+                appState.cart.items[itemIndex].quantity = newQuantity;
+                
+                // Update cart totals
+                calculateCartTotals();
+                
+                // Update cart display
+                if (appState.currentPage === 'cartPage') {
+                    loadCartPage();
+                }
+                
+                showToast('Quantity Updated', 'Cart quantity updated successfully', 'success');
+            }
+        }
+        
+        function removeFromCart(productId) {
+            console.log(`Removing product ${productId} from cart`);
+            
+            const itemIndex = appState.cart.items.findIndex(item => item.id === productId);
+            if (itemIndex !== -1) {
+                const itemName = appState.cart.items[itemIndex].name;
+                appState.cart.items.splice(itemIndex, 1);
+                
+                // Update cart totals
+                calculateCartTotals();
+                
+                // Update cart badge
+                updateCartBadge();
+                
+                // Update cart display
+                if (appState.currentPage === 'cartPage') {
+                    loadCartPage();
+                }
+                
+                showToast('Removed from Cart', `${itemName} removed from your cart`, 'success');
+            }
+        }
+        
+        function moveToWishlist(productId) {
+            // First remove from cart
+            removeFromCart(productId);
+            
+            // Then add to wishlist
+            toggleWishlist(productId);
+            
+            showToast('Moved to Wishlist', 'Item moved to your wishlist', 'success');
+        }
+        
+        function loadCartRecommendations() {
+            const container = document.getElementById('cartRecommendations');
+            if (!container) return;
+            
+            // Get recommendations (products not in cart)
+            const cartProductIds = appState.cart.items.map(item => item.id);
+            const recommendations = appState.products
+                .filter(product => !cartProductIds.includes(product.id))
+                .slice(0, 4);
+            
+            if (recommendations.length > 0) {
+                container.innerHTML = recommendations.map(product => createProductCard(product)).join('');
+            }
+        }
+        
+        // ============================================
+        // WISHLIST FUNCTIONS
+        // ============================================
+        
+        function toggleWishlist(productId, event = null) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            console.log(`Toggling wishlist for product: ${productId}`);
+            
+            const product = appState.products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const index = appState.wishlist.indexOf(productId);
+            const isInWishlist = index !== -1;
+            
+            if (isInWishlist) {
+                // Remove from wishlist
+                appState.wishlist.splice(index, 1);
+                showToast('Removed from Wishlist', `${product.name} removed from your wishlist`, 'success');
+            } else {
+                // Add to wishlist
+                appState.wishlist.push(productId);
+                showToast('Added to Wishlist', `${product.name} added to your wishlist`, 'success');
+            }
+            
+            // Update wishlist badge
+            updateWishlistBadge();
+            
+            // Update UI if on wishlist page
+            if (appState.currentPage === 'wishlistPage') {
+                loadWishlistPage();
+            }
+            
+            // Update wishlist button state
+            const wishlistButtons = document.querySelectorAll(`[onclick*="toggleWishlist('${productId}'"]`);
+            wishlistButtons.forEach(btn => {
+                if (isInWishlist) {
+                    btn.classList.remove('active');
+                    if (btn.querySelector('.fa-heart')) {
+                        btn.innerHTML = '<i class="fas fa-heart"></i>';
+                    }
+                } else {
+                    btn.classList.add('active');
+                    if (btn.querySelector('.fa-heart')) {
+                        btn.innerHTML = '<i class="fas fa-heart"></i>';
+                    }
+                }
+            });
+        }
+        
+        function removeFromWishlist(productId) {
+            toggleWishlist(productId);
+        }
+        
+        function clearWishlist() {
+            if (appState.wishlist.length === 0) {
+                showToast('Wishlist is already empty', '', 'info');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to clear your entire wishlist?')) {
+                appState.wishlist = [];
+                updateWishlistBadge();
+                loadWishlistPage();
+                showToast('Wishlist Cleared', 'All items removed from your wishlist', 'success');
+            }
+        }
+        
+        // ============================================
+        // SHOP FUNCTIONS
+        // ============================================
+        
+        function showShopDetail(shopId) {
+            console.log(`Showing shop detail for: ${shopId}`);
+            
+            const shop = appState.shops.find(s => s.id === shopId);
+            if (!shop) {
+                showToast('Shop not found', 'The requested shop could not be loaded', 'error');
+                return;
+            }
+            
+            // Create shop detail HTML
+            const shopDetailHTML = `
+                <div class="shop-detail-header">
+                    <img src="${shop.banner}" alt="${shop.name}" class="shop-detail-banner">
+                    <div class="shop-detail-header-overlay"></div>
+                    <div class="shop-detail-header-content">
+                        ${shop.isVerified ? `
+                            <div class="shop-detail-verified">
+                                <i class="fas fa-check"></i>
+                                <span>Verified Shop</span>
+                            </div>
+                        ` : ''}
+                        
+                        <h1 class="shop-detail-name">${shop.name}</h1>
+                        <div class="shop-detail-category">${shop.category}</div>
+                        
+                        <div class="shop-detail-header-actions">
+                            <button class="btn btn-primary" onclick="showShopProducts('${shopId}')">
+                                <i class="fas fa-store"></i>
+                                View Products
+                            </button>
+                            <button class="btn btn-outline" onclick="followShop('${shopId}')">
+                                <i class="fas fa-bell"></i>
+                                Follow Shop
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="shop-detail-avatar">
+                        <img src="${shop.logo}" alt="${shop.name}" class="shop-detail-logo">
+                    </div>
+                </div>
+                
+                <div class="shop-detail-main">
+                    <div class="shop-detail-info">
+                        <div class="shop-detail-card">
+                            <h3 class="shop-detail-card-title">
+                                <i class="fas fa-info-circle"></i>
+                                About This Shop
+                            </h3>
+                            <div class="shop-detail-about">${shop.description}</div>
+                            
+                            <div class="shop-detail-stats">
+                                <div class="shop-stat">
+                                    <div class="shop-stat-value">${shop.rating}</div>
+                                    <div class="shop-stat-label">Rating</div>
+                                </div>
+                                <div class="shop-stat">
+                                    <div class="shop-stat-value">${shop.reviewCount}</div>
+                                    <div class="shop-stat-label">Reviews</div>
+                                </div>
+                                <div class="shop-stat">
+                                    <div class="shop-stat-value">${shop.stats.totalOrders}</div>
+                                    <div class="shop-stat-label">Orders</div>
+                                </div>
+                                <div class="shop-stat">
+                                    <div class="shop-stat-value">${shop.stats.yearsActive}</div>
+                                    <div class="shop-stat-label">Years Active</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="shop-detail-card">
+                            <h3 class="shop-detail-card-title">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Contact & Location
+                            </h3>
+                            <div class="shop-contact-info">
+                                <div class="shop-contact-item">
+                                    <i class="fas fa-map-marker-alt shop-contact-icon"></i>
+                                    <span>${shop.address}</span>
+                                </div>
+                                <div class="shop-contact-item">
+                                    <i class="fas fa-phone shop-contact-icon"></i>
+                                    <span>${shop.phone}</span>
+                                </div>
+                                <div class="shop-contact-item">
+                                    <i class="fas fa-envelope shop-contact-icon"></i>
+                                    <span>${shop.email}</span>
+                                </div>
+                                <div class="shop-contact-item">
+                                    <i class="fas fa-motorcycle shop-contact-icon"></i>
+                                    <span>${shop.distance} away • ${shop.deliveryTime} delivery</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="shop-detail-card">
+                            <h3 class="shop-detail-card-title">
+                                <i class="fas fa-clock"></i>
+                                Shop Hours
+                            </h3>
+                            <div class="shop-hours">
+                                <div class="shop-hour-item">
+                                    <div class="shop-day">Monday - Friday</div>
+                                    <div class="shop-time open">${shop.hours.monday}</div>
+                                </div>
+                                <div class="shop-hour-item">
+                                    <div class="shop-day">Saturday</div>
+                                    <div class="shop-time open">${shop.hours.saturday}</div>
+                                </div>
+                                <div class="shop-hour-item">
+                                    <div class="shop-day">Sunday</div>
+                                    <div class="shop-time open">${shop.hours.sunday}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="shop-detail-tabs">
+                        <div class="shop-tabs">
+                            <button class="shop-tab-btn active" onclick="switchShopTab('products')">Products</button>
+                            <button class="shop-tab-btn" onclick="switchShopTab('reviews')">Reviews</button>
+                            <button class="shop-tab-btn" onclick="switchShopTab('info')">Information</button>
+                        </div>
+                        
+                        <div class="shop-tab-content active" id="shopProductsTab">
+                            <div class="shop-products-header">
+                                <h3>Products from ${shop.name}</h3>
+                                <div class="shop-products-filter">
+                                    <select class="form-control" style="max-width: 200px;">
+                                        <option>Sort by: Popular</option>
+                                        <option>Price: Low to High</option>
+                                        <option>Price: High to Low</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="product-grid" id="shopProductsGrid">
+                                <!-- Shop products will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <div class="shop-tab-content" id="shopReviewsTab">
+                            <div class="reviews-summary">
+                                <div class="overall-rating">
+                                    <div class="overall-rating-value">${shop.rating}</div>
+                                    <div class="overall-rating-stars">
+                                        ${generateStarRating(shop.rating)}
+                                    </div>
+                                    <div class="overall-rating-count">${shop.reviewCount} reviews</div>
+                                </div>
+                                
+                                <div class="rating-breakdown">
+                                    <!-- Rating breakdown would go here -->
+                                </div>
+                            </div>
+                            
+                            <div class="reviews-list">
+                                <!-- Shop reviews would go here -->
+                            </div>
+                        </div>
+                        
+                        <div class="shop-tab-content" id="shopInfoTab">
+                            <div class="shop-info-details">
+                                <h4>Shop Policies</h4>
+                                <ul>
+                                    <li>Minimum order: ₹${shop.minOrder}</li>
+                                    <li>Delivery fee: ₹${shop.deliveryFee}</li>
+                                    <li>Delivery time: ${shop.deliveryTime}</li>
+                                    <li>Free delivery on orders above ₹299</li>
+                                </ul>
+                                
+                                <h4>Quality Assurance</h4>
+                                <p>All products are quality checked before dispatch. We ensure freshness and quality in every order.</p>
+                                
+                                <h4>Return Policy</h4>
+                                <p>We accept returns within 24 hours for damaged or incorrect items. Contact our support for assistance.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Update the shop detail container
+            const container = document.getElementById('shopDetailContainer');
+            if (container) {
+                container.innerHTML = shopDetailHTML;
+                
+                // Show the shop detail page
+                showPage('shopDetailPage');
+                
+                // Load shop products
+                loadShopProducts(shopId);
+            }
+        }
+        
+        function loadShopProducts(shopId) {
+            const container = document.getElementById('shopProductsGrid');
+            if (!container) return;
+            
+            // Get products from this shop
+            const shopProducts = appState.products.filter(product => product.shop.id === shopId);
+            
+            if (shopProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h3 class="empty-state-title">No Products Available</h3>
+                        <p class="empty-state-message">This shop doesn't have any products listed yet</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = shopProducts.map(product => createProductCard(product)).join('');
+            }
+        }
+        
+        function switchShopTab(tabName) {
+            // Update active tab button
+            document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show selected tab content
+            document.querySelectorAll('.shop-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const tabId = 'shop' + tabName.charAt(0).toUpperCase() + tabName.slice(1) + 'Tab';
+            const tabContent = document.getElementById(tabId);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+        }
+        
+        function followShop(shopId) {
+            showToast('Shop Followed', 'You will receive updates from this shop', 'success');
+        }
+        
+        function showShopProducts(shopId) {
+            // This would filter products by shop
+            // For now, just show a message
+            showToast('Feature Coming Soon', 'Shop products filtering will be available soon', 'info');
+        }
+        
+        // ============================================
+        // CATEGORY FUNCTIONS
+        // ============================================
+        
+        function showCategory(categoryId) {
+            console.log(`Showing category: ${categoryId}`);
+            
+            const category = appState.categories.find(c => c.id === categoryId);
+            if (!category) {
+                showToast('Category not found', 'The requested category could not be loaded', 'error');
+                return;
+            }
+            
+            // Set category title and description
+            document.getElementById('categoryTitle').textContent = category.name;
+            document.getElementById('categoryDescription').textContent = category.description;
+            
+            // Get products in this category
+            const categoryProducts = appState.products.filter(product => product.category === category.name);
+            
+            // Update products grid
+            const container = document.getElementById('categoryProducts');
+            if (container) {
+                if (categoryProducts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <h3 class="empty-state-title">No Products Available</h3>
+                            <p class="empty-state-message">No products found in this category</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = categoryProducts.map(product => createProductCard(product)).join('');
+                }
+                
+                // Initialize pagination
+                initPagination('categoryPagination', categoryProducts.length, 12, 1);
+                
+                // Show the category products page
+                showPage('categoryProductsPage');
+            }
+        }
+        
+        function showCategoryProducts(categoryName) {
+            // Find category by name
+            const category = appState.categories.find(c => c.name === categoryName);
+            if (category) {
+                showCategory(category.id);
+            }
+        }
+        
+        // ============================================
+        // CHECKOUT FUNCTIONS
+        // ============================================
+        
+        function proceedToCheckout() {
+            if (appState.cart.items.length === 0) {
+                showToast('Cart is empty', 'Add items to your cart before checkout', 'error');
+                return;
+            }
+            
+            // Navigate to checkout page
+            showPage('checkoutPage');
+        }
+        
+        function loadCheckoutAddresses() {
+            const container = document.getElementById('checkoutAddresses');
+            if (!container) return;
+            
+            if (appState.addresses.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3 class="empty-state-title">No Addresses Saved</h3>
+                        <p class="empty-state-message">Add an address to continue with checkout</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = appState.addresses.map(address => `
+                <div class="checkout-address-card ${address.isDefault ? 'selected' : ''}" 
+                     onclick="selectCheckoutAddress('${address.id}')" 
+                     id="address-${address.id}">
+                    <div class="checkout-address-type">
+                        <i class="fas fa-${address.type === 'home' ? 'home' : address.type === 'work' ? 'briefcase' : 'map-marker-alt'} checkout-address-type-icon"></i>
+                        <div class="checkout-address-type-text">
+                            ${address.type === 'home' ? 'Home' : address.type === 'work' ? 'Work' : 'Other'}
+                            ${address.isDefault ? '<span class="checkout-address-default">Default</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="checkout-address-details">
+                        <p><strong>${address.name}</strong></p>
+                        <p>${address.line1}</p>
+                        <p>${address.line2}</p>
+                        <p>${address.city}, ${address.state} - ${address.pincode}</p>
+                    </div>
+                    <div class="checkout-address-phone">
+                        <i class="fas fa-phone"></i>
+                        <span>${address.phone}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Select default address if exists
+            const defaultAddress = appState.addresses.find(addr => addr.isDefault);
+            if (defaultAddress) {
+                selectCheckoutAddress(defaultAddress.id);
+            }
+        }
+        
+        function selectCheckoutAddress(addressId) {
+            // Remove selected class from all addresses
+            document.querySelectorAll('.checkout-address-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked address
+            const selectedCard = document.getElementById(`address-${addressId}`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+                
+                // Enable next step if this is step 1
+                if (appState.checkoutStep === 1) {
+                    nextCheckoutStep();
+                }
+            }
+        }
+        
+        function loadDeliveryOptions() {
+            const container = document.getElementById('deliveryOptions');
+            if (!container) return;
+            
+            const deliveryOptions = [
+                {
+                    id: 'standard',
+                    name: 'Standard Delivery',
+                    description: 'Delivery within 30-40 minutes',
+                    price: 40,
+                    freeAbove: 299,
+                    time: '30-40 mins'
+                },
+                {
+                    id: 'express',
+                    name: 'Express Delivery',
+                    description: 'Priority delivery within 20-30 minutes',
+                    price: 60,
+                    freeAbove: 499,
+                    time: '20-30 mins'
+                },
+                {
+                    id: 'scheduled',
+                    name: 'Scheduled Delivery',
+                    description: 'Choose your preferred delivery time',
+                    price: 50,
+                    freeAbove: 399,
+                    time: 'Select time'
+                }
+            ];
+            
+            container.innerHTML = deliveryOptions.map(option => {
+                const isFree = appState.cart.subtotal >= option.freeAbove;
+                return `
+                    <div class="checkout-delivery-option" onclick="selectDeliveryOption('${option.id}')" id="delivery-${option.id}">
+                        <div class="delivery-option-icon">
+                            <i class="fas fa-${option.id === 'express' ? 'bolt' : option.id === 'scheduled' ? 'calendar-alt' : 'shipping-fast'}"></i>
+                        </div>
+                        <div class="delivery-option-name">${option.name}</div>
+                        <div class="delivery-option-description">${option.description}</div>
+                        <div class="delivery-option-price">${isFree ? 'FREE' : '₹' + option.price}</div>
+                        <div class="delivery-option-time">${option.time}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Select first option by default
+            selectDeliveryOption('standard');
+        }
+        
+        function selectDeliveryOption(optionId) {
+            // Remove selected class from all options
+            document.querySelectorAll('.checkout-delivery-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            const selectedOption = document.getElementById(`delivery-${optionId}`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+                
+                // Update delivery fee in cart
+                const option = optionId === 'standard' ? { price: 40, freeAbove: 299 } : 
+                              optionId === 'express' ? { price: 60, freeAbove: 499 } : 
+                              { price: 50, freeAbove: 399 };
+                
+                const isFree = appState.cart.subtotal >= option.freeAbove;
+                appState.cart.delivery = isFree ? 0 : option.price;
+                
+                // Update cart totals and summary
+                calculateCartTotals();
+                updateCartSummary();
+                loadCheckoutSummary();
+                
+                // Enable next step if this is step 2
+                if (appState.checkoutStep === 2) {
+                    nextCheckoutStep();
+                }
+            }
+        }
+        
+        function loadPaymentMethods() {
+            const container = document.getElementById('paymentMethods');
+            if (!container) return;
+            
+            const paymentMethods = [
+                {
+                    id: 'credit_card',
+                    name: 'Credit/Debit Card',
+                    icon: 'fas fa-credit-card',
+                    description: 'Pay with your card'
+                },
+                {
+                    id: 'upi',
+                    name: 'UPI',
+                    icon: 'fas fa-mobile-alt',
+                    description: 'Pay using UPI apps'
+                },
+                {
+                    id: 'netbanking',
+                    name: 'Net Banking',
+                    icon: 'fas fa-university',
+                    description: 'Pay via net banking'
+                },
+                {
+                    id: 'cod',
+                    name: 'Cash on Delivery',
+                    icon: 'fas fa-money-bill-wave',
+                    description: 'Pay when you receive'
+                }
+            ];
+            
+            container.innerHTML = paymentMethods.map(method => `
+                <div class="checkout-payment-method" onclick="selectPaymentMethod('${method.id}')" id="payment-${method.id}">
+                    <div class="payment-method-icon">
+                        <i class="${method.icon}"></i>
+                    </div>
+                    <div class="payment-method-name">${method.name}</div>
+                    <div class="payment-method-description">${method.description}</div>
+                </div>
+            `).join('');
+            
+            // Select first option by default
+            selectPaymentMethod('credit_card');
+        }
+        
+        function selectPaymentMethod(methodId) {
+            // Remove selected class from all methods
+            document.querySelectorAll('.checkout-payment-method').forEach(method => {
+                method.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked method
+            const selectedMethod = document.getElementById(`payment-${methodId}`);
+            if (selectedMethod) {
+                selectedMethod.classList.add('selected');
+                
+                // Enable next step if this is step 3
+                if (appState.checkoutStep === 3) {
+                    nextCheckoutStep();
+                }
+            }
+        }
+        
+        function loadCheckoutSummary() {
+            // Update order summary items
+            const summaryItems = document.getElementById('checkoutSummaryItems');
+            const summaryDetails = document.getElementById('checkoutSummaryDetails');
+            
+            if (summaryItems) {
+                summaryItems.innerHTML = appState.cart.items.map(item => `
+                    <div class="checkout-order-item">
+                        <img src="${item.image}" alt="${item.name}" class="checkout-order-item-image">
+                        <div class="checkout-order-item-info">
+                            <div class="checkout-order-item-name">${item.name}</div>
+                            <div class="checkout-order-item-details">${item.variant} × ${item.quantity}</div>
+                            <div class="checkout-order-item-price">₹${item.price * item.quantity}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            if (summaryDetails) {
+                summaryDetails.innerHTML = `
+                    <div class="checkout-summary-item">
+                        <span>Item Total</span>
+                        <span class="value">₹${appState.cart.subtotal}</span>
+                    </div>
+                    <div class="checkout-summary-item">
+                        <span>Delivery Fee</span>
+                        <span class="value">${appState.cart.delivery === 0 ? 'FREE' : '₹' + appState.cart.delivery}</span>
+                    </div>
+                    <div class="checkout-summary-item">
+                        <span>Tax (5%)</span>
+                        <span class="value">₹${appState.cart.tax.toFixed(2)}</span>
+                    </div>
+                    ${appState.cart.discount > 0 ? `
+                        <div class="checkout-summary-item">
+                            <span>Discount</span>
+                            <span class="value" style="color: var(--success);">-₹${appState.cart.discount}</span>
+                        </div>
+                    ` : ''}
+                    <div class="checkout-summary-item total">
+                        <span>Total Amount</span>
+                        <span class="value">₹${appState.cart.total.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateCheckoutSteps() {
+            // Update step indicators
+            const steps = document.querySelectorAll('.step');
+            const stepLine = document.getElementById('checkoutStepLine');
+            
+            steps.forEach((step, index) => {
+                const stepNumber = index + 1;
+                
+                if (stepNumber < appState.checkoutStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (stepNumber === appState.checkoutStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+            
+            // Update step line width
+            if (stepLine) {
+                const widthPercentage = ((appState.checkoutStep - 1) / 3) * 100;
+                stepLine.style.width = `${widthPercentage}%`;
+            }
+            
+            // Show/hide step content
+            for (let i = 1; i <= 4; i++) {
+                const stepContent = document.getElementById(`checkoutStep${i}`);
+                if (stepContent) {
+                    if (i === appState.checkoutStep) {
+                        stepContent.style.display = 'block';
+                    } else {
+                        stepContent.style.display = 'none';
+                    }
+                }
+            }
+            
+            // Enable/disable place order button
+            const placeOrderBtn = document.getElementById('btnPlaceOrder');
+            if (placeOrderBtn) {
+                const agreementCheckbox = document.getElementById('checkoutAgreement');
+                if (agreementCheckbox) {
+                    agreementCheckbox.addEventListener('change', function() {
+                        placeOrderBtn.disabled = !this.checked;
+                    });
+                }
+            }
+        }
+        
+        function nextCheckoutStep() {
+            if (appState.checkoutStep < 4) {
+                appState.checkoutStep++;
+                updateCheckoutSteps();
+            }
+        }
+        
+        function previousCheckoutStep() {
+            if (appState.checkoutStep > 1) {
+                appState.checkoutStep--;
+                updateCheckoutSteps();
+            }
+        }
+        
+        function placeOrder() {
+            console.log('Placing order...');
+            
+            // Validate cart
+            if (appState.cart.items.length === 0) {
+                showToast('Cart is empty', 'Add items to your cart before placing an order', 'error');
+                return;
+            }
+            
+            // Get selected address
+            const selectedAddressCard = document.querySelector('.checkout-address-card.selected');
+            if (!selectedAddressCard) {
+                showToast('Select Address', 'Please select a delivery address', 'error');
+                appState.checkoutStep = 1;
+                updateCheckoutSteps();
+                return;
+            }
+            
+            // Get selected payment method
+            const selectedPaymentCard = document.querySelector('.checkout-payment-method.selected');
+            if (!selectedPaymentCard) {
+                showToast('Select Payment Method', 'Please select a payment method', 'error');
+                appState.checkoutStep = 3;
+                updateCheckoutSteps();
+                return;
+            }
+            
+            // Create new order
+            const orderId = 'ORD-' + Date.now().toString().slice(-6);
+            const selectedAddressId = selectedAddressCard.id.replace('address-', '');
+            const address = appState.addresses.find(addr => addr.id === selectedAddressId);
+            
+            const newOrder = {
+                id: orderId,
+                date: new Date().toISOString().split('T')[0],
+                status: 'pending',
+                items: appState.cart.items.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    image: item.image,
+                    variant: item.variant
+                })),
+                total: appState.cart.total,
+                subtotal: appState.cart.subtotal,
+                delivery: appState.cart.delivery,
+                tax: appState.cart.tax,
+                discount: appState.cart.discount,
+                shop: {
+                    id: appState.cart.items[0].shop.id,
+                    name: appState.cart.items[0].shop.name
+                },
+                address: address,
+                payment: {
+                    method: selectedPaymentCard.id.replace('payment-', ''),
+                    transactionId: 'TXN-' + Date.now().toString().slice(-8),
+                    status: 'pending'
+                },
+                delivery: {
+                    method: 'standard',
+                    estimated: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
+                    actual: null,
+                    rider: null
+                },
+                timeline: [
+                    { 
+                        time: new Date().toISOString(), 
+                        status: 'ordered', 
+                        message: 'Order placed' 
+                    }
+                ]
+            };
+            
+            // Add order to state
+            appState.orders.unshift(newOrder);
+            
+            // Clear cart
+            appState.cart.items = [];
+            appState.cart.subtotal = 0;
+            appState.cart.tax = 0;
+            appState.cart.total = 0;
+            appState.cart.discount = 0;
+            
+            // Update UI
+            updateCartBadge();
+            updateOrdersBadge();
+            
+            // Show success modal
+            showOrderSuccessModal(newOrder);
+            
+            // Add notification
+            addNotification({
+                title: 'Order Confirmed',
+                message: `Your order ${orderId} has been placed successfully`,
+                time: new Date().toISOString(),
+                type: 'order',
+                orderId: orderId,
+                read: false,
+                action: 'view_order'
+            });
+            
+            // Navigate to home page
+            setTimeout(() => {
+                closeOrderSuccess();
+                showPage('homePage');
+            }, 3000);
+        }
+        
+        function showOrderSuccessModal(order) {
+            const modal = document.getElementById('orderSuccessModal');
+            if (!modal) return;
+            
+            // Update modal content
+            document.getElementById('successOrderId').textContent = order.id;
+            document.getElementById('successOrderTotal').textContent = `₹${order.total.toFixed(2)}`;
+            
+            // Format delivery date
+            const deliveryDate = new Date(order.delivery.estimated);
+            const options = { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            };
+            const formattedTime = deliveryDate.toLocaleTimeString('en-IN', options);
+            document.getElementById('successDeliveryDate').textContent = `Today, ${formattedTime}`;
+            
+            // Show modal
+            modal.classList.add('show');
+            overlay.classList.add('show');
+        }
+        
+        function closeOrderSuccess() {
+            const modal = document.getElementById('orderSuccessModal');
+            if (modal) {
+                modal.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+        }
+        
+        function viewOrderDetails() {
+            // Get the latest order (first in array)
+            if (appState.orders.length > 0) {
+                showOrderDetail(appState.orders[0].id);
+                closeOrderSuccess();
+            }
+        }
+        
+        // ============================================
+        // ORDER FUNCTIONS
+        // ============================================
+        
+        function filterOrders(status) {
+            const container = document.getElementById('ordersList');
+            if (!container) return;
+            
+            // Update active tab
+            document.querySelectorAll('.orders-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            let filteredOrders = appState.orders;
+            
+            if (status !== 'all') {
+                filteredOrders = appState.orders.filter(order => {
+                    if (status === 'pending') {
+                        return ['pending', 'confirmed', 'preparing', 'ready', 'out-for-delivery'].includes(order.status);
+                    } else if (status === 'delivered') {
+                        return order.status === 'delivered';
+                    } else if (status === 'cancelled') {
+                        return order.status === 'cancelled';
+                    }
+                    return true;
+                });
+            }
+            
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="orders-empty">
+                        <div class="orders-empty-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <h3 class="orders-empty-title">No ${status === 'all' ? '' : status} Orders</h3>
+                        <p class="orders-empty-message">${status === 'all' ? 'Start shopping and your orders will appear here' : `You don't have any ${status} orders yet`}</p>
+                        ${status === 'all' ? `
+                            <button class="btn btn-primary" onclick="showPage('homePage')">
+                                <i class="fas fa-shopping-cart"></i>
+                                Start Shopping
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = filteredOrders.map(order => createOrderCard(order)).join('');
+            }
+        }
+        
+        function showOrderDetail(orderId) {
+            console.log(`Showing order detail for: ${orderId}`);
+            
+            const order = appState.orders.find(o => o.id === orderId);
+            if (!order) {
+                showToast('Order not found', 'The requested order could not be loaded', 'error');
+                return;
+            }
+            
+            // Create order detail HTML
+            const orderDetailHTML = `
+                <div class="orders-header">
+                    <h1 class="orders-title">Order Details</h1>
+                    <p class="orders-subtitle">Order #${order.id} • ${formatDate(order.date)}</p>
+                </div>
+                
+                <div class="orders-content">
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-info">
+                                <div class="order-id">Order #${order.id}</div>
+                                <div class="order-date">${formatDate(order.date)}</div>
+                                <div class="order-shop">
+                                    <i class="fas fa-store"></i>
+                                    <span class="order-shop-name">${order.shop.name}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="order-status">
+                                <div class="order-status-badge status-${order.status}">
+                                    ${order.status.replace(/-/g, ' ').toUpperCase()}
+                                </div>
+                                ${order.delivery.estimated ? `
+                                    <div class="order-status-time">Est: ${formatTime(order.delivery.estimated)}</div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="order-body">
+                            <h4>Delivery Address</h4>
+                            <div class="order-address">
+                                <p><strong>${order.address.name}</strong></p>
+                                <p>${order.address.line1}</p>
+                                <p>${order.address.line2}</p>
+                                <p>${order.address.city}, ${order.address.state} - ${order.address.pincode}</p>
+                                <p>Phone: ${order.address.phone}</p>
+                            </div>
+                            
+                            <div class="order-items">
+                                <h4>Order Items</h4>
+                                ${order.items.map(item => `
+                                    <div class="order-item">
+                                        <img src="${item.image}" alt="${item.name}" class="order-item-image" onclick="showProductDetail('${item.id}')">
+                                        <div class="order-item-info">
+                                            <div class="order-item-name" onclick="showProductDetail('${item.id}')">${item.name}</div>
+                                            <div class="order-item-details">${item.variant} × ${item.quantity}</div>
+                                            <div class="order-item-price">₹${item.price * item.quantity}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="order-summary">
+                                <div class="order-summary-item">
+                                    <span>Item Total</span>
+                                    <span class="value">₹${order.subtotal}</span>
+                                </div>
+                                <div class="order-summary-item">
+                                    <span>Delivery</span>
+                                    <span class="value">${order.delivery === 0 ? 'FREE' : '₹' + order.delivery}</span>
+                                </div>
+                                <div class="order-summary-item">
+                                    <span>Taxes</span>
+                                    <span class="value">₹${order.tax}</span>
+                                </div>
+                                ${order.discount > 0 ? `
+                                    <div class="order-summary-item">
+                                        <span>Discount</span>
+                                        <span class="value" style="color: var(--success);">-₹${order.discount}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="order-summary-item">
+                                    <span>Total Amount</span>
+                                    <span class="value">₹${order.total}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="order-payment">
+                                <h4>Payment Details</h4>
+                                <div class="payment-info">
+                                    <p><strong>Payment Method:</strong> ${order.payment.method.replace('_', ' ').toUpperCase()}</p>
+                                    <p><strong>Transaction ID:</strong> ${order.payment.transactionId}</p>
+                                    <p><strong>Payment Status:</strong> ${order.payment.status.toUpperCase()}</p>
+                                </div>
+                            </div>
+                            
+                            ${order.timeline && order.timeline.length > 0 ? `
+                                <div class="order-timeline">
+                                    <h4>Order Timeline</h4>
+                                    <div class="timeline">
+                                        ${order.timeline.map((step, index) => `
+                                            <div class="timeline-item ${index === order.timeline.length - 1 ? 'active' : 'completed'}">
+                                                <div class="timeline-time">${formatTime(step.time)}</div>
+                                                <div class="timeline-title">${step.message}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="order-footer">
+                            <div class="order-actions">
+                                <!-- FIXED: Removed "Modify Order" button -->
+                                <!-- FIXED: Removed "Track Order" button -->
+                                
+                                ${order.status === 'delivered' ? `
+                                    <button class="btn-reorder" onclick="reorder('${order.id}')">
+                                        <i class="fas fa-redo"></i>
+                                        Reorder
+                                    </button>
+                                    <button class="btn-rate-order" onclick="rateOrder('${order.id}')">
+                                        <i class="fas fa-star"></i>
+                                        Rate Order
+                                    </button>
+                                ` : ''}
+                                
+                                ${['pending', 'confirmed', 'preparing'].includes(order.status) ? `
+                                    <button class="btn-cancel-order" onclick="cancelOrder('${order.id}')">
+                                        <i class="fas fa-times"></i>
+                                        Cancel Order
+                                    </button>
+                                ` : ''}
+                                
+                                <button class="btn-view-invoice" onclick="viewInvoice('${order.id}')">
+                                    <i class="fas fa-receipt"></i>
+                                    View Invoice
+                                </button>
+                                
+                                <button class="btn btn-secondary" onclick="showPage('ordersPage')">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Back to Orders
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Update the order detail container
+            const container = document.getElementById('orderDetailContainer');
+            if (container) {
+                container.innerHTML = orderDetailHTML;
+                
+                // Show the order detail page
+                showPage('orderDetailPage');
+            }
+        }
+        
+        function reorder(orderId) {
+            const order = appState.orders.find(o => o.id === orderId);
+            if (!order) return;
+            
+            // Add all items from order to cart
+            order.items.forEach(item => {
+                addToCart(item.id, item.quantity);
+            });
+            
+            showToast('Items Added to Cart', 'All items from this order have been added to your cart', 'success');
+            
+            // Navigate to cart page
+            setTimeout(() => {
+                showPage('cartPage');
+            }, 1000);
+        }
+        
+        function cancelOrder(orderId) {
+            if (!confirm('Are you sure you want to cancel this order?')) {
+                return;
+            }
+            
+            const orderIndex = appState.orders.findIndex(o => o.id === orderId);
+            if (orderIndex !== -1) {
+                // Update order status
+                appState.orders[orderIndex].status = 'cancelled';
+                appState.orders[orderIndex].timeline.push({
+                    time: new Date().toISOString(),
+                    status: 'cancelled',
+                    message: 'Order cancelled by customer'
+                });
+                
+                // Update orders badge
+                updateOrdersBadge();
+                
+                // Reload orders page if currently viewing it
+                if (appState.currentPage === 'ordersPage' || appState.currentPage === 'orderDetailPage') {
+                    showPage('ordersPage');
+                }
+                
+                showToast('Order Cancelled', 'Your order has been cancelled successfully', 'success');
+                
+                // Add notification
+                addNotification({
+                    title: 'Order Cancelled',
+                    message: `Your order ${orderId} has been cancelled`,
+                    time: new Date().toISOString(),
+                    type: 'order',
+                    orderId: orderId,
+                    read: false
+                });
+            }
+        }
+        
+        function rateOrder(orderId) {
+            showToast('Feature Coming Soon', 'Order rating feature will be available soon', 'info');
+        }
+        
+        function viewInvoice(orderId) {
+            showToast('Feature Coming Soon', 'Invoice download feature will be available soon', 'info');
+        }
+        
+        // ============================================
+        // ADDRESS FUNCTIONS (FIXED)
+        // ============================================
+        
+        function loadAddresses(container) {
+            if (!container) return;
+            
+            if (appState.addresses.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3 class="empty-state-title">No Addresses Saved</h3>
+                        <p class="empty-state-message">Add your first address for faster checkout</p>
+                        <button class="btn btn-primary" onclick="openAddressModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Address
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = appState.addresses.map(address => `
+                <div class="address-card ${address.isDefault ? 'default' : ''}">
+                    <div class="address-header">
+                        <div class="address-type">
+                            <i class="fas fa-${address.type === 'home' ? 'home' : address.type === 'work' ? 'briefcase' : 'map-marker-alt'} address-type-icon"></i>
+                            <div class="address-type-text">
+                                ${address.type === 'home' ? 'Home' : address.type === 'work' ? 'Work' : 'Other'}
+                                ${address.isDefault ? '<span class="address-default-badge">Default</span>' : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="address-actions">
+                            <!-- FIXED: Edit button now working -->
+                            <button class="btn-edit-address" onclick="editAddress('${address.id}')">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                            
+                            <!-- FIXED: Delete button now working -->
+                            <button class="btn-delete-address" onclick="deleteAddress('${address.id}')">
+                                <i class="fas fa-trash"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="address-details">
+                        <p><strong>${address.name}</strong></p>
+                        <p>${address.line1}</p>
+                        <p>${address.line2}</p>
+                        <p>${address.city}, ${address.state} - ${address.pincode}</p>
+                    </div>
+                    
+                    <div class="address-phone">
+                        <i class="fas fa-phone"></i>
+                        <span>${address.phone}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function loadProfileAddresses() {
+            const container = document.getElementById('profileAddresses');
+            loadAddresses(container);
+        }
+        
+        function saveAddress() {
+            console.log('Saving address...');
+            
+            // Get form values
+            const type = document.getElementById('addressType').value;
+            const name = document.getElementById('addressName').value.trim();
+            const phone = document.getElementById('addressPhone').value.trim();
+            const pincode = document.getElementById('addressPincode').value.trim();
+            const line1 = document.getElementById('addressLine1').value.trim();
+            const line2 = document.getElementById('addressLine2').value.trim();
+            const city = document.getElementById('addressCity').value.trim();
+            const state = document.getElementById('addressState').value.trim();
+            const setDefault = document.getElementById('setDefaultAddress').checked;
+            
+            // Validation
+            if (!name || !phone || !pincode || !line1 || !city || !state) {
+                showToast('Validation Error', 'Please fill all required fields', 'error');
+                return;
+            }
+            
+            if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                showToast('Validation Error', 'Please enter a valid 10-digit phone number', 'error');
+                return;
+            }
+            
+            if (pincode.length !== 6 || !/^\d+$/.test(pincode)) {
+                showToast('Validation Error', 'Please enter a valid 6-digit pincode', 'error');
+                return;
+            }
+            
+            // Check if editing existing address
+            const editingAddressId = window.editingAddressId;
+            
+            if (editingAddressId) {
+                // Update existing address
+                const addressIndex = appState.addresses.findIndex(addr => addr.id === editingAddressId);
+                if (addressIndex !== -1) {
+                    appState.addresses[addressIndex] = {
+                        ...appState.addresses[addressIndex],
+                        type,
+                        name,
+                        phone: '+91 ' + phone,
+                        line1,
+                        line2,
+                        city,
+                        state,
+                        pincode,
+                        isDefault: setDefault
+                    };
+                }
+                
+                showToast('Address Updated', 'Your address has been updated successfully', 'success');
+            } else {
+                // Add new address
+                const newAddress = {
+                    id: 'addr-' + Date.now(),
+                    type,
+                    name,
+                    phone: '+91 ' + phone,
+                    line1,
+                    line2,
+                    city,
+                    state,
+                    pincode,
+                    isDefault: setDefault
+                };
+                
+                appState.addresses.push(newAddress);
+                showToast('Address Added', 'New address has been added successfully', 'success');
+            }
+            
+            // If setting as default, remove default from others
+            if (setDefault) {
+                appState.addresses.forEach(addr => {
+                    if (addr.id !== (editingAddressId || appState.addresses[appState.addresses.length - 1].id)) {
+                        addr.isDefault = false;
+                    }
+                });
+            }
+            
+            // Update profile stats
+            document.getElementById('profileAddressesCount').textContent = appState.addresses.length;
+            
+            // Reload addresses in all containers
+            const addressContainers = [
+                'profileAddresses',
+                'allAddresses',
+                'checkoutAddresses'
+            ];
+            
+            addressContainers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    loadAddresses(container);
+                }
+            });
+            
+            // Close address sheet
+            closeAddressSheet();
+            
+            // Clear editing state
+            window.editingAddressId = null;
+        }
+        
+        // FIXED: Edit address function
+        function editAddress(addressId) {
+            console.log(`Editing address: ${addressId}`);
+            
+            const address = appState.addresses.find(addr => addr.id === addressId);
+            if (!address) {
+                showToast('Address not found', 'Could not edit address', 'error');
+                return;
+            }
+            
+            // Store editing address ID
+            window.editingAddressId = addressId;
+            
+            // Open address sheet with pre-filled data
+            openAddressModal();
+            
+            // Set form values
+            setTimeout(() => {
+                document.getElementById('addressSheetTitle').textContent = 'Edit Address';
+                document.getElementById('addressType').value = address.type;
+                document.getElementById('addressName').value = address.name;
+                
+                // Extract phone number without country code
+                const phone = address.phone.replace('+91 ', '');
+                document.getElementById('addressPhone').value = phone;
+                
+                document.getElementById('addressPincode').value = address.pincode;
+                document.getElementById('addressLine1').value = address.line1;
+                document.getElementById('addressLine2').value = address.line2;
+                document.getElementById('addressCity').value = address.city;
+                document.getElementById('addressState').value = address.state;
+                document.getElementById('setDefaultAddress').checked = address.isDefault;
+            }, 100);
+        }
+        
+        // FIXED: Delete address function
+        function deleteAddress(addressId) {
+            console.log(`Deleting address: ${addressId}`);
+            
+            const address = appState.addresses.find(addr => addr.id === addressId);
+            if (!address) {
+                showToast('Address not found', 'Could not delete address', 'error');
+                return;
+            }
+            
+            // Check if it's the default address
+            if (address.isDefault && appState.addresses.length > 1) {
+                showToast('Cannot Delete', 'Please set another address as default before deleting this one', 'error');
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to delete this address?')) {
+                return;
+            }
+            
+            // Remove address
+            const addressIndex = appState.addresses.findIndex(addr => addr.id === addressId);
+            if (addressIndex !== -1) {
+                appState.addresses.splice(addressIndex, 1);
+                
+                // If we deleted the default and have other addresses, set first as default
+                if (address.isDefault && appState.addresses.length > 0) {
+                    appState.addresses[0].isDefault = true;
+                }
+                
+                // Update profile stats
+                document.getElementById('profileAddressesCount').textContent = appState.addresses.length;
+                
+                // Reload addresses in all containers
+                const addressContainers = [
+                    'profileAddresses',
+                    'allAddresses',
+                    'checkoutAddresses'
+                ];
+                
+                addressContainers.forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        loadAddresses(container);
+                    }
+                });
+                
+                showToast('Address Deleted', 'Address has been removed successfully', 'success');
+            }
+        }
+        
+            function openAddressModal(address = null) {
+        const modal = document.getElementById('addressModal');
+        const title = document.getElementById('addressModalTitle');
+        
+        if (address) {
+            // Edit mode
+            title.textContent = 'Edit Address';
+            document.getElementById('addressType').value = address.type || 'home';
+            document.getElementById('fullName').value = address.fullName || '';
+            document.getElementById('phoneNumber').value = address.phoneNumber || '';
+            document.getElementById('pincode').value = address.pincode || '';
+            document.getElementById('state').value = address.state || '';
+            document.getElementById('city').value = address.city || '';
+            document.getElementById('locality').value = address.locality || '';
+            document.getElementById('flatNo').value = address.flatNo || '';
+            document.getElementById('landmark').value = address.landmark || '';
+            document.getElementById('addressId').value = address.id || '';
+            document.getElementById('setAsDefault').checked = address.isDefault || false;
+        } else {
+            // Add mode
+            title.textContent = 'Add New Address';
+            // Reset form
+            document.getElementById('addressForm').reset();
+            document.getElementById('addressType').value = 'home';
+            document.getElementById('addressId').value = '';
+            document.getElementById('setAsDefault').checked = false;
+        }
+        
+        // Open modal
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Focus on first input
+        setTimeout(() => {
+            document.getElementById('fullName').focus();
+        }, 100);
+    }
+    
+    function closeAddressModal() {
+        document.getElementById('addressModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        document.getElementById('addressForm').reset();
+    }
+    
+    function saveAddress() {
+        const addressId = document.getElementById('addressId').value;
+        const addressData = {
+            type: document.getElementById('addressType').value,
+            fullName: document.getElementById('fullName').value,
+            phoneNumber: document.getElementById('phoneNumber').value,
+            pincode: document.getElementById('pincode').value,
+            state: document.getElementById('state').value,
+            city: document.getElementById('city').value,
+            locality: document.getElementById('locality').value,
+            flatNo: document.getElementById('flatNo').value,
+            landmark: document.getElementById('landmark').value,
+            isDefault: document.getElementById('setAsDefault').checked
+        };
+        
+        // Validation
+        if (!addressData.fullName || !addressData.phoneNumber || !addressData.pincode || 
+            !addressData.state || !addressData.city || !addressData.locality || !addressData.flatNo) {
+            showToast('Error', 'Please fill all required fields', 'error');
+            return;
+        }
+        
+        // Phone validation
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (!phoneRegex.test(addressData.phoneNumber.replace(/\D/g, ''))) {
+            showToast('Error', 'Please enter a valid 10-digit mobile number', 'error');
+            return;
+        }
+        
+        // Pincode validation
+        const pincodeRegex = /^\d{6}$/;
+        if (!pincodeRegex.test(addressData.pincode)) {
+            showToast('Error', 'Please enter a valid 6-digit pincode', 'error');
+            return;
+        }
+        
+        if (addressId) {
+            // Update existing address
+            const index = addresses.findIndex(addr => addr.id === addressId);
+            if (index !== -1) {
+                addresses[index] = {
+                    ...addresses[index],
+                    ...addressData,
+                    id: addressId
+                };
+            }
+            showToast('Success', 'Address updated successfully', 'success');
+        } else {
+            // Add new address
+            const newAddress = {
+                ...addressData,
+                id: 'addr-' + Date.now(),
+                createdAt: new Date().toISOString()
+            };
+            addresses.push(newAddress);
+            showToast('Success', 'New address added successfully', 'success');
+        }
+        
+        // If setting as default, remove default from others
+        if (addressData.isDefault) {
+            addresses.forEach(addr => {
+                if (addr.id !== (addressId || addresses[addresses.length - 1].id)) {
+                    addr.isDefault = false;
+                }
+            });
+        }
+        
+        // Close modal
+        closeAddressModal();
+        
+        // Reload addresses in all containers
+        const addressContainers = [
+            'profileAddresses',
+            'allAddresses', 
+            'checkoutAddresses'
+        ];
+        
+        addressContainers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                loadAddresses(container);
+            }
+        });
+        
+        // Update address badges/counts
+        updateAddressBadges();
+    }
+    
+    function updateAddressBadges() {
+        // Update address count in profile
+        const addressCount = addresses.length;
+        document.getElementById('addressCount').textContent = `(${addressCount})`;
+        
+        // Update checkout address selector if exists
+        const checkoutAddressSelect = document.getElementById('selectedAddress');
+        if (checkoutAddressSelect) {
+            const defaultAddress = addresses.find(addr => addr.isDefault) || addresses[0];
+            if (defaultAddress) {
+                checkoutAddressSelect.innerHTML = `
+                    <option value="${defaultAddress.id}" selected>
+                        ${defaultAddress.type.toUpperCase()}: ${defaultAddress.flatNo}, ${defaultAddress.locality}, ${defaultAddress.city}
+                    </option>
+                    ${addresses.filter(addr => addr.id !== defaultAddress.id).map(addr => `
+                        <option value="${addr.id}">
+                            ${addr.type.toUpperCase()}: ${addr.flatNo}, ${addr.locality}, ${addr.city}
+                        </option>
+                    `).join('')}
+                `;
+            }
+        }
+    }
+    
+    function deleteAddress(addressId) {
+        if (confirm('Are you sure you want to delete this address?')) {
+            // Remove address
+            const index = addresses.findIndex(addr => addr.id === addressId);
+            if (index !== -1) {
+                // Check if deleting default address
+                const wasDefault = addresses[index].isDefault;
+                
+                // Remove address
+                addresses.splice(index, 1);
+                
+                // If default was deleted, set first address as default
+                if (wasDefault && addresses.length > 0) {
+                    addresses[0].isDefault = true;
+                }
+                
+                // Reload addresses in all containers
+                const addressContainers = [
+                    'profileAddresses',
+                    'allAddresses',
+                    'checkoutAddresses'
+                ];
+                
+                addressContainers.forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        loadAddresses(container);
+                    }
+                });
+                
+                showToast('Address Deleted', 'Address has been removed successfully', 'success');
+            }
+        }
+    }
