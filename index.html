@@ -1879,6 +1879,37 @@
             line-height: 1.6;
             color: var(--text-light);
         }
+        .refund-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .refund-pending { background: #FEF3C7; color: #92400E; }
+        .refund-processing { background: #DBEAFE; color: #1E40AF; }
+        .refund-completed { background: #D1FAE5; color: #065F46; }
+        .refund-rejected { background: #FEE2E2; color: #991B1B; }
+        .wishlist-page .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+        .delivery-charge-section {
+            display: none !important;
+        }
+        .new-order-badge {
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .address-phone-optional {
+            color: var(--text-light);
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -2107,7 +2138,7 @@
             </div>
             <div id="wishlistPage" class="wishlist-page">
                 <h3 class="mb-4">My Wishlist</h3>
-                <div id="wishlistItems"></div>
+                <div id="wishlistItems" class="product-grid"></div>
                 <div id="noWishlist" class="empty-state" style="display: none;">
                     <div class="empty-icon"><i class="fas fa-heart"></i></div>
                     <div class="empty-text">Your wishlist is empty</div>
@@ -2405,7 +2436,7 @@
                             <input type="text" class="form-control" id="checkoutName" placeholder="Enter your full name">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Phone Number</label>
+                            <label class="form-label">Phone Number <span class="address-phone-optional">(Optional if saved in address)</span></label>
                             <input type="tel" class="form-control" id="checkoutPhone" placeholder="Enter your phone number" oninput="validatePhone()">
                             <small id="phoneValidation" class="validation-message"></small>
                         </div>
@@ -2450,7 +2481,7 @@
                         <div class="qr-code-content">
                             <h5>Scan to Pay</h5>
                             <div class="qr-image-container">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=shopkeeper@upi&pn=Raashanmart&am=100&tn=Order%20Payment" alt="QR Code">
+                                <img id="dynamicQRCode" src="" alt="QR Code">
                             </div>
                             <div class="upi-details">
                                 <strong>UPI ID:</strong> <span id="dynamicUpiId">shopkeeper@upi</span><br>
@@ -2608,6 +2639,7 @@
         let isOnline = navigator.onLine;
         let currentTrackingOrder = null;
         let SHOP_CONFIG = null;
+        let SHOP_COUPONS = [];
 
         // Load shop configuration from Firebase
         async function loadShopConfig() {
@@ -2618,32 +2650,53 @@
                     console.log('Shop config loaded:', SHOP_CONFIG);
                     
                     // Update QR code UPI ID if available
-                    if (SHOP_CONFIG.upiId) {
-                        document.getElementById('dynamicUpiId').textContent = SHOP_CONFIG.upiId;
-                        const qrImage = document.querySelector('.qr-image-container img');
-                        if (qrImage) {
-                            const amount = document.getElementById('qrAmount').textContent.replace('₹', '');
-                            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${amount}&tn=Order%20Payment`;
-                        }
-                    }
+                    updateQRCode();
                     
-                    // Update coupon availability
-                    updateCouponSection();
+                    // Load shop coupons
+                    await loadShopCoupons();
                     
                 } else {
                     SHOP_CONFIG = {
                         upiId: 'shopkeeper@upi',
-                        couponsEnabled: true,
-                        multipleShopsAllowed: false
+                        couponsEnabled: false,
+                        multipleShopsAllowed: false,
+                        deliveryCharge: 0
                     };
                 }
             } catch (error) {
                 console.error('Error loading shop config:', error);
                 SHOP_CONFIG = {
                     upiId: 'shopkeeper@upi',
-                    couponsEnabled: true,
-                    multipleShopsAllowed: false
+                    couponsEnabled: false,
+                    multipleShopsAllowed: false,
+                    deliveryCharge: 0
                 };
+            }
+        }
+
+        // Load shop coupons
+        async function loadShopCoupons() {
+            try {
+                const couponsSnapshot = await db.collection('coupons').get();
+                SHOP_COUPONS = [];
+                couponsSnapshot.forEach(doc => {
+                    SHOP_COUPONS.push({ id: doc.id, ...doc.data() });
+                });
+                console.log('Shop coupons loaded:', SHOP_COUPONS.length);
+            } catch (error) {
+                console.error('Error loading coupons:', error);
+                SHOP_COUPONS = [];
+            }
+        }
+
+        function updateQRCode() {
+            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
+                document.getElementById('dynamicUpiId').textContent = SHOP_CONFIG.upiId;
+                const qrImage = document.getElementById('dynamicQRCode');
+                if (qrImage) {
+                    const amount = document.getElementById('qrAmount').textContent.replace('₹', '');
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${amount}&tn=Order%20Payment`;
+                }
             }
         }
 
@@ -2659,7 +2712,7 @@
             pushEnabled: false
         };
 
-        // Load products from Firebase with FIXED query
+        // Load products from Firebase
         async function loadProductsFromFirebase() {
             try {
                 console.log('📦 Loading products from Firebase...');
@@ -2671,7 +2724,6 @@
                 productsSnapshot.forEach(doc => {
                     const firebaseProduct = doc.data();
                     
-                    // Skip inactive or out of stock
                     if (firebaseProduct.status !== 'active' || firebaseProduct.stock <= 0) {
                         return;
                     }
@@ -2713,7 +2765,6 @@
                 
             } catch (error) {
                 console.error('Error loading products:', error);
-                // Use demo products as fallback
                 PRODUCTS = getDemoProducts();
                 updateDynamicShops();
                 updateShopAndCategoryFilters();
@@ -2723,7 +2774,6 @@
             }
         }
 
-        // Demo products for fallback
         function getDemoProducts() {
             return [
                 { 
@@ -2755,7 +2805,6 @@
             ];
         }
 
-        // Update shops dynamically
         function updateDynamicShops() {
             SHOPS = {};
             
@@ -2777,7 +2826,6 @@
             console.log('🛍️ Dynamic shops:', Object.keys(SHOPS).length, 'shops');
         }
 
-        // Update filters with dynamic data
         function updateShopAndCategoryFilters() {
             const shopFilter = document.getElementById('shopFilter');
             const categoryFilter = document.getElementById('categoryFilter');
@@ -2822,7 +2870,6 @@
                     updateCouponAuth();
                     showToast('Welcome back to Raashanmart!');
                     
-                    // Update profile email display
                     document.getElementById('profileUserEmail').textContent = user.email;
                     document.getElementById('profileUserName').textContent = user.displayName || user.email.split('@')[0];
                     document.getElementById('avatarText').textContent = (user.displayName || user.email.split('@')[0]).charAt(0).toUpperCase();
@@ -2890,7 +2937,9 @@
                         total: firebaseOrder.total || 0,
                         tracking: firebaseOrder.tracking || {
                             confirmed: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString()
-                        }
+                        },
+                        refundStatus: firebaseOrder.refundStatus || null,
+                        refundAmount: firebaseOrder.refundAmount || 0
                     };
                     
                     orders.push(mappedOrder);
@@ -2961,7 +3010,6 @@
             }
         }
 
-        // Show order update notification
         function showOrderUpdateNotification(orderId, oldStatus, newStatus) {
             if (!notificationPreferences.orderUpdates) return;
 
@@ -2992,7 +3040,6 @@
             }
         }
 
-        // Get status text
         function getStatusText(status) {
             const statusMap = {
                 'pending': 'Pending',
@@ -3004,6 +3051,16 @@
                 'out_for_delivery': 'Out for Delivery',
                 'delivered': 'Delivered',
                 'cancelled': 'Cancelled'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getRefundStatusText(status) {
+            const statusMap = {
+                'pending': 'Pending',
+                'processing': 'Processing',
+                'completed': 'Completed',
+                'rejected': 'Rejected'
             };
             return statusMap[status] || status;
         }
@@ -3333,24 +3390,34 @@
             
             let discount = 0;
             if (appliedCoupon) {
-                if (appliedCoupon.type === 'percentage') {
-                    discount = (subtotal * appliedCoupon.value) / 100;
+                // Validate coupon minimum order value
+                if (subtotal < appliedCoupon.minOrder) {
+                    // Remove coupon if cart value is below minimum
+                    appliedCoupon = null;
+                    document.getElementById('couponCode').value = '';
+                    document.getElementById('couponMessage').textContent = 'Cart value is below coupon minimum. Coupon removed.';
+                    document.getElementById('couponMessage').className = 'coupon-error';
                 } else {
-                    discount = appliedCoupon.value;
+                    if (appliedCoupon.type === 'percentage') {
+                        discount = (subtotal * appliedCoupon.value) / 100;
+                    } else {
+                        discount = appliedCoupon.value;
+                    }
+                    discount = Math.min(discount, subtotal);
                 }
-                discount = Math.min(discount, subtotal);
             }
             
-            const total = subtotal + 40 - discount;
+            // Remove delivery charge
+            const total = subtotal - discount;
             const orderTotal = document.getElementById('orderTotal');
             const qrAmount = document.getElementById('qrAmount');
             
             if (orderTotal) orderTotal.textContent = `₹${Math.max(0, total)}`;
             if (qrAmount) qrAmount.textContent = `₹${Math.max(0, total)}`;
             
-            // Update QR code with dynamic UPI ID and amount
+            // Update QR code
             if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-                const qrImage = document.querySelector('.qr-image-container img');
+                const qrImage = document.getElementById('dynamicQRCode');
                 if (qrImage) {
                     qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${total}&tn=Order%20Payment`;
                 }
@@ -3380,6 +3447,25 @@
                 
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
+                
+                // Re-validate coupon after quantity change
+                if (appliedCoupon) {
+                    validateCouponOnCartUpdate();
+                }
+            }
+        }
+
+        // Validate coupon on cart update
+        function validateCouponOnCartUpdate() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (appliedCoupon && subtotal < appliedCoupon.minOrder) {
+                appliedCoupon = null;
+                document.getElementById('couponCode').value = '';
+                document.getElementById('couponMessage').textContent = 'Cart value is below coupon minimum. Coupon removed.';
+                document.getElementById('couponMessage').className = 'coupon-error';
+                updateOrderSummary();
+                showToast('Coupon removed due to low cart value', 'warning');
             }
         }
 
@@ -3398,6 +3484,7 @@
             localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
             updateWishlistUI();
             renderProducts(PRODUCTS);
+            renderWishlistItems();
         }
 
         function updateWishlistUI() {
@@ -3406,6 +3493,54 @@
                 wishlistCount.textContent = wishlist.length;
                 wishlistCount.style.display = wishlist.length > 0 ? 'block' : 'none';
             }
+        }
+
+        // Render wishlist items
+        function renderWishlistItems() {
+            const wishlistItems = document.getElementById('wishlistItems');
+            const noWishlist = document.getElementById('noWishlist');
+            
+            if (!wishlistItems) return;
+
+            wishlistItems.innerHTML = '';
+            
+            if (wishlist.length === 0) {
+                if (noWishlist) noWishlist.style.display = 'block';
+                return;
+            }
+            
+            if (noWishlist) noWishlist.style.display = 'none';
+            
+            wishlist.forEach(productId => {
+                const product = PRODUCTS.find(p => p.id === productId);
+                if (!product) return;
+                
+                const shopName = product.shopName || 'Unknown Shop';
+                const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
+                
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="shop-badge">${shopName}</div>
+                    <button class="wishlist-btn active" onclick="toggleWishlist('${product.id}')">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
+                    <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
+                    <p class="product-category">${product.category} • ${product.deliveryTime || '10-15 min'}</p>
+                    <div class="product-price">
+                        <span class="current-price">₹${product.price}</span>
+                        ${product.mrp ? `<span class="original-price">₹${product.mrp}</span>` : ''}
+                        ${discount > 0 ? `<span class="discount">${discount}% OFF</span>` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                wishlistItems.appendChild(productCard);
+            });
         }
 
         // Product detail functions
@@ -3502,7 +3637,7 @@
             wishlistBtn?.classList.toggle('active', isInWishlist);
         }
 
-        // Address functions - FIXED
+        // Address functions
         function renderAddresses() {
             const addressesContainer = document.getElementById('addresses');
             if (!addressesContainer) return;
@@ -3514,7 +3649,6 @@
                 return;
             }
             
-            // Use a Set to track unique addresses
             const uniqueAddresses = new Set();
             const filteredAddresses = [];
             
@@ -3536,14 +3670,24 @@
                         ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
                     </div>
                     <div class="address-details">${address.name || 'Customer'} • ${address.address || ''}</div>
-                    <div class="address-phone">${address.phone || ''} • ${address.city || ''} - ${address.pincode || ''}</div>
+                    <div class="address-phone">${address.phone || 'No phone'} • ${address.city || ''} - ${address.pincode || ''}</div>
                 `;
                 addressCard.onclick = () => {
                     selectedAddress = address.id;
                     renderAddresses();
+                    // Fill checkout form with selected address
+                    fillCheckoutForm(address);
                 };
                 addressesContainer.appendChild(addressCard);
             });
+        }
+
+        function fillCheckoutForm(address) {
+            document.getElementById('checkoutName').value = address.name || '';
+            document.getElementById('checkoutPhone').value = address.phone || '';
+            document.getElementById('checkoutCity').value = address.city || '';
+            document.getElementById('checkoutPincode').value = address.pincode || '';
+            document.getElementById('checkoutAddress').value = address.address || '';
         }
 
         function savedAddresses() {
@@ -3568,7 +3712,7 @@
                             ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
                         </div>
                         <div class="address-details">${address.name || 'Customer'} • ${address.address || ''}</div>
-                        <div class="address-phone">${address.phone || ''} • ${address.city || ''} - ${address.pincode || ''}</div>
+                        <div class="address-phone">${address.phone || 'No phone'} • ${address.city || ''} - ${address.pincode || ''}</div>
                         <div class="address-actions mt-2">
                             <button class="btn btn-sm btn-outline-primary" onclick="editSavedAddress('${address.id}')">
                                 <i class="fas fa-edit"></i> Edit
@@ -3635,8 +3779,8 @@
                             <input type="text" class="form-control" id="addressName" placeholder="Enter full name" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Phone Number *</label>
-                            <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number" required oninput="validatePhoneModal(this)">
+                            <label class="form-label">Phone Number (Optional)</label>
+                            <input type="tel" class="form-control" id="addressPhone" placeholder="Enter phone number" oninput="validatePhoneModal(this)">
                             <small id="phoneValidationModal" class="validation-message"></small>
                         </div>
                         <div class="form-group">
@@ -3685,11 +3829,11 @@
             const landmark = document.getElementById('addressLandmark').value.trim();
             const isDefault = document.getElementById('defaultAddress').checked;
 
-            if (!name || !phone || !pincode || !address || !city) {
+            if (!name || !pincode || !address || !city) {
                 showToast("Please fill all required fields", 'error');
                 return;
             }
-            if (!validatePhoneNumber(phone)) {
+            if (phone && !validatePhoneNumber(phone)) {
                 showToast("Please enter a valid phone number", 'error');
                 return;
             }
@@ -3700,7 +3844,7 @@
                 const newAddress = {
                     id: 'addr_' + Date.now() + Math.random().toString(36).substr(2, 4),
                     name: name,
-                    phone: phone,
+                    phone: phone || '',
                     pincode: pincode,
                     address: address,
                     city: city,
@@ -3766,8 +3910,8 @@
                             <input type="text" class="form-control" id="editAddressName" value="${address.name || ''}" placeholder="Enter full name" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Phone Number *</label>
-                            <input type="tel" class="form-control" id="editAddressPhone" value="${address.phone || ''}" placeholder="Enter phone number" required oninput="validatePhoneModal(this)">
+                            <label class="form-label">Phone Number (Optional)</label>
+                            <input type="tel" class="form-control" id="editAddressPhone" value="${address.phone || ''}" placeholder="Enter phone number" oninput="validatePhoneModal(this)">
                             <small id="phoneValidationModal" class="validation-message"></small>
                         </div>
                         <div class="form-group">
@@ -3818,11 +3962,11 @@
             const landmark = document.getElementById('editAddressLandmark').value.trim();
             const isDefault = document.getElementById('editDefaultAddress').checked;
 
-            if (!name || !phone || !pincode || !address || !city) { 
+            if (!name || !pincode || !address || !city) { 
                 showToast("Please fill all required fields", 'error'); 
                 return; 
             }
-            if (!validatePhoneNumber(phone)) { 
+            if (phone && !validatePhoneNumber(phone)) { 
                 showToast("Please enter a valid phone number", 'error'); 
                 return; 
             }
@@ -3843,7 +3987,7 @@
                 addresses[addressIndex] = {
                     ...addresses[addressIndex],
                     name,
-                    phone,
+                    phone: phone || '',
                     pincode,
                     address,
                     city,
@@ -3971,6 +4115,7 @@
             
             noOrders.style.display = 'none';
             
+            // Sort orders by date (newest first)
             const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
             
             sortedOrders.forEach(order => {
@@ -3982,9 +4127,30 @@
                 const statusText = getStatusText(order.status);
                 const displayOrderId = order.orderId || order.id;
                 
+                // Check if order is new (within last 24 hours)
+                const orderDate = new Date(order.date);
+                const now = new Date();
+                const isNewOrder = (now - orderDate) < 24 * 60 * 60 * 1000;
+                
+                let refundSection = '';
+                if (order.refundStatus) {
+                    const refundStatusText = getRefundStatusText(order.refundStatus);
+                    const refundStatusClass = `refund-${order.refundStatus}`;
+                    refundSection = `
+                        <div class="mt-3 p-2" style="background: var(--neutral); border-radius: 8px;">
+                            <strong>Refund Status:</strong>
+                            <span class="refund-status ${refundStatusClass}">${refundStatusText}</span>
+                            ${order.refundAmount > 0 ? `<div class="mt-1">Amount: ₹${order.refundAmount}</div>` : ''}
+                        </div>
+                    `;
+                }
+                
                 orderCard.innerHTML = `
                     <div class="order-header">
-                        <div class="order-id">Order #${displayOrderId.slice(-6)}</div>
+                        <div class="order-id">
+                            Order #${displayOrderId.slice(-6)}
+                            ${isNewOrder ? '<span class="new-order-badge">NEW</span>' : ''}
+                        </div>
                         <div class="order-status ${statusClass}">${statusText}</div>
                     </div>
                     <div class="order-items">
@@ -3995,6 +4161,7 @@
                             </div>
                         `).join('')}
                     </div>
+                    ${refundSection}
                     <div class="order-footer">
                         <div class="order-total">₹${order.total}</div>
                         <div class="order-actions">
@@ -4119,9 +4286,20 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             }
 
             try {
-                const phone = document.getElementById('checkoutPhone')?.value?.trim();
+                // Get phone from selected address or input
+                let phone = '';
+                if (selectedAddress) {
+                    const address = addresses.find(addr => addr.id === selectedAddress);
+                    phone = address?.phone || '';
+                }
                 
-                if (!phone || phone.length < 10) {
+                // If no phone in address, check checkout form
+                if (!phone) {
+                    phone = document.getElementById('checkoutPhone')?.value?.trim() || '';
+                }
+                
+                // Phone is optional now, only validate if provided
+                if (phone && !validatePhoneNumber(phone)) {
                     showToast('Please enter a valid phone number', 'error');
                     return;
                 }
@@ -4151,23 +4329,25 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                     return;
                 }
                 
+                // Use selected address or default
+                const selectedAddressData = addresses.find(addr => addr.id === selectedAddress) || addressData;
+                
                 const completeAddress = {
-                    id: addressData.id || generateId(),
-                    fullName: addressData.name || user.displayName || 'Customer',
-                    phone: addressData.phone || phone,
-                    details: addressData.address || 'Address not specified',
-                    city: addressData.city || 'City not specified',
-                    pincode: addressData.pincode || '000000',
-                    landmark: addressData.landmark || '',
-                    type: addressData.type || 'home',
+                    id: selectedAddressData.id || generateId(),
+                    fullName: selectedAddressData.name || user.displayName || 'Customer',
+                    phone: phone || selectedAddressData.phone || '',
+                    details: selectedAddressData.address || 'Address not specified',
+                    city: selectedAddressData.city || 'City not specified',
+                    pincode: selectedAddressData.pincode || '000000',
+                    landmark: selectedAddressData.landmark || '',
+                    type: selectedAddressData.type || 'home',
                     customerId: user.uid,
                     customerName: user.displayName || 'Customer',
                     customerEmail: user.email,
-                    customerPhone: phone
+                    customerPhone: phone || selectedAddressData.phone || ''
                 };
                 
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const deliveryCharge = 40;
                 let discount = 0;
                 
                 if (appliedCoupon) {
@@ -4178,7 +4358,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                     }
                 }
                 
-                const total = subtotal + deliveryCharge - discount;
+                const total = subtotal - discount;
                 
                 const orderItems = cart.map(item => ({
                     id: item.id,
@@ -4198,10 +4378,9 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                     customerId: user.uid,
                     customerName: user.displayName || 'Customer',
                     customerEmail: user.email,
-                    phone: phone,
+                    phone: phone || selectedAddressData.phone || '',
                     items: orderItems,
                     subtotal: subtotal,
-                    deliveryCharge: deliveryCharge,
                     discount: discount,
                     total: total,
                     address: completeAddress,
@@ -4211,7 +4390,8 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                     shopId: cart[0]?.shopId || 'default_shop',
                     shopName: cart[0]?.shopName || 'Default Shop',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    appliedCoupon: appliedCoupon ? appliedCoupon.code : null
                 };
                 
                 const docRef = await db.collection('orders').add(orderData);
@@ -4220,6 +4400,9 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 cart = [];
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
+                appliedCoupon = null;
+                document.getElementById('couponCode').value = '';
+                document.getElementById('couponMessage').textContent = '';
                 
                 showLoading(false);
                 showToast(`✅ Order placed successfully! Order ID: ${unifiedOrderId}`, 'success');
@@ -4290,7 +4473,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                             <small class="text-muted">Email cannot be changed</small>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Phone Number</label>
+                            <label class="form-label">Phone Number (Optional)</label>
                             <input type="tel" class="form-control" id="editUserPhone" value="${currentPhone}" placeholder="Enter phone number" oninput="validatePhoneModal(this)">
                              <small id="phoneValidationModal" class="validation-message"></small>
                         </div>
@@ -4521,6 +4704,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             document.getElementById('bsheet').classList.add('open');
             if (!selectedAddress && addresses.length > 0) {
                 selectedAddress = addresses.find(addr => addr.isDefault)?.id || addresses[0].id;
+                fillCheckoutForm(addresses.find(addr => addr.id === selectedAddress));
             }
             renderAddresses();
         }
@@ -4566,18 +4750,23 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 if (applyCouponBtn) {
                     applyCouponBtn.disabled = true;
                 }
+            } else if (SHOP_COUPONS.length > 0) {
+                // Shop has coupons, enable the section
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = !currentUser;
+                }
             }
         }
 
         function applyCoupon() {
-            if (!currentUser) {
-                showToast('Please login to apply coupons');
+            // Check if shop has coupons enabled
+            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
+                showToast('Coupons are currently disabled by the shopkeeper', 'warning');
                 return;
             }
             
-            // Check if coupons are enabled
-            if (SHOP_CONFIG && !SHOP_CONFIG.couponsEnabled) {
-                showToast('Coupons are currently disabled by the shopkeeper', 'warning');
+            if (!currentUser) {
+                showToast('Please login to apply coupons');
                 return;
             }
             
@@ -4592,7 +4781,13 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 return;
             }
             
-            const coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
+            // Check shop coupons first
+            let coupon = SHOP_COUPONS.find(c => c.code === couponCode && c.isActive !== false);
+            
+            // If not found in shop coupons, check default coupons
+            if (!coupon) {
+                coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
+            }
             
             if (!coupon) {
                 couponMessage.textContent = 'Invalid coupon code';
