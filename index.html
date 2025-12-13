@@ -2453,7 +2453,7 @@
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=shopkeeper@upi&pn=Raashanmart&am=100&tn=Order%20Payment" alt="QR Code">
                             </div>
                             <div class="upi-details">
-                                <strong>UPI ID:</strong> shopkeeper@upi<br>
+                                <strong>UPI ID:</strong> <span id="dynamicUpiId">shopkeeper@upi</span><br>
                                 <strong>Amount:</strong> <span id="qrAmount">₹0</span>
                             </div>
                             <div class="utr-input">
@@ -2607,6 +2607,45 @@
         let selectedRating = 0;
         let isOnline = navigator.onLine;
         let currentTrackingOrder = null;
+        let SHOP_CONFIG = null;
+
+        // Load shop configuration from Firebase
+        async function loadShopConfig() {
+            try {
+                const configDoc = await db.collection('shop_config').doc('settings').get();
+                if (configDoc.exists) {
+                    SHOP_CONFIG = configDoc.data();
+                    console.log('Shop config loaded:', SHOP_CONFIG);
+                    
+                    // Update QR code UPI ID if available
+                    if (SHOP_CONFIG.upiId) {
+                        document.getElementById('dynamicUpiId').textContent = SHOP_CONFIG.upiId;
+                        const qrImage = document.querySelector('.qr-image-container img');
+                        if (qrImage) {
+                            const amount = document.getElementById('qrAmount').textContent.replace('₹', '');
+                            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${amount}&tn=Order%20Payment`;
+                        }
+                    }
+                    
+                    // Update coupon availability
+                    updateCouponSection();
+                    
+                } else {
+                    SHOP_CONFIG = {
+                        upiId: 'shopkeeper@upi',
+                        couponsEnabled: true,
+                        multipleShopsAllowed: false
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading shop config:', error);
+                SHOP_CONFIG = {
+                    upiId: 'shopkeeper@upi',
+                    couponsEnabled: true,
+                    multipleShopsAllowed: false
+                };
+            }
+        }
 
         const AVAILABLE_COUPONS = [
             { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
@@ -2782,6 +2821,11 @@
                     
                     updateCouponAuth();
                     showToast('Welcome back to Raashanmart!');
+                    
+                    // Update profile email display
+                    document.getElementById('profileUserEmail').textContent = user.email;
+                    document.getElementById('profileUserName').textContent = user.displayName || user.email.split('@')[0];
+                    document.getElementById('avatarText').textContent = (user.displayName || user.email.split('@')[0]).charAt(0).toUpperCase();
                 } else {
                     currentUser = null;
                     showAuthScreen();
@@ -3002,6 +3046,7 @@
                 loadProductsFromFirebase();
                 loadOrderHistory();
                 startRealTimeOrderListener();
+                loadShopConfig();
             }
         }
         
@@ -3207,6 +3252,15 @@
                 const product = PRODUCTS.find(p => p.id === productId);
                 if (!product) return;
                 
+                // Check if cart already has items from different shop
+                if (SHOP_CONFIG && !SHOP_CONFIG.multipleShopsAllowed && cart.length > 0) {
+                    const firstShopId = cart[0].shopId;
+                    if (firstShopId !== product.shopId) {
+                        showToast(`Cannot add items from different shops. Please complete your order from ${cart[0].shopName} first.`, 'warning');
+                        return;
+                    }
+                }
+                
                 const existingItem = cart.find(item => item.id === productId);
                 
                 if (existingItem) {
@@ -3293,6 +3347,14 @@
             
             if (orderTotal) orderTotal.textContent = `₹${Math.max(0, total)}`;
             if (qrAmount) qrAmount.textContent = `₹${Math.max(0, total)}`;
+            
+            // Update QR code with dynamic UPI ID and amount
+            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
+                const qrImage = document.querySelector('.qr-image-container img');
+                if (qrImage) {
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${total}&tn=Order%20Payment`;
+                }
+            }
             
             const placeOrderBtn = document.getElementById('placeOrderBtn');
             if (placeOrderBtn) {
@@ -3401,6 +3463,15 @@
             
             if (!product) return;
             
+            // Check if cart already has items from different shop
+            if (SHOP_CONFIG && !SHOP_CONFIG.multipleShopsAllowed && cart.length > 0) {
+                const firstShopId = cart[0].shopId;
+                if (firstShopId !== product.shopId) {
+                    showToast(`Cannot add items from different shops. Please complete your order from ${cart[0].shopName} first.`, 'warning');
+                    return;
+                }
+            }
+            
             const existingItem = cart.find(item => item.id === product.id);
             
             if (existingItem) {
@@ -3431,7 +3502,7 @@
             wishlistBtn?.classList.toggle('active', isInWishlist);
         }
 
-        // Address functions
+        // Address functions - FIXED
         function renderAddresses() {
             const addressesContainer = document.getElementById('addresses');
             if (!addressesContainer) return;
@@ -3443,7 +3514,19 @@
                 return;
             }
             
+            // Use a Set to track unique addresses
+            const uniqueAddresses = new Set();
+            const filteredAddresses = [];
+            
             addresses.forEach(address => {
+                const addressKey = `${address.name || ''}-${address.address || ''}-${address.city || ''}-${address.pincode || ''}`;
+                if (!uniqueAddresses.has(addressKey)) {
+                    uniqueAddresses.add(addressKey);
+                    filteredAddresses.push(address);
+                }
+            });
+            
+            filteredAddresses.forEach(address => {
                 const isSelected = selectedAddress === address.id;
                 const addressCard = document.createElement('div');
                 addressCard.className = `address-card ${isSelected ? 'selected' : ''}`;
@@ -3452,8 +3535,8 @@
                         ${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}
                         ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
                     </div>
-                    <div class="address-details">${address.name || 'Customer'} • ${address.address}</div>
-                    <div class="address-phone">${address.phone} • ${address.city} - ${address.pincode}</div>
+                    <div class="address-details">${address.name || 'Customer'} • ${address.address || ''}</div>
+                    <div class="address-phone">${address.phone || ''} • ${address.city || ''} - ${address.pincode || ''}</div>
                 `;
                 addressCard.onclick = () => {
                     selectedAddress = address.id;
@@ -3484,8 +3567,8 @@
                             ${address.type === 'home' ? '🏠 Home' : address.type === 'work' ? '💼 Work' : '📍 Other'}
                             ${address.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : ''}
                         </div>
-                        <div class="address-details">${address.name} • ${address.address}</div>
-                        <div class="address-phone">${address.phone} • ${address.city} - ${address.pincode}</div>
+                        <div class="address-details">${address.name || 'Customer'} • ${address.address || ''}</div>
+                        <div class="address-phone">${address.phone || ''} • ${address.city || ''} - ${address.pincode || ''}</div>
                         <div class="address-actions mt-2">
                             <button class="btn btn-sm btn-outline-primary" onclick="editSavedAddress('${address.id}')">
                                 <i class="fas fa-edit"></i> Edit
@@ -3680,20 +3763,20 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label class="form-label">Full Name *</label>
-                            <input type="text" class="form-control" id="editAddressName" value="${address.name}" placeholder="Enter full name" required>
+                            <input type="text" class="form-control" id="editAddressName" value="${address.name || ''}" placeholder="Enter full name" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phone Number *</label>
-                            <input type="tel" class="form-control" id="editAddressPhone" value="${address.phone}" placeholder="Enter phone number" required oninput="validatePhoneModal(this)">
+                            <input type="tel" class="form-control" id="editAddressPhone" value="${address.phone || ''}" placeholder="Enter phone number" required oninput="validatePhoneModal(this)">
                             <small id="phoneValidationModal" class="validation-message"></small>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Pincode *</label>
-                            <input type="text" class="form-control" id="editAddressPincode" value="${address.pincode}" placeholder="Enter pincode" required>
+                            <input type="text" class="form-control" id="editAddressPincode" value="${address.pincode || ''}" placeholder="Enter pincode" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Address *</label>
-                            <textarea class="form-control" id="editAddressLine1" placeholder="House no., Building, Street" rows="2" required>${address.address}</textarea>
+                            <textarea class="form-control" id="editAddressLine1" placeholder="House no., Building, Street" rows="2" required>${address.address || ''}</textarea>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Landmark (Optional)</label>
@@ -3701,7 +3784,7 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">City *</label>
-                            <input type="text" class="form-control" id="editAddressCity" value="${address.city}" placeholder="Enter city" required>
+                            <input type="text" class="form-control" id="editAddressCity" value="${address.city || ''}" placeholder="Enter city" required>
                         </div>
                         <div class="form-group form-check">
                             <input type="checkbox" class="form-check-input" id="editDefaultAddress" ${address.isDefault ? 'checked' : ''}>
@@ -4270,6 +4353,118 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             }
         }
 
+        // Change Password Function
+        function changePassword() {
+            const modalHTML = `
+            <div class="modal-overlay active" id="changePasswordModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Change Password</h3>
+                        <button class="modal-close" onclick="closeChangePasswordModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" placeholder="Enter new password" required>
+                            <small class="text-muted">Password must be at least 6 characters long</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password" required>
+                        </div>
+                        <div id="passwordError" class="alert alert-danger" style="display: none;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-outline" onclick="closeChangePasswordModal()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="updatePassword()">Change Password</button>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            if (modal) modal.remove();
+        }
+
+        async function updatePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorElement = document.getElementById('passwordError');
+            
+            // Clear previous errors
+            errorElement.style.display = 'none';
+            errorElement.textContent = '';
+            
+            // Validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                errorElement.textContent = 'Please fill all fields';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                errorElement.textContent = 'New password must be at least 6 characters long';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                errorElement.textContent = 'New passwords do not match';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword === currentPassword) {
+                errorElement.textContent = 'New password must be different from current password';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            const user = firebase.auth().currentUser;
+            
+            try {
+                // Re-authenticate user
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+                await user.reauthenticateWithCredential(credential);
+                
+                // Update password
+                await user.updatePassword(newPassword);
+                
+                showToast('Password changed successfully!', 'success');
+                closeChangePasswordModal();
+                
+            } catch (error) {
+                console.error('Password change error:', error);
+                
+                let errorMessage = 'Error changing password: ';
+                switch(error.code) {
+                    case 'auth/wrong-password':
+                        errorMessage = 'Current password is incorrect';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'New password is too weak';
+                        break;
+                    case 'auth/requires-recent-login':
+                        errorMessage = 'Please login again and try';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                errorElement.textContent = errorMessage;
+                errorElement.style.display = 'block';
+            }
+        }
+
         // Navigation
         function navigateToPage(page) {
             document.getElementById('homePage').style.display = 'none';
@@ -4355,9 +4550,34 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
         }
 
         // Coupon functions
+        function updateCouponSection() {
+            const couponSection = document.querySelector('.coupon-section');
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            
+            if (SHOP_CONFIG && !SHOP_CONFIG.couponsEnabled) {
+                if (couponSection) {
+                    couponSection.innerHTML = `
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>Coupons are currently disabled by the shopkeeper</p>
+                        </div>
+                    `;
+                }
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                }
+            }
+        }
+
         function applyCoupon() {
             if (!currentUser) {
                 showToast('Please login to apply coupons');
+                return;
+            }
+            
+            // Check if coupons are enabled
+            if (SHOP_CONFIG && !SHOP_CONFIG.couponsEnabled) {
+                showToast('Coupons are currently disabled by the shopkeeper', 'warning');
                 return;
             }
             
@@ -4859,9 +5079,8 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             setupOfflineDetection();
             setupPushNotifications();
             
-            // Auto-fill demo credentials
-            document.getElementById('loginEmail').value = 'demo@dukaan.com';
-            document.getElementById('loginPassword').value = 'demo123';
+            // Load shop configuration
+            loadShopConfig();
             
             // Load products
             loadProductsFromFirebase();
