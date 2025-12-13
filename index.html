@@ -19,6 +19,54 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--neutral); color: var(--text-dark); line-height: 1.6; padding-bottom: 80px; }
+        
+        /* Shop Status Banner Styles */
+        .shop-status-banner {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease;
+        }
+        .shop-status-banner.closed {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+        }
+        .shop-status-banner.holiday {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        }
+        .shop-status-banner.on-holiday {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        }
+        .status-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        .btn-close-status {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .shop-closed-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--danger);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 2;
+        }
+        
         .app-header { background: var(--primary); color: white; padding: 12px 0; position: sticky; top: 0; z-index: 1000; }
         .header-container { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
         .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.4rem; text-decoration: none; color: white; }
@@ -61,6 +109,7 @@
         .hero-subtitle { font-size: 1.1rem; margin-bottom: 25px; opacity: 0.9; }
         .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
         .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn-primary:disabled { background: var(--text-light); cursor: not-allowed; transform: none; }
         .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .btn-outline:hover { background: var(--accent); color: white; }
         .hero-pattern { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="rgba(255,255,255,0.05)"><circle cx="20" cy="20" r="5"/><circle cx="50" cy="50" r="8"/><circle cx="80" cy="80" r="5"/></svg>'); }
@@ -105,6 +154,7 @@
         .card-actions { display: flex; justify-content: center; margin-top: 15px; }
         .btn-add-cart { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 600; width: 100%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; font-size: 14px; }
         .btn-add-cart:hover { background: var(--accent-hover); transform: scale(1.02); }
+        .btn-add-cart:disabled { background: var(--text-light); cursor: not-allowed; transform: none; }
         .shop-badge { position: absolute; top: 12px; right: 55px; background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
         .bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: white; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15); transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); z-index: 1001; max-height: 85vh; overflow: auto; }
         .bottom-sheet.open { transform: translateY(0); }
@@ -1181,17 +1231,11 @@
             gap: 15px;
             flex: 1;
         }
-        #hamburgerWishlistCount {
-            display: none !important;
-        }
+        #hamburgerWishlistCount { display: none !important; }
         #bottomCartCount { background: red !important; }
         #hamburgerWishlistCount { background: blue !important; }
-        #hamburgerWishlistCount {
-            display: none !important;
-        }
-        #hamburgerMenu .nav-badge {
-            display: none !important;
-        }
+        #hamburgerWishlistCount { display: none !important; }
+        #hamburgerMenu .nav-badge { display: none !important; }
         .quantity-cart-container {
             display: flex !important;
             flex-direction: row !important;
@@ -1913,6 +1957,15 @@
     </style>
 </head>
 <body>
+    <!-- Shop Status Banner -->
+    <div id="shopStatusBanner" class="shop-status-banner" style="display: none;">
+        <div class="status-content">
+            <i class="fas fa-store-alt"></i>
+            <span id="shopStatusMessage"></span>
+            <button onclick="closeStatusBanner()" class="btn-close-status">&times;</button>
+        </div>
+    </div>
+
     <div id="offlineOverlay" class="offline-overlay">
         <div class="offline-content">
             <div class="offline-icon">
@@ -2640,6 +2693,8 @@
         let currentTrackingOrder = null;
         let SHOP_CONFIG = null;
         let SHOP_COUPONS = [];
+        let SHOP_DATA = null; // Store shop data for coupon validation
+        let shopStatusListener = null; // Real-time listener for shop status
 
         // Load shop configuration from Firebase
         async function loadShopConfig() {
@@ -2671,6 +2726,267 @@
                     multipleShopsAllowed: false,
                     deliveryCharge: 0
                 };
+            }
+        }
+
+        // Load shop data including coupon settings and status
+        async function loadShopData() {
+            try {
+                // Get shop ID from products (if available)
+                let shopId = 'default_shop';
+                if (cart.length > 0) {
+                    shopId = cart[0].shopId;
+                } else if (PRODUCTS.length > 0) {
+                    shopId = PRODUCTS[0].shopId;
+                }
+                
+                const shopDoc = await db.collection('shops').doc(shopId).get();
+                if (shopDoc.exists) {
+                    SHOP_DATA = shopDoc.data();
+                    console.log('✅ Shop data loaded:', SHOP_DATA);
+                    
+                    // Update coupon section based on shop data
+                    updateCouponSection();
+                    
+                    // Check and display shop status
+                    await checkAndDisplayShopStatus();
+                    
+                    // Start real-time listener
+                    startShopStatusListener(shopId);
+                }
+            } catch (error) {
+                console.error('Error loading shop data:', error);
+                SHOP_DATA = null;
+            }
+        }
+
+        // Check shop status function
+        async function checkShopStatus() {
+            try {
+                if (!SHOP_DATA) {
+                    await loadShopData();
+                    if (!SHOP_DATA) {
+                        return {
+                            isOpen: true,
+                            status: 'open',
+                            reason: null
+                        };
+                    }
+                }
+                
+                const now = new Date();
+                const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                                   now.getMinutes().toString().padStart(2, '0');
+                
+                // Check manual status first
+                if (SHOP_DATA.shopStatus === 'closed') {
+                    return {
+                        isOpen: false,
+                        status: 'closed',
+                        reason: 'Shop is manually closed by shopkeeper'
+                    };
+                }
+                
+                if (SHOP_DATA.shopStatus === 'holiday') {
+                    return {
+                        isOpen: false,
+                        status: 'on holiday',
+                        reason: 'Shop is on holiday'
+                    };
+                }
+                
+                // Check if today is a working day
+                const workingDays = SHOP_DATA.shopTimings?.workingDays || 
+                                  ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                
+                if (!workingDays.includes(currentDay)) {
+                    return {
+                        isOpen: false,
+                        status: 'closed',
+                        reason: `Shop is closed on ${currentDay}s`
+                    };
+                }
+                
+                // Check shop timings
+                const openTime = SHOP_DATA.shopTimings?.openTime || '09:00';
+                const closeTime = SHOP_DATA.shopTimings?.closeTime || '21:00';
+                
+                if (currentTime < openTime) {
+                    return {
+                        isOpen: false,
+                        status: 'closed',
+                        reason: `Shop opens at ${openTime}`,
+                        opensAt: openTime
+                    };
+                }
+                
+                if (currentTime > closeTime) {
+                    return {
+                        isOpen: false,
+                        status: 'closed',
+                        reason: `Shop closed at ${closeTime}. Opens tomorrow at ${openTime}`,
+                        opensAt: openTime
+                    };
+                }
+                
+                // Check for holidays
+                const todayStr = now.toISOString().split('T')[0];
+                const holidays = SHOP_DATA.holidays || [];
+                
+                const todayHoliday = holidays.find(holiday => holiday.date === todayStr);
+                if (todayHoliday) {
+                    return {
+                        isOpen: false,
+                        status: 'on holiday',
+                        reason: todayHoliday.reason || 'Holiday'
+                    };
+                }
+                
+                return {
+                    isOpen: true,
+                    status: 'open',
+                    nextOpen: null
+                };
+                
+            } catch (error) {
+                console.error('Error checking shop status:', error);
+                return {
+                    isOpen: true,
+                    status: 'open',
+                    reason: null
+                };
+            }
+        }
+
+        // Display shop status function
+        async function checkAndDisplayShopStatus() {
+            const status = await checkShopStatus();
+            
+            if (!status.isOpen) {
+                const banner = document.getElementById('shopStatusBanner');
+                const message = document.getElementById('shopStatusMessage');
+                
+                if (banner && message) {
+                    banner.style.display = 'flex';
+                    banner.className = `shop-status-banner ${status.status.replace(' ', '-')}`;
+                    message.textContent = status.reason;
+                }
+                
+                // Disable add to cart buttons
+                disableAddToCartButtons(status.reason);
+            } else {
+                const banner = document.getElementById('shopStatusBanner');
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+                
+                // Enable add to cart buttons
+                enableAddToCartButtons();
+            }
+        }
+
+        function closeStatusBanner() {
+            const banner = document.getElementById('shopStatusBanner');
+            if (banner) {
+                banner.style.display = 'none';
+            }
+        }
+
+        // Disable/Enable Cart Buttons Functions
+        function disableAddToCartButtons(reason = 'Shop is closed') {
+            document.querySelectorAll('.btn-add-cart').forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-store-slash"></i> ${reason.substring(0, 20)}...`;
+                btn.style.background = 'var(--text-light)';
+                btn.style.cursor = 'not-allowed';
+            });
+            
+            // Also disable cart button in bottom nav
+            const bottomCartBtn = document.getElementById('bottomNavCart');
+            if (bottomCartBtn) {
+                bottomCartBtn.style.opacity = '0.5';
+                bottomCartBtn.style.pointerEvents = 'none';
+            }
+            
+            // Disable place order button
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+            if (placeOrderBtn) {
+                placeOrderBtn.disabled = true;
+                placeOrderBtn.innerHTML = `<i class="fas fa-store-slash"></i> Shop Closed`;
+                placeOrderBtn.style.background = 'var(--text-light)';
+            }
+        }
+
+        function enableAddToCartButtons() {
+            document.querySelectorAll('.btn-add-cart').forEach(btn => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+                btn.style.background = 'var(--accent)';
+                btn.style.cursor = 'pointer';
+            });
+            
+            // Enable cart button in bottom nav
+            const bottomCartBtn = document.getElementById('bottomNavCart');
+            if (bottomCartBtn) {
+                bottomCartBtn.style.opacity = '1';
+                bottomCartBtn.style.pointerEvents = 'auto';
+            }
+            
+            // Enable place order button if cart has items
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+            if (placeOrderBtn && cart.length > 0) {
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = '<i class="fas fa-lock"></i> Place Order Securely';
+                placeOrderBtn.style.background = 'var(--accent)';
+            }
+        }
+
+        // Check if shop is open for product cards
+        function checkIfShopIsOpen(shopId) {
+            if (!SHOP_DATA) return true; // Default to open if no data
+            
+            // Check manual status
+            if (SHOP_DATA.shopStatus === 'closed' || SHOP_DATA.shopStatus === 'holiday') {
+                return false;
+            }
+            
+            // Check timings
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                               now.getMinutes().toString().padStart(2, '0');
+            
+            const openTime = SHOP_DATA.shopTimings?.openTime || '09:00';
+            const closeTime = SHOP_DATA.shopTimings?.closeTime || '21:00';
+            
+            return currentTime >= openTime && currentTime <= closeTime;
+        }
+
+        // Real-time Shop Status Listener
+        function startShopStatusListener(shopId) {
+            if (!shopId || shopStatusListener) return;
+            
+            console.log('🔔 Starting shop status listener for shop:', shopId);
+            
+            shopStatusListener = db.collection('shops').doc(shopId)
+                .onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const updatedShopData = doc.data();
+                        SHOP_DATA = updatedShopData;
+                        console.log('🔄 Shop status updated:', updatedShopData.shopStatus);
+                        
+                        // Update UI based on new status
+                        checkAndDisplayShopStatus();
+                    }
+                }, (error) => {
+                    console.error('❌ Error in shop status listener:', error);
+                });
+        }
+
+        function stopShopStatusListener() {
+            if (shopStatusListener) {
+                shopStatusListener();
+                shopStatusListener = null;
             }
         }
 
@@ -3104,6 +3420,7 @@
                 loadOrderHistory();
                 startRealTimeOrderListener();
                 loadShopConfig();
+                loadShopData();
             }
         }
         
@@ -3210,6 +3527,7 @@
             document.getElementById('authScreen').style.display = 'block';
             document.getElementById('appScreen').style.display = 'none';
             currentUser = null;
+            stopShopStatusListener();
         }
         
         function showAppScreen() {
@@ -3240,9 +3558,13 @@
                 const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
                 const isInWishlist = wishlist.includes(product.id);
                 
+                // Check if shop is open
+                const isShopOpen = checkIfShopIsOpen(product.shopId);
+                
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
                 productCard.innerHTML = `
+                    ${!isShopOpen ? '<div class="shop-closed-badge">Shop Closed</div>' : ''}
                     <div class="shop-badge">${shopName}</div>
                     <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
                         <i class="fas fa-heart"></i>
@@ -3256,11 +3578,18 @@
                         ${discount > 0 ? `<span class="discount">${discount}% OFF</span>` : ''}
                     </div>
                     <div class="card-actions">
-                        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        <button class="btn-add-cart" onclick="addToCart('${product.id}')" ${!isShopOpen ? 'disabled' : ''}>
+                            ${!isShopOpen ? '<i class="fas fa-store-slash"></i> Shop Closed' : '<i class="fas fa-shopping-cart"></i> Add to Cart'}
                         </button>
                     </div>
                 `;
+                
+                if (!isShopOpen) {
+                    const addToCartBtn = productCard.querySelector('.btn-add-cart');
+                    addToCartBtn.style.background = 'var(--text-light)';
+                    addToCartBtn.style.cursor = 'not-allowed';
+                }
+                
                 productGrid.appendChild(productCard);
             });
         }
@@ -3303,9 +3632,16 @@
             renderProducts(sortedProducts);
         }
 
-        // Add to cart
+        // Add to cart - UPDATED WITH SHOP STATUS CHECK
         async function addToCart(productId) {
             try {
+                // First check shop status
+                const shopStatusCheck = await checkShopStatus();
+                if (!shopStatusCheck.isOpen) {
+                    showToast(`Cannot add to cart: ${shopStatusCheck.reason}`, 'error');
+                    return;
+                }
+                
                 const product = PRODUCTS.find(p => p.id === productId);
                 if (!product) return;
                 
@@ -3337,6 +3673,9 @@
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
                 showToast('Product added to cart!');
+                
+                // Load shop data for coupon validation
+                await loadShopData();
                 
             } catch (error) {
                 console.error('Error adding to cart:', error);
@@ -3590,8 +3929,15 @@
             quantityElement.textContent = quantity;
         }
 
-        function addToCartFromDetail() {
+        async function addToCartFromDetail() {
             if (!currentProductDetail) return;
+            
+            // First check shop status
+            const shopStatusCheck = await checkShopStatus();
+            if (!shopStatusCheck.isOpen) {
+                showToast(`Cannot add to cart: ${shopStatusCheck.reason}`, 'error');
+                return;
+            }
             
             const quantity = parseInt(document.getElementById('quantityValue').textContent);
             const product = PRODUCTS.find(p => p.id === currentProductDetail.id);
@@ -3626,6 +3972,9 @@
             localStorage.setItem('dukaan_cart', JSON.stringify(cart));
             updateCartUI();
             showToast('Product added to cart!');
+            
+            // Load shop data for coupon validation
+            loadShopData();
         }
 
         function toggleWishlistFromDetail() {
@@ -4278,7 +4627,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             });
         }
 
-        // Place order function
+        // Place order function - UPDATED WITH SHOP STATUS CHECK
         async function placeOrder() {
             if (!isOnline) {
                 showToast('Cannot place order while offline', 'error');
@@ -4286,6 +4635,13 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             }
 
             try {
+                // Check shop status before placing order
+                const shopStatusCheck = await checkShopStatus();
+                if (!shopStatusCheck.isOpen) {
+                    showToast(`Cannot place order: ${shopStatusCheck.reason}`, 'error');
+                    return;
+                }
+                
                 // Get phone from selected address or input
                 let phone = '';
                 if (selectedAddress) {
@@ -4707,6 +5063,9 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 fillCheckoutForm(addresses.find(addr => addr.id === selectedAddress));
             }
             renderAddresses();
+            
+            // Update coupon section when bottom sheet opens
+            updateCouponSection();
         }
 
         function closeBottomSheet() {
@@ -4734,136 +5093,142 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
         }
 
         // Coupon functions - UPDATED VERSION
-function updateCouponSection() {
-    const couponSection = document.querySelector('.coupon-section');
-    const applyCouponBtn = document.getElementById('applyCouponBtn');
-    
-    // Check both possible field names
-    const couponsEnabled = SHOP_CONFIG && (
-        SHOP_CONFIG.couponsEnabled || 
-        SHOP_CONFIG.couponEnabled || 
-        (SHOP_CONFIG.couponSettings && SHOP_CONFIG.couponSettings.enabled)
-    );
-    
-    if (!couponsEnabled) {
-        if (couponSection) {
-            couponSection.innerHTML = `
-                <div class="text-center text-muted p-3">
-                    <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
-                    <p>Coupons are currently disabled by the shopkeeper</p>
-                </div>
-            `;
+        function updateCouponSection() {
+            const couponSection = document.querySelector('.coupon-section');
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            
+            if (!SHOP_DATA) {
+                // Shop data not loaded yet, disable coupon section
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                }
+                return;
+            }
+            
+            // Check if shop has coupons enabled
+            const couponsEnabled = SHOP_DATA.couponEnabled || false;
+            
+            if (!couponsEnabled) {
+                if (couponSection) {
+                    couponSection.innerHTML = `
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>Coupons are currently disabled by the shopkeeper</p>
+                        </div>
+                    `;
+                }
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                }
+                return;
+            }
+            
+            // Shop has coupons enabled, show coupon input
+            const hasCoupons = SHOP_DATA.couponCode || SHOP_DATA.couponSettings;
+            
+            if (hasCoupons) {
+                // Enable coupon section
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = !currentUser;
+                }
+            } else {
+                // No coupons available
+                if (couponSection) {
+                    couponSection.innerHTML = `
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>No coupons available at the moment</p>
+                        </div>
+                    `;
+                }
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                }
+            }
         }
-        if (applyCouponBtn) {
-            applyCouponBtn.disabled = true;
-        }
-        return;
-    }
-    
-    // Shop has coupons enabled, check if any coupons available
-    const hasCoupons = SHOP_COUPONS && SHOP_COUPONS.length > 0;
-    
-    if (hasCoupons) {
-        // Enable coupon section
-        if (applyCouponBtn) {
-            applyCouponBtn.disabled = !currentUser;
-        }
-    } else {
-        // No coupons available
-        if (couponSection) {
-            couponSection.innerHTML = `
-                <div class="text-center text-muted p-3">
-                    <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
-                    <p>No coupons available at the moment</p>
-                </div>
-            `;
-        }
-        if (applyCouponBtn) {
-            applyCouponBtn.disabled = true;
-        }
-    }
-}
 
-function applyCoupon() {
-    // Check if shop has coupons enabled - UPDATED
-    const couponsEnabled = SHOP_CONFIG && (
-        SHOP_CONFIG.couponsEnabled || 
-        SHOP_CONFIG.couponEnabled || 
-        (SHOP_CONFIG.couponSettings && SHOP_CONFIG.couponSettings.enabled)
-    );
-    
-    if (!couponsEnabled) {
-        showToast('Coupons are currently disabled by the shopkeeper', 'warning');
-        return;
-    }
-    
-    if (!currentUser) {
-        showToast('Please login to apply coupons');
-        return;
-    }
-    
-    const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
-    const couponMessage = document.getElementById('couponMessage');
-    
-    if (!couponCode) {
-        appliedCoupon = null;
-        couponMessage.textContent = '';
-        updateOrderSummary();
-        showToast('Coupon removed');
-        return;
-    }
-    
-    // Check shop coupons first
-    let coupon = null;
-    
-    if (SHOP_COUPONS && SHOP_COUPONS.length > 0) {
-        coupon = SHOP_COUPONS.find(c => {
-            // Handle different coupon structures
-            const codeMatch = (c.code === couponCode || c.couponCode === couponCode);
-            const isActive = c.isActive !== false && c.active !== false && c.status !== 'inactive';
-            return codeMatch && isActive;
-        });
-    }
-    
-    // If not found in shop coupons, check default coupons
-    if (!coupon && AVAILABLE_COUPONS) {
-        coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
-    }
-    
-    // Also check shop's couponSettings if available
-    if (!coupon && SHOP_CONFIG && SHOP_CONFIG.couponSettings) {
-        const shopCoupon = SHOP_CONFIG.couponSettings;
-        if (shopCoupon.code === couponCode && shopCoupon.active !== false) {
-            coupon = shopCoupon;
+        function applyCoupon() {
+            // Check if shop has coupons enabled
+            if (!SHOP_DATA || !SHOP_DATA.couponEnabled) {
+                showToast('Coupons are currently disabled by the shopkeeper', 'warning');
+                return;
+            }
+            
+            if (!currentUser) {
+                showToast('Please login to apply coupons');
+                return;
+            }
+            
+            const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
+            const couponMessage = document.getElementById('couponMessage');
+            
+            if (!couponCode) {
+                appliedCoupon = null;
+                couponMessage.textContent = '';
+                updateOrderSummary();
+                showToast('Coupon removed');
+                return;
+            }
+            
+            // Check shop coupon settings
+            let coupon = null;
+            const shopCouponCode = SHOP_DATA.couponCode;
+            const shopCouponSettings = SHOP_DATA.couponSettings;
+            
+            // First check shop's own coupon
+            if (shopCouponCode && shopCouponCode.toUpperCase() === couponCode) {
+                if (shopCouponSettings) {
+                    coupon = {
+                        code: shopCouponCode,
+                        type: shopCouponSettings.discountType || 'percentage',
+                        value: shopCouponSettings.value || 0,
+                        minOrder: shopCouponSettings.minOrder || 0,
+                        maxDiscount: shopCouponSettings.maxDiscount || 0,
+                        description: shopCouponSettings.description || 'Shop coupon applied',
+                        active: shopCouponSettings.active !== false
+                    };
+                }
+            }
+            
+            // If not found in shop coupons, check default coupons
+            if (!coupon) {
+                coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
+            }
+            
+            if (!coupon) {
+                couponMessage.textContent = 'Invalid coupon code';
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
+            
+            // Check if coupon is active
+            if (coupon.active === false) {
+                couponMessage.textContent = 'Coupon is no longer active';
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Check minimum order amount
+            if (subtotal < coupon.minOrder) {
+                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
+            
+            appliedCoupon = coupon;
+            couponMessage.textContent = `🎉 ${coupon.description || 'Coupon applied!'}`;
+            couponMessage.className = 'coupon-success';
+            updateOrderSummary();
+            showToast('Coupon applied successfully!');
         }
-    }
-    
-    if (!coupon) {
-        couponMessage.textContent = 'Invalid coupon code';
-        couponMessage.className = 'coupon-error';
-        appliedCoupon = null;
-        updateOrderSummary();
-        return;
-    }
-    
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // Check minimum order amount
-    const minOrder = coupon.minOrder || coupon.minimumOrder || 0;
-    if (subtotal < minOrder) {
-        couponMessage.textContent = `Minimum order amount of ₹${minOrder} required`;
-        couponMessage.className = 'coupon-error';
-        appliedCoupon = null;
-        updateOrderSummary();
-        return;
-    }
-    
-    appliedCoupon = coupon;
-    couponMessage.textContent = `🎉 ${coupon.description || 'Coupon applied!'}`;
-    couponMessage.className = 'coupon-success';
-    updateOrderSummary();
-    showToast('Coupon applied successfully!');
-}
 
         function updateCouponAuth() {
             const couponCodeInput = document.getElementById('couponCode');
@@ -5057,6 +5422,9 @@ function applyCoupon() {
         // Logout
         function logout() {
             console.log("Logout function called");
+            
+            // Stop shop status listener
+            stopShopStatusListener();
             
             if (firebase.auth().currentUser) {
                 firebase.auth().signOut().then(() => {
@@ -5340,6 +5708,11 @@ function applyCoupon() {
             updateWishlistUI();
             renderOrders();
             renderAddresses();
+            
+            // Load shop data for status checking after a delay
+            setTimeout(() => {
+                loadShopData();
+            }, 1000);
         }
 
         // Handle search
