@@ -66,6 +66,19 @@
             font-weight: 600;
             z-index: 2;
         }
+        .shop-closed-badge.holiday {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        }
+        
+        .real-time-update {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
         
         .app-header { background: var(--primary); color: white; padding: 12px 0; position: sticky; top: 0; z-index: 1000; }
         .header-container { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
@@ -2729,10 +2742,9 @@
             }
         }
 
-        // Load shop data including coupon settings and status
+        // IMPROVED: Load shop data including coupon settings and status
         async function loadShopData() {
             try {
-                // Get shop ID from products (if available)
                 let shopId = 'default_shop';
                 if (cart.length > 0) {
                     shopId = cart[0].shopId;
@@ -2740,27 +2752,43 @@
                     shopId = PRODUCTS[0].shopId;
                 }
                 
+                console.log('📱 Loading shop data for:', shopId);
+                
                 const shopDoc = await db.collection('shops').doc(shopId).get();
                 if (shopDoc.exists) {
                     SHOP_DATA = shopDoc.data();
-                    console.log('✅ Shop data loaded:', SHOP_DATA);
-                    
-                    // Update coupon section based on shop data
-                    updateCouponSection();
-                    
-                    // Check and display shop status
-                    await checkAndDisplayShopStatus();
+                    console.log('✅ Shop data loaded:', {
+                        status: SHOP_DATA.shopStatus,
+                        timings: SHOP_DATA.shopTimings,
+                        hasCoupons: !!SHOP_DATA.couponEnabled
+                    });
                     
                     // Start real-time listener
                     startShopStatusListener(shopId);
+                    
+                    // Update UI immediately
+                    checkAndDisplayShopStatus();
+                    updateCouponSection();
+                    
+                    // Update product cards if on home page
+                    if (document.getElementById('homePage').style.display === 'block') {
+                        renderProducts(PRODUCTS);
+                    }
+                    
+                    return true;
+                } else {
+                    console.log('⚠️ No shop data found');
+                    SHOP_DATA = null;
+                    return false;
                 }
             } catch (error) {
-                console.error('Error loading shop data:', error);
+                console.error('❌ Error loading shop data:', error);
                 SHOP_DATA = null;
+                return false;
             }
         }
 
-        // Check shop status function
+        // IMPROVED: SIMPLIFIED checkShopStatus - Only checks what shopkeeper sets
         async function checkShopStatus() {
             try {
                 if (!SHOP_DATA) {
@@ -2774,17 +2802,14 @@
                     }
                 }
                 
-                const now = new Date();
-                const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
-                                   now.getMinutes().toString().padStart(2, '0');
+                console.log('🛍️ Checking shop status:', SHOP_DATA.shopStatus);
                 
-                // Check manual status first
+                // ONLY check what shopkeeper has set
                 if (SHOP_DATA.shopStatus === 'closed') {
                     return {
                         isOpen: false,
                         status: 'closed',
-                        reason: 'Shop is manually closed by shopkeeper'
+                        reason: SHOP_DATA.closeReason || 'Shop is closed by shopkeeper'
                     };
                 }
                 
@@ -2792,61 +2817,15 @@
                     return {
                         isOpen: false,
                         status: 'on holiday',
-                        reason: 'Shop is on holiday'
+                        reason: SHOP_DATA.holidayReason || 'Shop is on holiday'
                     };
                 }
                 
-                // Check if today is a working day
-                const workingDays = SHOP_DATA.shopTimings?.workingDays || 
-                                  ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                
-                if (!workingDays.includes(currentDay)) {
-                    return {
-                        isOpen: false,
-                        status: 'closed',
-                        reason: `Shop is closed on ${currentDay}s`
-                    };
-                }
-                
-                // Check shop timings
-                const openTime = SHOP_DATA.shopTimings?.openTime || '09:00';
-                const closeTime = SHOP_DATA.shopTimings?.closeTime || '21:00';
-                
-                if (currentTime < openTime) {
-                    return {
-                        isOpen: false,
-                        status: 'closed',
-                        reason: `Shop opens at ${openTime}`,
-                        opensAt: openTime
-                    };
-                }
-                
-                if (currentTime > closeTime) {
-                    return {
-                        isOpen: false,
-                        status: 'closed',
-                        reason: `Shop closed at ${closeTime}. Opens tomorrow at ${openTime}`,
-                        opensAt: openTime
-                    };
-                }
-                
-                // Check for holidays
-                const todayStr = now.toISOString().split('T')[0];
-                const holidays = SHOP_DATA.holidays || [];
-                
-                const todayHoliday = holidays.find(holiday => holiday.date === todayStr);
-                if (todayHoliday) {
-                    return {
-                        isOpen: false,
-                        status: 'on holiday',
-                        reason: todayHoliday.reason || 'Holiday'
-                    };
-                }
-                
+                // If shopkeeper has set status to 'open' or null/undefined
                 return {
                     isOpen: true,
                     status: 'open',
-                    nextOpen: null
+                    reason: null
                 };
                 
             } catch (error) {
@@ -2942,41 +2921,50 @@
             }
         }
 
-        // Check if shop is open for product cards
+        // SIMPLIFIED: checkIfShopIsOpen - Only checks shopkeeper's manual status
         function checkIfShopIsOpen(shopId) {
             if (!SHOP_DATA) return true; // Default to open if no data
             
-            // Check manual status
-            if (SHOP_DATA.shopStatus === 'closed' || SHOP_DATA.shopStatus === 'holiday') {
-                return false;
-            }
-            
-            // Check timings
-            const now = new Date();
-            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
-                               now.getMinutes().toString().padStart(2, '0');
-            
-            const openTime = SHOP_DATA.shopTimings?.openTime || '09:00';
-            const closeTime = SHOP_DATA.shopTimings?.closeTime || '21:00';
-            
-            return currentTime >= openTime && currentTime <= closeTime;
+            // ONLY check manual status set by shopkeeper
+            return !(SHOP_DATA.shopStatus === 'closed' || SHOP_DATA.shopStatus === 'holiday');
         }
 
-        // Real-time Shop Status Listener
+        // IMPROVED: Real-time Shop Status Listener
         function startShopStatusListener(shopId) {
             if (!shopId || shopStatusListener) return;
             
-            console.log('🔔 Starting shop status listener for shop:', shopId);
+            console.log('🔔 Starting ENHANCED shop status listener for shop:', shopId);
             
             shopStatusListener = db.collection('shops').doc(shopId)
                 .onSnapshot((doc) => {
                     if (doc.exists) {
                         const updatedShopData = doc.data();
                         SHOP_DATA = updatedShopData;
-                        console.log('🔄 Shop status updated:', updatedShopData.shopStatus);
+                        console.log('🔄 Shop data UPDATED in real-time:', {
+                            status: updatedShopData.shopStatus,
+                            timings: updatedShopData.shopTimings,
+                            holidays: updatedShopData.holidays?.length || 0
+                        });
                         
                         // Update UI based on new status
                         checkAndDisplayShopStatus();
+                        
+                        // Update product cards
+                        if (typeof renderProducts === 'function') {
+                            renderProducts(PRODUCTS);
+                        }
+                        
+                        // Update coupon section
+                        updateCouponSection();
+                        
+                        // Show notification about status change
+                        if (updatedShopData.shopStatus === 'closed') {
+                            showToast('Shop status updated: Now closed', 'warning');
+                        } else if (updatedShopData.shopStatus === 'holiday') {
+                            showToast('Shop status updated: On holiday', 'info');
+                        } else if (updatedShopData.shopStatus === 'open') {
+                            showToast('Shop status updated: Now open', 'success');
+                        }
                     }
                 }, (error) => {
                     console.error('❌ Error in shop status listener:', error);
@@ -3537,7 +3525,7 @@
             renderProducts(PRODUCTS);
         }
 
-        // Render products
+        // IMPROVED: Render products with real-time shop status
         function renderProducts(products) {
             const productGrid = document.getElementById('productGrid');
             const emptyState = document.getElementById('empty');
@@ -3558,13 +3546,29 @@
                 const discount = product.mrp ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0;
                 const isInWishlist = wishlist.includes(product.id);
                 
-                // Check if shop is open
-                const isShopOpen = checkIfShopIsOpen(product.shopId);
+                // Check shop status from SHOP_DATA
+                const isShopOpen = SHOP_DATA ? 
+                    !(SHOP_DATA.shopStatus === 'closed' || SHOP_DATA.shopStatus === 'holiday') : 
+                    true;
+                
+                // Get status text for badge
+                let statusBadge = '';
+                let statusText = '';
+                
+                if (SHOP_DATA) {
+                    if (SHOP_DATA.shopStatus === 'closed') {
+                        statusBadge = 'shop-closed-badge';
+                        statusText = 'Shop Closed';
+                    } else if (SHOP_DATA.shopStatus === 'holiday') {
+                        statusBadge = 'shop-closed-badge holiday';
+                        statusText = 'On Holiday';
+                    }
+                }
                 
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
                 productCard.innerHTML = `
-                    ${!isShopOpen ? '<div class="shop-closed-badge">Shop Closed</div>' : ''}
+                    ${statusText ? `<div class="${statusBadge}">${statusText}</div>` : ''}
                     <div class="shop-badge">${shopName}</div>
                     <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" onclick="toggleWishlist('${product.id}')">
                         <i class="fas fa-heart"></i>
@@ -3579,7 +3583,9 @@
                     </div>
                     <div class="card-actions">
                         <button class="btn-add-cart" onclick="addToCart('${product.id}')" ${!isShopOpen ? 'disabled' : ''}>
-                            ${!isShopOpen ? '<i class="fas fa-store-slash"></i> Shop Closed' : '<i class="fas fa-shopping-cart"></i> Add to Cart'}
+                            ${!isShopOpen ? 
+                                `<i class="fas fa-store-slash"></i> ${statusText}` : 
+                                '<i class="fas fa-shopping-cart"></i> Add to Cart'}
                         </button>
                     </div>
                 `;
@@ -3632,14 +3638,20 @@
             renderProducts(sortedProducts);
         }
 
-        // Add to cart - UPDATED WITH SHOP STATUS CHECK
+        // UPDATED: Add to cart with shop status check from SHOP_DATA
         async function addToCart(productId) {
             try {
-                // First check shop status
-                const shopStatusCheck = await checkShopStatus();
-                if (!shopStatusCheck.isOpen) {
-                    showToast(`Cannot add to cart: ${shopStatusCheck.reason}`, 'error');
-                    return;
+                // First check shop status from SHOP_DATA (real-time)
+                if (SHOP_DATA) {
+                    if (SHOP_DATA.shopStatus === 'closed') {
+                        showToast(`Cannot add to cart: Shop is closed`, 'error');
+                        return;
+                    }
+                    
+                    if (SHOP_DATA.shopStatus === 'holiday') {
+                        showToast(`Cannot add to cart: Shop is on holiday`, 'error');
+                        return;
+                    }
                 }
                 
                 const product = PRODUCTS.find(p => p.id === productId);
@@ -3929,14 +3941,21 @@
             quantityElement.textContent = quantity;
         }
 
+        // UPDATED: addToCartFromDetail with shop status check
         async function addToCartFromDetail() {
             if (!currentProductDetail) return;
             
-            // First check shop status
-            const shopStatusCheck = await checkShopStatus();
-            if (!shopStatusCheck.isOpen) {
-                showToast(`Cannot add to cart: ${shopStatusCheck.reason}`, 'error');
-                return;
+            // Check shop status from SHOP_DATA (real-time)
+            if (SHOP_DATA) {
+                if (SHOP_DATA.shopStatus === 'closed') {
+                    showToast(`Cannot add to cart: Shop is closed`, 'error');
+                    return;
+                }
+                
+                if (SHOP_DATA.shopStatus === 'holiday') {
+                    showToast(`Cannot add to cart: Shop is on holiday`, 'error');
+                    return;
+                }
             }
             
             const quantity = parseInt(document.getElementById('quantityValue').textContent);
@@ -4627,7 +4646,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             });
         }
 
-        // Place order function - UPDATED WITH SHOP STATUS CHECK
+        // UPDATED: Place order function with shop status check from SHOP_DATA
         async function placeOrder() {
             if (!isOnline) {
                 showToast('Cannot place order while offline', 'error');
@@ -4635,11 +4654,17 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             }
 
             try {
-                // Check shop status before placing order
-                const shopStatusCheck = await checkShopStatus();
-                if (!shopStatusCheck.isOpen) {
-                    showToast(`Cannot place order: ${shopStatusCheck.reason}`, 'error');
-                    return;
+                // Check shop status from SHOP_DATA (real-time)
+                if (SHOP_DATA) {
+                    if (SHOP_DATA.shopStatus === 'closed') {
+                        showToast(`Cannot place order: Shop is closed`, 'error');
+                        return;
+                    }
+                    
+                    if (SHOP_DATA.shopStatus === 'holiday') {
+                        showToast(`Cannot place order: Shop is on holiday`, 'error');
+                        return;
+                    }
                 }
                 
                 // Get phone from selected address or input
@@ -5701,18 +5726,27 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             loadShopConfig();
             
             // Load products
-            loadProductsFromFirebase();
+            loadProductsFromFirebase().then(() => {
+                // Load shop data after products are loaded
+                setTimeout(() => {
+                    loadShopData().then(() => {
+                        console.log('✅ All initial data loaded');
+                        
+                        // Set up periodic refresh (every 30 seconds) for safety
+                        setInterval(() => {
+                            if (isOnline && currentUser) {
+                                loadShopData();
+                            }
+                        }, 30000);
+                    });
+                }, 1000);
+            });
             
             // Initial UI updates
             updateCartUI();
             updateWishlistUI();
             renderOrders();
             renderAddresses();
-            
-            // Load shop data for status checking after a delay
-            setTimeout(() => {
-                loadShopData();
-            }, 1000);
         }
 
         // Handle search
