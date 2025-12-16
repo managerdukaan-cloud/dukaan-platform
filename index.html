@@ -3202,13 +3202,32 @@ function getCurrentCartTotal() {
         }
 
         function updateQRCodeWithAmount(amount) {
-            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-                const qrImage = document.getElementById('dynamicQRCode');
-                if (qrImage) {
-                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=${SHOP_CONFIG.shopName || 'Raashanmart'}&am=${amount}&tn=Order%20Payment`;
-                }
-            }
-        }
+    if (!SHOP_CONFIG) return;
+    
+    const upiId = SHOP_CONFIG.upiId || 'shopkeeper@upi';
+    const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
+    const qrImage = document.getElementById('dynamicQRCode');
+    
+    if (!qrImage) return;
+    
+    // QR कोड URL बनाएं
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR`;
+    
+    // QR कोड सेट करें
+    qrImage.src = qrUrl;
+    
+    // UPI ID अपडेट करें
+    const upiElement = document.getElementById('dynamicUpiId');
+    if (upiElement) {
+        upiElement.textContent = upiId;
+    }
+    
+    // Amount display अपडेट करें
+    const qrAmountElement = document.getElementById('qrAmount');
+    if (qrAmountElement) {
+        qrAmountElement.textContent = `₹${amount}`;
+    }
+}
 
         // Update cart quantity
         function updateCartQuantity(index, change) {
