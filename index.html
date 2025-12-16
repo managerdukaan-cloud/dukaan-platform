@@ -3453,7 +3453,6 @@
                 loadOrderHistory();
                 startRealTimeOrderListener();
                 loadShopConfig();
-                loadShopData();
             }
         }
         
@@ -5769,7 +5768,6 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             
             // Load shop configuration
             loadShopConfig();
-            loadShopData();
             
             // Load products
             loadProductsFromFirebase();
