@@ -78,7 +78,7 @@
         .status-delivered { background: var(--success); color: white; }
         .status-pending { background: var(--warning); color: white; }
         .status-cancelled { background: var(--danger); color: white; }
-        .status-preparing { background: #F59E0B; color: white; }
+        .status-preparing { background: var(--accent); color: white; }
         .status-dispatched { background: #8B5CF6; color: white; }
         .status-packed { background: #7C3AED; color: white; }
         .status-ready-for-pickup { background: #10B981; color: white; }
@@ -1400,6 +1400,497 @@
             background: #D1FAE5;
             color: #065F46;
         }
+        .offline-notification {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--danger);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            z-index: 9999;
+            display: none;
+            animation: slideDown 0.3s ease;
+            text-align: center;
+            max-width: 90%;
+        }
+        .online-notification {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            z-index: 9999;
+            display: none;
+            animation: slideDown 0.3s ease;
+            text-align: center;
+            max-width: 90%;
+        }
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .offline-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .offline-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+        .offline-icon {
+            font-size: 60px;
+            color: var(--danger);
+            margin-bottom: 20px;
+        }
+        .offline-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+        .offline-message {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .reload-button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .reload-button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                padding: 0 8px !important;
+            }
+            .product-card {
+                padding: 12px !important;
+                border-radius: 12px !important;
+                min-height: 280px !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            .product-image {
+                height: 120px !important;
+                border-radius: 8px !important;
+                margin-bottom: 8px !important;
+            }
+            .product-title {
+                font-size: 14px !important;
+                line-height: 1.3 !important;
+                margin-bottom: 4px !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important;
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
+            }
+            .product-category {
+                font-size: 11px !important;
+                margin-bottom: 8px !important;
+            }
+            .product-price {
+                margin-top: auto !important;
+                padding-top: 8px !important;
+            }
+            .current-price {
+                font-size: 16px !important;
+            }
+            .original-price {
+                font-size: 12px !important;
+            }
+            .discount {
+                font-size: 11px !important;
+            }
+            .btn-add-cart {
+                padding: 8px 12px !important;
+                font-size: 12px !important;
+                border-radius: 8px !important;
+            }
+            .product-badge {
+                font-size: 10px !important;
+                padding: 3px 8px !important;
+                top: 8px !important;
+                left: 8px !important;
+            }
+            .shop-badge {
+                font-size: 9px !important;
+                padding: 2px 6px !important;
+                top: 8px !important;
+                right: 8px !important;
+            }
+            .wishlist-btn {
+                position: absolute !important;
+                bottom: 60px !important;
+                right: 12px !important;
+                top: auto !important;
+                width: 32px !important;
+                height: 32px !important;
+                background: rgba(255,255,255,0.9) !important;
+                border: none !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+                transition: all 0.3s ease !important;
+                color: var(--text-light) !important;
+                z-index: 3 !important;
+            }
+            .wishlist-btn:hover {
+                background: white !important;
+                transform: scale(1.1) !important;
+            }
+            .wishlist-btn.active {
+                background: var(--danger) !important;
+                color: white !important;
+            }
+            @media (max-width: 768px) {
+                .wishlist-btn {
+                    bottom: 50px !important;
+                    right: 8px !important;
+                    width: 28px !important;
+                    height: 28px !important;
+                }
+            }
+            .header-container { 
+                flex-direction: column; 
+                gap: 12px; 
+                position: relative;
+            }
+            .search-container { 
+                margin: 0 auto; 
+                width: 100%; 
+                max-width: 500px;
+            }
+            .container-main {
+                margin: 16px auto !important;
+                padding: 0 8px !important;
+            }
+            .container-main {
+                margin: 16px auto !important;
+                padding: 0 8px !important;
+            }
+            .hero-banner {
+                padding: 20px 16px !important;
+                margin-bottom: 20px !important;
+                border-radius: 16px !important;
+            }
+            .hero-content { 
+                max-width: 100%; 
+            }
+            .hero-title { 
+                font-size: 1.5rem !important;
+                margin-bottom: 10px !important;
+            }
+            .hero-subtitle {
+                font-size: 0.9rem !important;
+                margin-bottom: 15px !important;
+            }
+            .filter-section > div {
+                flex-direction: column !important;
+                gap: 12px !important;
+            }
+            .filter-section .d-flex {
+                width: 100% !important;
+                justify-content: space-between !important;
+                margin-bottom: 15px !important;
+            }
+            .category-filter {
+                flex: 1 !important;
+                margin: 0 4px !important;
+            }
+            .sorting-options {
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+            .sort-select {
+                min-width: 140px !important;
+            }
+            .auth-card { 
+                padding: 30px 25px; 
+            }
+            .form-row { 
+                grid-template-columns: 1fr; 
+            }
+            .wishlist-card { 
+                flex-direction: column; 
+                text-align: center; 
+            }
+            .wishlist-actions { 
+                justify-content: center; 
+            }
+            .rating-summary { 
+                flex-direction: column; 
+                gap: 20px; 
+                text-align: center; 
+            }
+            .product-detail-actions { 
+                flex-direction: column; 
+            }
+            .product-detail-image { 
+                height: 300px; 
+            }
+            .order-actions {
+                justify-content: center;
+            }
+            .order-actions button {
+                flex: 1;
+                min-width: 80px;
+            }
+            .search-modal-body {
+                max-height: 70vh;
+            }
+            .popular-searches {
+                grid-template-columns: 1fr;
+            }
+            .shop-filters {
+                grid-template-columns: 1fr;
+            }
+            .recent-searches {
+                flex-direction: column;
+            }
+            .recent-search-item {
+                text-align: center;
+            }
+            .order-timeline {
+                padding: 0 5px !important;
+            }
+            .step-label {
+                font-size: 9px !important;
+            }
+            .step-time {
+                font-size: 8px !important;
+            }
+            .step-icon {
+                width: 30px !important;
+                height: 30px !important;
+                font-size: 12px !important;
+            }
+            .specifications-section,
+            .return-policy-section {
+                padding: 15px !important;
+            }
+            .specs-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        .app-header .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: relative;
+        }
+        .app-header .search-container {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .app-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+        @media (min-width: 769px) {
+            .app-header .header-container {
+                position: relative;
+            }
+            .app-header .search-container {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 400px;
+            }
+            .app-header .header-actions {
+                margin-left: auto;
+            }
+        }
+        @media (max-width: 768px) {
+            .app-header .header-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .app-header .search-container {
+                order: 2;
+                width: 100%;
+                max-width: none;
+            }
+            .app-header .header-actions {
+                order: 3;
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+        .preference-item[style*="color: var(--danger)"] {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .preference-item[style*="color: var(--danger)"]:hover {
+            background: #FEE2E2;
+            border-radius: 8px;
+            padding: 12px;
+            margin: -12px -12px -12px -12px;
+        }
+        @media (max-width: 480px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+                padding: 0 4px !important;
+            }
+            .product-card {
+                padding: 10px !important;
+                min-height: 260px !important;
+            }
+            .product-image {
+                height: 110px !important;
+            }
+            .product-title {
+                font-size: 13px !important;
+            }
+            .current-price {
+                font-size: 15px !important;
+            }
+            .container-main { 
+                padding: 0 12px; 
+            }
+            .hero-banner { 
+                padding: 20px; 
+            }
+            .product-detail-content { 
+                padding: 20px; 
+            }
+            .reviews-section { 
+                padding: 20px; 
+            }
+            .order-timeline {
+                padding: 0 2px !important;
+            }
+            .step-label {
+                font-size: 8px !important;
+            }
+            .step-time {
+                font-size: 7px !important;
+            }
+            .step-icon {
+                width: 25px !important;
+                height: 25px !important;
+                font-size: 10px !important;
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 16px !important;
+            }
+        }
+        @media (min-width: 769px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 20px;
+            }
+        }
+        .orders-count-badge {
+            position: absolute;
+            top: -8px;
+            right: 10px;
+            background: var(--danger);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            text-align: center;
+        }
+        .status-preparing { background: #F59E0B; color: white; }
+        .status-dispatched { background: #8B5CF6; color: white; }
+        .status-packed { background: #7C3AED; color: white; }
+        .status-ready-for-pickup { background: #10B981; color: white; }
+        .status-out-for-delivery { background: #3A8EF6; color: white; }
+        .order-update-notification {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            z-index: 9999;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .search-container.active .search-bar {
+            box-shadow: 0 4px 20px rgba(58, 142, 246, 0.4);
+        }
+        .product-description {
+            margin: 25px 0;
+            padding: 20px;
+            background: var(--neutral);
+            border-radius: 15px;
+        }
+        .product-description h4 {
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            font-size: 1.2rem;
+        }
+        .product-description p {
+            line-height: 1.6;
+            color: var(--text-light);
+        }
+        .refund-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .refund-pending { background: #FEF3C7; color: #92400E; }
+        .refund-processing { background: #DBEAFE; color: #1E40AF; }
+        .refund-completed { background: #D1FAE5; color: #065F46; }
+        .refund-rejected { background: #FEE2E2; color: #991B1B; }
         .wishlist-page .product-grid {
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         }
@@ -1419,92 +1910,10 @@
             color: var(--text-light);
             font-size: 12px;
         }
-        .offline-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .offline-content {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            max-width: 400px;
-            box-shadow: var(--shadow-lg);
-        }
-        .offline-icon {
-            font-size: 60px;
-            color: var(--warning);
-            margin-bottom: 20px;
-        }
-        .offline-title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-        }
-        .offline-message {
-            color: var(--text-light);
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-        .reload-button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .reload-button:hover {
-            background: var(--accent-hover);
-        }
-        .offline-notification {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: var(--danger);
-            color: white;
-            padding: 12px;
-            text-align: center;
-            z-index: 9998;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
-        }
-        .online-notification {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: var(--success);
-            color: white;
-            padding: 12px;
-            text-align: center;
-            z-index: 9998;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
     </style>
 </head>
 <body>
-    <div id="offlineOverlay" class="offline-overlay" style="display: none;">
+    <div id="offlineOverlay" class="offline-overlay">
         <div class="offline-content">
             <div class="offline-icon">
                 <i class="fas fa-wifi-slash"></i>
@@ -1520,13 +1929,13 @@
             </button>
         </div>
     </div>
-    <div id="offlineNotification" class="offline-notification" style="display: none;">
+    <div id="offlineNotification" class="offline-notification">
         <i class="fas fa-wifi-slash"></i> You are offline
     </div>
-    <div id="onlineNotification" class="online-notification" style="display: none;">
+    <div id="onlineNotification" class="online-notification">
         <i class="fas fa-wifi"></i> You are back online
     </div>
-    <div id="authScreen" style="display: block;">
+    <div id="authScreen">
         <div class="auth-container">
             <div class="auth-card">
                 <div class="auth-header">
@@ -1544,8 +1953,8 @@
                         <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
                     </div>
                     <button type="submit" class="btn-primary w-100" style="padding: 12px;">Sign In</button>
-                    <div class="forgot-password mt-2 text-center">
-                        <a href="#" onclick="showForgotPassword()" style="color: var(--accent); text-decoration: none;">Forgot Password?</a>
+                    <div class="forgot-password">
+                        <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
                     </div>
                 </form>
                 <form id="signupForm" style="display: none;">
@@ -2201,29 +2610,15 @@
             appId: "1:75765851780:web:dd9567db1d39c3b09c84d1"
         };
 
-        // Check if Firebase is already initialized
-        if (!firebase.apps.length) {
-            try {
-                firebase.initializeApp(firebaseConfig);
-                console.log('✅ Firebase initialized successfully');
-            } catch (error) {
-                console.log('⚠️ Firebase initialization error:', error);
-            }
-        } else {
-            console.log('✅ Firebase already initialized');
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.log('Firebase already initialized');
         }
-
         const auth = firebase.auth();
         const db = firebase.firestore();
-        
-        // Set persistence to LOCAL for better offline support
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-            .then(() => {
-                console.log('✅ Auth persistence set to LOCAL');
-            })
-            .catch((error) => {
-                console.log('⚠️ Error setting auth persistence:', error);
-            });
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
         // Data variables
         let SHOPS = {};
@@ -2245,136 +2640,15 @@
         let currentTrackingOrder = null;
         let SHOP_CONFIG = null;
         let SHOP_COUPONS = [];
-
-        // Real-time shop config listener
-        function setupShopConfigListener() {
-            console.log('🔔 Setting up real-time shop config listener...');
-            
-            db.collection('shop_config').doc('settings')
-                .onSnapshot((doc) => {
-                    console.log('🔄 Shop config updated in real-time');
-                    
-                    if (doc.exists) {
-                        SHOP_CONFIG = doc.data();
-                        console.log('✅ Shop config updated:', SHOP_CONFIG);
-                        
-                        // Update UPI ID in real-time
-                        updateQRCode();
-                        
-                        // Update coupon section in real-time
-                        updateCouponSection();
-                        
-                        // Show notification if coupons status changed
-                        showCouponStatusNotification();
-                        
-                        // Show notification if UPI changed
-                        showUPIUpdateNotification();
-                        
-                    } else {
-                        // Default configuration if no config exists
-                        SHOP_CONFIG = {
-                            upiId: 'shopkeeper@upi',
-                            couponsEnabled: false,
-                            multipleShopsAllowed: false,
-                            deliveryCharge: 0,
-                            shopName: 'Raashanmart'
-                        };
-                        console.log('⚠️ Using default shop config');
-                        updateCouponSection();
-                    }
-                }, (error) => {
-                    console.error('❌ Error in real-time shop config listener:', error);
-                });
-        }
-
-        // Real-time coupons listener
-        function setupCouponsListener() {
-            console.log('🔔 Setting up real-time coupons listener...');
-            
-            db.collection('coupons')
-                .onSnapshot((snapshot) => {
-                    console.log('🔄 Coupons updated in real-time');
-                    
-                    SHOP_COUPONS = [];
-                    
-                    snapshot.forEach(doc => {
-                        SHOP_COUPONS.push({ 
-                            id: doc.id, 
-                            ...doc.data(),
-                            code: doc.data().code || doc.id,
-                            isActive: doc.data().isActive !== false
-                        });
-                    });
-                    
-                    console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded in real-time`);
-                    
-                    // Sort coupons by isActive (active coupons first)
-                    SHOP_COUPONS.sort((a, b) => {
-                        if (a.isActive === b.isActive) return 0;
-                        return a.isActive ? -1 : 1;
-                    });
-                    
-                    // Update coupon section
-                    updateCouponSection();
-                    
-                }, (error) => {
-                    console.error('❌ Error in real-time coupons listener:', error);
-                    SHOP_COUPONS = [];
-                });
-        }
-
-        // Show notification when coupon status changes
-        function showCouponStatusNotification() {
-            const wasCouponsEnabled = localStorage.getItem('lastCouponsStatus') === 'true';
-            const isCouponsEnabled = SHOP_CONFIG.couponsEnabled;
-            
-            if (wasCouponsEnabled !== undefined && wasCouponsEnabled !== isCouponsEnabled) {
-                if (isCouponsEnabled) {
-                    showToast('🎉 Coupons are now enabled! You can apply coupon codes.', 'success');
-                } else {
-                    showToast('⚠️ Coupons are now disabled by shopkeeper.', 'warning');
-                    
-                    // Clear any applied coupon if disabled
-                    if (appliedCoupon) {
-                        appliedCoupon = null;
-                        const couponCodeInput = document.getElementById('couponCode');
-                        const couponMessage = document.getElementById('couponMessage');
-                        if (couponCodeInput) couponCodeInput.value = '';
-                        if (couponMessage) {
-                            couponMessage.textContent = 'Coupons disabled by shopkeeper';
-                            couponMessage.className = 'coupon-error';
-                        }
-                        updateOrderSummary();
-                    }
-                }
-            }
-            
-            // Store current status
-            localStorage.setItem('lastCouponsStatus', isCouponsEnabled.toString());
-        }
-
-        // Show notification when UPI ID changes
-        function showUPIUpdateNotification() {
-            const lastUpiId = localStorage.getItem('lastUpiId');
-            const currentUpiId = SHOP_CONFIG?.upiId || '';
-            
-            if (lastUpiId && lastUpiId !== currentUpiId) {
-                showToast('ℹ️ Shopkeeper has updated payment UPI ID', 'info');
-            }
-            
-            // Store current UPI ID
-            localStorage.setItem('lastUpiId', currentUpiId);
-        }
+        let SHOP_DATA = null; // Store shop data for coupon validation
 
         // Load shop configuration from Firebase
         async function loadShopConfig() {
             try {
-                console.log('🔄 Loading shop configuration...');
                 const configDoc = await db.collection('shop_config').doc('settings').get();
-                
                 if (configDoc.exists) {
                     SHOP_CONFIG = configDoc.data();
-                    console.log('✅ Shop config loaded:', SHOP_CONFIG);
+                    console.log('Shop config loaded:', SHOP_CONFIG);
                     
                     // Update QR code UPI ID if available
                     updateQRCode();
@@ -2382,341 +2656,80 @@
                     // Load shop coupons
                     await loadShopCoupons();
                     
-                    // Update coupon section based on shop settings
-                    updateCouponSection();
-                    
-                    // Setup real-time listeners
-                    setupShopConfigListener();
-                    setupCouponsListener();
-                    
                 } else {
-                    // Default configuration
                     SHOP_CONFIG = {
                         upiId: 'shopkeeper@upi',
                         couponsEnabled: false,
                         multipleShopsAllowed: false,
-                        deliveryCharge: 0,
-                        shopName: 'Raashanmart'
+                        deliveryCharge: 0
                     };
-                    console.log('⚠️ Using default shop config');
-                    updateCouponSection();
-                    
-                    // Setup real-time listeners even with default config
-                    setupShopConfigListener();
-                    setupCouponsListener();
                 }
-                
-                // Initialize last known states
-                localStorage.setItem('lastCouponsStatus', SHOP_CONFIG.couponsEnabled.toString());
-                localStorage.setItem('lastUpiId', SHOP_CONFIG.upiId || '');
-                
             } catch (error) {
-                console.error('❌ Error loading shop config:', error);
+                console.error('Error loading shop config:', error);
                 SHOP_CONFIG = {
                     upiId: 'shopkeeper@upi',
                     couponsEnabled: false,
                     multipleShopsAllowed: false,
-                    deliveryCharge: 0,
-                    shopName: 'Raashanmart'
+                    deliveryCharge: 0
                 };
-                updateCouponSection();
+            }
+        }
+
+        // Load shop data including coupon settings
+        async function loadShopData() {
+            try {
+                // Get shop ID from products (if available)
+                let shopId = 'default_shop';
+                if (cart.length > 0) {
+                    shopId = cart[0].shopId;
+                } else if (PRODUCTS.length > 0) {
+                    shopId = PRODUCTS[0].shopId;
+                }
+                
+                const shopDoc = await db.collection('shops').doc(shopId).get();
+                if (shopDoc.exists) {
+                    SHOP_DATA = shopDoc.data();
+                    console.log('✅ Shop data loaded:', SHOP_DATA);
+                    
+                    // Update coupon section based on shop data
+                    updateCouponSection();
+                }
+            } catch (error) {
+                console.error('Error loading shop data:', error);
+                SHOP_DATA = null;
             }
         }
 
         // Load shop coupons
         async function loadShopCoupons() {
             try {
-                console.log('🔄 Loading shop coupons...');
                 const couponsSnapshot = await db.collection('coupons').get();
                 SHOP_COUPONS = [];
-                
                 couponsSnapshot.forEach(doc => {
-                    SHOP_COUPONS.push({ 
-                        id: doc.id, 
-                        ...doc.data(),
-                        code: doc.data().code || doc.id,
-                        isActive: doc.data().isActive !== false
-                    });
+                    SHOP_COUPONS.push({ id: doc.id, ...doc.data() });
                 });
-                
-                console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded`);
-                
-                // Sort coupons by isActive (active coupons first)
-                SHOP_COUPONS.sort((a, b) => {
-                    if (a.isActive === b.isActive) return 0;
-                    return a.isActive ? -1 : 1;
-                });
-                
+                console.log('Shop coupons loaded:', SHOP_COUPONS.length);
             } catch (error) {
-                console.error('❌ Error loading coupons:', error);
+                console.error('Error loading coupons:', error);
                 SHOP_COUPONS = [];
             }
         }
 
         function updateQRCode() {
             if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-                const upiIdElement = document.getElementById('dynamicUpiId');
-                if (upiIdElement) {
-                    upiIdElement.textContent = SHOP_CONFIG.upiId;
-                }
-                
+                document.getElementById('dynamicUpiId').textContent = SHOP_CONFIG.upiId;
                 const qrImage = document.getElementById('dynamicQRCode');
                 if (qrImage) {
-                    const amount = document.getElementById('qrAmount') ? document.getElementById('qrAmount').textContent.replace('₹', '') : '0';
-                    const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
-                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR&t=${Date.now()}`;
+                    const amount = document.getElementById('qrAmount').textContent.replace('₹', '');
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${amount}&tn=Order%20Payment`;
                 }
             }
         }
 
-        // Enhanced updateQRCodeWithAmount function for real-time updates
-        function updateQRCodeWithAmount(amount) {
-            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-                const qrImage = document.getElementById('dynamicQRCode');
-                if (qrImage) {
-                    const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
-                    const upiId = SHOP_CONFIG.upiId;
-                    
-                    // Generate QR code with current UPI ID
-                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR`;
-                    
-                    // Add timestamp to prevent caching
-                    qrImage.src += `&t=${Date.now()}`;
-                }
-            }
-        }
-
-        // Demo coupons (only used if shop doesn't have any)
-        const DEMO_COUPONS = [
-            { 
-                code: "WELCOME10", 
-                type: "percentage", 
-                value: 10, 
-                minOrder: 500, 
-                description: "Get 10% OFF on orders above ₹500",
-                isActive: true 
-            },
-            { 
-                code: "FLAT50", 
-                type: "fixed", 
-                value: 50, 
-                minOrder: 300, 
-                description: "Get ₹50 OFF on orders above ₹300",
-                isActive: true 
-            }
+        const AVAILABLE_COUPONS = [
+            { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
+            { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" }
         ];
-
-        // Enhanced updateCouponSection function for real-time updates
-        function updateCouponSection() {
-            const couponSection = document.querySelector('.coupon-section');
-            const applyCouponBtn = document.getElementById('applyCouponBtn');
-            const couponLoginRequired = document.getElementById('couponLoginRequired');
-            const couponCodeInput = document.getElementById('couponCode');
-            
-            if (!SHOP_CONFIG) {
-                SHOP_CONFIG = {
-                    couponsEnabled: false,
-                    upiId: 'shopkeeper@upi'
-                };
-            }
-            
-            // Check if shopkeeper has disabled coupons
-            if (!SHOP_CONFIG.couponsEnabled) {
-                if (couponSection) {
-                    couponSection.innerHTML = `
-                        <div class="text-center text-muted p-3">
-                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
-                            <p>Coupons are currently disabled by the shopkeeper</p>
-                        </div>
-                    `;
-                }
-                if (applyCouponBtn) {
-                    applyCouponBtn.disabled = true;
-                    applyCouponBtn.style.display = 'none';
-                }
-                if (couponCodeInput) {
-                    couponCodeInput.disabled = true;
-                    couponCodeInput.placeholder = "Coupons disabled by shopkeeper";
-                }
-                if (couponLoginRequired) {
-                    couponLoginRequired.style.display = 'none';
-                }
-                
-                // Clear any applied coupon
-                if (appliedCoupon) {
-                    appliedCoupon = null;
-                    if (couponCodeInput) couponCodeInput.value = '';
-                    updateOrderSummary();
-                }
-                return;
-            }
-            
-            // Shopkeeper has enabled coupons
-            const availableCoupons = SHOP_COUPONS.length > 0 ? SHOP_COUPONS : DEMO_COUPONS;
-            
-            if (availableCoupons.length === 0) {
-                if (couponSection) {
-                    couponSection.innerHTML = `
-                        <div class="text-center text-muted p-3">
-                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
-                            <p>No coupons available at the moment</p>
-                        </div>
-                    `;
-                }
-                if (applyCouponBtn) {
-                    applyCouponBtn.disabled = true;
-                    applyCouponBtn.style.display = 'none';
-                }
-                if (couponCodeInput) {
-                    couponCodeInput.disabled = true;
-                    couponCodeInput.placeholder = "No coupons available";
-                }
-                if (couponLoginRequired) {
-                    couponLoginRequired.style.display = 'none';
-                }
-                return;
-            }
-            
-            // Coupons are available and enabled
-            if (couponSection) {
-                // Restore original coupon section structure if needed
-                if (!document.getElementById('couponCode')) {
-                    couponSection.innerHTML = `
-                        <div class="coupon-input-group">
-                            <input type="text" id="couponCode" class="coupon-input" placeholder="Enter coupon code">
-                            <button id="applyCouponBtn" class="btn-apply-coupon">Apply</button>
-                        </div>
-                        <div id="couponMessage"></div>
-                        <div id="couponLoginRequired" class="coupon-login-required" style="display: none;">
-                            Please login to apply coupons
-                        </div>
-                    `;
-                    
-                    // Re-attach event listeners
-                    setTimeout(() => {
-                        const newApplyBtn = document.getElementById('applyCouponBtn');
-                        const newCouponInput = document.getElementById('couponCode');
-                        if (newApplyBtn) {
-                            newApplyBtn.addEventListener('click', applyCoupon);
-                        }
-                        if (newCouponInput) {
-                            newCouponInput.addEventListener('keypress', (e) => {
-                                if (e.key === 'Enter') applyCoupon();
-                            });
-                        }
-                    }, 100);
-                }
-            }
-            
-            // Update button and input states
-            const newApplyBtn = document.getElementById('applyCouponBtn');
-            const newCouponInput = document.getElementById('couponCode');
-            const newCouponLoginRequired = document.getElementById('couponLoginRequired');
-            
-            if (newApplyBtn) {
-                newApplyBtn.disabled = !currentUser;
-                newApplyBtn.style.display = 'block';
-            }
-            
-            if (newCouponInput) {
-                newCouponInput.disabled = !currentUser;
-                newCouponInput.placeholder = currentUser ? "Enter coupon code" : "Login to apply coupons";
-                if (appliedCoupon) {
-                    newCouponInput.value = appliedCoupon.code;
-                }
-            }
-            
-            if (newCouponLoginRequired) {
-                newCouponLoginRequired.style.display = currentUser ? 'none' : 'block';
-            }
-            
-            // Update coupon message if coupon is applied
-            if (appliedCoupon) {
-                const couponMessage = document.getElementById('couponMessage');
-                if (couponMessage) {
-                    const coupon = SHOP_COUPONS.find(c => c.code === appliedCoupon.code) || 
-                                  DEMO_COUPONS.find(c => c.code === appliedCoupon.code);
-                    if (coupon) {
-                        couponMessage.textContent = `🎉 ${coupon.description}`;
-                        couponMessage.className = 'coupon-success';
-                    }
-                }
-            }
-        }
-
-        // Enhanced applyCoupon function with real-time validation
-        function applyCoupon() {
-            // Check if shop has coupons enabled in real-time
-            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
-                showToast('Coupons are currently disabled by the shopkeeper', 'warning');
-                return;
-            }
-            
-            if (!currentUser) {
-                showToast('Please login to apply coupons');
-                return;
-            }
-            
-            const couponCodeInput = document.getElementById('couponCode');
-            const couponMessage = document.getElementById('couponMessage');
-            
-            if (!couponCodeInput || !couponMessage) return;
-            
-            const couponCode = couponCodeInput.value.trim().toUpperCase();
-            
-            if (!couponCode) {
-                appliedCoupon = null;
-                couponMessage.textContent = '';
-                updateOrderSummary();
-                showToast('Coupon removed');
-                return;
-            }
-            
-            // Check active shop coupons first
-            let coupon = SHOP_COUPONS.find(c => 
-                c.code === couponCode && 
-                c.isActive !== false &&
-                (!c.validTill || new Date(c.validTill) > new Date())
-            );
-            
-            // If not found in active shop coupons, check demo coupons
-            if (!coupon && SHOP_CONFIG.couponsEnabled) {
-                coupon = DEMO_COUPONS.find(c => c.code === couponCode);
-            }
-            
-            if (!coupon) {
-                couponMessage.textContent = 'Invalid or expired coupon code';
-                couponMessage.className = 'coupon-error';
-                appliedCoupon = null;
-                updateOrderSummary();
-                return;
-            }
-            
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            if (subtotal < coupon.minOrder) {
-                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
-                couponMessage.className = 'coupon-error';
-                appliedCoupon = null;
-                updateOrderSummary();
-                return;
-            }
-            
-            // Check coupon usage limit if specified
-            if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-                couponMessage.textContent = 'Coupon usage limit reached';
-                couponMessage.className = 'coupon-error';
-                appliedCoupon = null;
-                updateOrderSummary();
-                return;
-            }
-            
-            appliedCoupon = coupon;
-            couponMessage.textContent = `🎉 ${coupon.description}`;
-            couponMessage.className = 'coupon-success';
-            updateOrderSummary();
-            showToast('Coupon applied successfully!', 'success');
-        }
 
         const notificationPreferences = JSON.parse(localStorage.getItem('dukaan_notification_prefs')) || {
             orderUpdates: true,
@@ -2737,7 +2750,6 @@
                 productsSnapshot.forEach(doc => {
                     const firebaseProduct = doc.data();
                     
-                    // Skip inactive or out-of-stock products
                     if (firebaseProduct.status !== 'active' || firebaseProduct.stock <= 0) {
                         return;
                     }
@@ -2767,7 +2779,7 @@
                     }
                 });
                 
-                console.log(`✅ ${PRODUCTS.length} products loaded`);
+                console.log('✅ Products loaded:', PRODUCTS.length);
                 console.log('📋 Categories:', Array.from(ALL_CATEGORIES));
                 
                 updateDynamicShops();
@@ -2778,7 +2790,7 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Error loading products:', error);
+                console.error('Error loading products:', error);
                 PRODUCTS = getDemoProducts();
                 updateDynamicShops();
                 updateShopAndCategoryFilters();
@@ -2837,7 +2849,7 @@
                 }
             });
             
-            console.log(`🛍️ ${Object.keys(SHOPS).length} dynamic shops loaded`);
+            console.log('🛍️ Dynamic shops:', Object.keys(SHOPS).length, 'shops');
         }
 
         function updateShopAndCategoryFilters() {
@@ -2865,19 +2877,14 @@
 
         // Setup Firebase Auth
         function setupFirebaseAuth() {
-            console.log('🔐 Setting up Firebase Auth...');
-            
             auth.onAuthStateChanged((user) => {
-                console.log('🔄 Auth state changed:', user ? `User: ${user.email}` : 'No user');
-                
+                console.log('Auth state changed:', user);
                 if (user) {
                     currentUser = {
                         uid: user.uid,
                         email: user.email,
                         name: user.displayName || user.email.split('@')[0]
                     };
-                    
-                    console.log('✅ User authenticated:', currentUser);
                     showAppScreen();
                     loadUserData();
                     
@@ -2887,20 +2894,15 @@
                     }, 1000);
                     
                     updateCouponAuth();
-                    showToast('Welcome back to Raashanmart!', 'success');
+                    showToast('Welcome back to Raashanmart!');
                     
-                    // Update profile info
                     document.getElementById('profileUserEmail').textContent = user.email;
                     document.getElementById('profileUserName').textContent = user.displayName || user.email.split('@')[0];
                     document.getElementById('avatarText').textContent = (user.displayName || user.email.split('@')[0]).charAt(0).toUpperCase();
-                    
                 } else {
-                    console.log('🔓 No user, showing auth screen');
                     currentUser = null;
                     showAuthScreen();
                 }
-            }, (error) => {
-                console.error('❌ Auth state change error:', error);
             });
         }
 
@@ -2909,16 +2911,13 @@
             if (!currentUser || !isOnline) return;
             
             try {
-                console.log('📋 Loading user data...');
-                
                 // Load addresses
                 const addressesSnapshot = await db.collection('users').doc(currentUser.uid).collection('addresses').get();
                 addresses = [];
                 addressesSnapshot.forEach(doc => {
-                    addresses.push({ id: doc.id, ...doc.data(), firebaseDocId: doc.id });
+                    addresses.push({ id: doc.id, ...doc.data() });
                 });
                 localStorage.setItem('userAddresses', JSON.stringify(addresses));
-                console.log(`✅ ${addresses.length} addresses loaded`);
                 renderAddresses();
 
                 // Load wishlist
@@ -2928,11 +2927,10 @@
                     wishlist.push(doc.id);
                 });
                 localStorage.setItem('dukaan_wishlist', JSON.stringify(wishlist));
-                console.log(`✅ ${wishlist.length} wishlist items loaded`);
                 updateWishlistUI();
 
             } catch (error) {
-                console.error('❌ Error loading user data:', error);
+                console.error('Error loading user data:', error);
             }
         }
 
@@ -2941,10 +2939,9 @@
             if (!currentUser || !isOnline) return;
             
             try {
-                console.log("🔄 Loading order history...");
+                console.log("🔄 Loading order history");
                 const snapshot = await db.collection('orders')
                     .where('customerId', '==', currentUser.uid)
-                    .orderBy('createdAt', 'desc')
                     .get();
                 
                 orders = [];
@@ -2954,7 +2951,6 @@
                     
                     const mappedOrder = {
                         id: orderIdToUse,
-                        firebaseDocId: doc.id,
                         orderId: orderIdToUse,
                         date: firebaseOrder.createdAt ? firebaseOrder.createdAt.toDate().toISOString() : new Date().toISOString(),
                         items: firebaseOrder.items || [],
@@ -2975,19 +2971,15 @@
                     orders.push(mappedOrder);
                 });
                 
-                // Sort by date (newest first)
                 orders.sort((a, b) => new Date(b.date) - new Date(a.date));
                 localStorage.setItem('dukaan_orders', JSON.stringify(orders));
-                console.log(`✅ ${orders.length} orders loaded`);
                 renderOrders();
                 
             } catch (error) {
-                console.error('❌ Error loading order history:', error);
+                console.error('Error loading order history:', error);
                 const savedOrders = localStorage.getItem('dukaan_orders');
                 if (savedOrders) {
                     orders = JSON.parse(savedOrders);
-                    // Sort by date (newest first)
-                    orders.sort((a, b) => new Date(b.date) - new Date(a.date));
                     renderOrders();
                 }
             }
@@ -3000,7 +2992,6 @@
             console.log("🔔 Starting real-time order listener");
             db.collection('orders')
                 .where('customerId', '==', currentUser.uid)
-                .orderBy('createdAt', 'desc')
                 .onSnapshot((snapshot) => {
                     console.log("🔄 Real-time order update received");
                     
@@ -3014,7 +3005,7 @@
                         console.log("📝 Order update:", change.type, "Order ID:", orderIdToUse);
                         
                         if (change.type === 'added' || change.type === 'modified') {
-                            handleOrderUpdate({...updatedOrder, id: orderIdToUse, firebaseDocId: change.doc.id});
+                            handleOrderUpdate({...updatedOrder, id: orderIdToUse});
                         }
                     });
                     
@@ -3037,8 +3028,6 @@
                 orders.push(updatedOrder);
             }
             
-            // Sort by date (newest first)
-            orders.sort((a, b) => new Date(b.date) - new Date(a.date));
             localStorage.setItem('dukaan_orders', JSON.stringify(orders));
             renderOrders();
             
@@ -3104,7 +3093,6 @@
 
         // Setup offline detection
         function setupOfflineDetection() {
-            console.log('📶 Setting up offline detection...');
             checkInternetConnection();
             window.addEventListener('online', handleOnlineStatus);
             window.addEventListener('offline', handleOfflineStatus);
@@ -3142,6 +3130,7 @@
                 loadOrderHistory();
                 startRealTimeOrderListener();
                 loadShopConfig();
+                loadShopData();
             }
         }
         
@@ -3169,19 +3158,10 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
-            if (!email || !password) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
-
             try {
-                console.log('🔐 Attempting login...');
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 
-                console.log('✅ Login successful:', user.email);
-                
-                // Update user document
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (!userDoc.exists) {
                     await db.collection('users').doc(user.uid).set({
@@ -3197,33 +3177,11 @@
                     });
                 }
                 
-                showToast('Welcome back to Raashanmart!', 'success');
+                showToast('Welcome back to Raashanmart!');
                 
             } catch (error) {
-                console.error('❌ Login error:', error);
-                
-                let errorMessage = 'Login failed';
-                switch(error.code) {
-                    case 'auth/user-not-found':
-                        errorMessage = 'User not found';
-                        break;
-                    case 'auth/wrong-password':
-                        errorMessage = 'Incorrect password';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = 'Invalid email address';
-                        break;
-                    case 'auth/user-disabled':
-                        errorMessage = 'Account disabled';
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = 'Too many attempts. Try again later';
-                        break;
-                    default:
-                        errorMessage = error.message;
-                }
-                
-                showToast(errorMessage, 'error');
+                console.error('Login error:', error);
+                showToast('Login failed: ' + error.message);
             }
         }
 
@@ -3235,13 +3193,7 @@
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
 
-            if (!name || !email || !password) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
-
             try {
-                console.log('📝 Attempting signup...');
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 await userCredential.user.updateProfile({ displayName: name });
                 
@@ -3252,24 +3204,15 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                console.log('✅ Signup successful:', email);
-                showToast('Account created successfully!', 'success');
+                showToast('Account created successfully!');
                 
             } catch (error) {
-                console.error('❌ Signup error:', error);
-                
-                let errorMessage = 'Signup failed';
+                console.error('Signup error:', error);
                 if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = 'Email already registered';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'Password is too weak';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'Invalid email address';
+                    showToast('Email already registered');
                 } else {
-                    errorMessage = error.message;
+                    showToast('Signup failed: ' + error.message);
                 }
-                
-                showToast(errorMessage, 'error');
             }
         }
 
@@ -3294,7 +3237,6 @@
             document.getElementById('authScreen').style.display = 'block';
             document.getElementById('appScreen').style.display = 'none';
             currentUser = null;
-            console.log('🔓 Showing auth screen');
         }
         
         function showAppScreen() {
@@ -3302,7 +3244,6 @@
             document.getElementById('appScreen').style.display = 'block';
             updateCouponAuth();
             renderProducts(PRODUCTS);
-            console.log('🔐 Showing app screen');
         }
 
         // Render products
@@ -3393,10 +3334,7 @@
         async function addToCart(productId) {
             try {
                 const product = PRODUCTS.find(p => p.id === productId);
-                if (!product) {
-                    showToast('Product not found', 'error');
-                    return;
-                }
+                if (!product) return;
                 
                 // Check if cart already has items from different shop
                 if (SHOP_CONFIG && !SHOP_CONFIG.multipleShopsAllowed && cart.length > 0) {
@@ -3425,11 +3363,14 @@
                 
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
-                showToast('Product added to cart!', 'success');
+                showToast('Product added to cart!');
+                
+                // Load shop data for coupon validation
+                await loadShopData();
                 
             } catch (error) {
-                console.error('❌ Error adding to cart:', error);
-                showToast('Error adding product to cart', 'error');
+                console.error('Error adding to cart:', error);
+                showToast('Error adding product to cart');
             }
         }
 
@@ -3479,14 +3420,13 @@
             
             let discount = 0;
             if (appliedCoupon) {
-                // Validate coupon minimum order value at checkout time
+                // Validate coupon minimum order value
                 if (subtotal < appliedCoupon.minOrder) {
                     // Remove coupon if cart value is below minimum
                     appliedCoupon = null;
                     document.getElementById('couponCode').value = '';
                     document.getElementById('couponMessage').textContent = 'Cart value is below coupon minimum. Coupon removed.';
                     document.getElementById('couponMessage').className = 'coupon-error';
-                    showToast('Coupon removed due to low cart value', 'warning');
                 } else {
                     if (appliedCoupon.type === 'percentage') {
                         discount = (subtotal * appliedCoupon.value) / 100;
@@ -3505,33 +3445,17 @@
             if (orderTotal) orderTotal.textContent = `₹${Math.max(0, total)}`;
             if (qrAmount) qrAmount.textContent = `₹${Math.max(0, total)}`;
             
-            // Update QR code with shopkeeper's UPI ID
-            updateQRCodeWithAmount(total);
+            // Update QR code
+            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
+                const qrImage = document.getElementById('dynamicQRCode');
+                if (qrImage) {
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${total}&tn=Order%20Payment`;
+                }
+            }
             
             const placeOrderBtn = document.getElementById('placeOrderBtn');
             if (placeOrderBtn) {
                 placeOrderBtn.disabled = cart.length === 0;
-            }
-            
-            // Show/hide discount section
-            const discountSection = document.getElementById('discountSection');
-            const discountAmount = document.getElementById('discountAmount');
-            if (discountSection && discountAmount) {
-                if (discount > 0) {
-                    discountSection.style.display = 'flex';
-                    discountAmount.textContent = `-₹${discount}`;
-                } else {
-                    discountSection.style.display = 'none';
-                }
-            }
-        }
-
-        function updateQRCodeWithAmount(amount) {
-            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-                const qrImage = document.getElementById('dynamicQRCode');
-                if (qrImage) {
-                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=${SHOP_CONFIG.shopName || 'Raashanmart'}&am=${amount}&tn=Order%20Payment`;
-                }
             }
         }
 
@@ -3732,6 +3656,9 @@
             localStorage.setItem('dukaan_cart', JSON.stringify(cart));
             updateCartUI();
             showToast('Product added to cart!');
+            
+            // Load shop data for coupon validation
+            loadShopData();
         }
 
         function toggleWishlistFromDetail() {
@@ -3973,10 +3900,7 @@
                 window.addresses = addresses;
                 
                 if (currentUser && isOnline) {
-                    db.collection('users').doc(currentUser.uid).collection('addresses').add(newAddress).then((docRef) => {
-                        newAddress.firebaseDocId = docRef.id;
-                        localStorage.setItem('userAddresses', JSON.stringify(addresses));
-                    }).catch(error => {
+                    db.collection('users').doc(currentUser.uid).collection('addresses').add(newAddress).catch(error => {
                         console.error('Error saving address to Firebase:', error);
                     });
                 }
@@ -3992,7 +3916,7 @@
                 }, 50);
 
             } catch (error) {
-                console.error("❌ Error saving address:", error);
+                console.error("Error saving address:", error);
                 showToast("Error saving address: " + error.message, 'error');
             }
         }
@@ -4120,7 +4044,7 @@
                 renderAddresses();
                 
             } catch (error) {
-                console.error("❌ Error updating address:", error);
+                console.error("Error updating address:", error);
                 showToast("Error updating address: " + error.message, 'error');
             }
         }
@@ -4156,7 +4080,7 @@
                 renderAddresses();
                 
             } catch (error) {
-                console.error("❌ Error deleting address:", error);
+                console.error("Error deleting address:", error);
                 showToast("Error deleting address: " + error.message, 'error');
             }
         }
@@ -4177,7 +4101,7 @@
                 renderAddresses();
                 
             } catch (error) {
-                console.error("❌ Error setting default address:", error);
+                console.error("Error setting default address:", error);
                 showToast("Error setting default address: " + error.message, 'error');
             }
         }
@@ -4224,8 +4148,10 @@
             
             noOrders.style.display = 'none';
             
-            // Sort orders by date (newest first) - already sorted in loadOrderHistory
-            orders.forEach(order => {
+            // Sort orders by date (newest first)
+            const sortedOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedOrders.forEach(order => {
                 const orderCard = document.createElement('div');
                 orderCard.className = 'order-card';
                 orderCard.setAttribute('data-order-id', order.id);
@@ -4419,15 +4345,6 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 if (cart.length === 0) {
                     showToast('Your cart is empty', 'error');
                     return;
-                }
-                
-                // Final coupon validation at checkout
-                if (appliedCoupon) {
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    if (subtotal < appliedCoupon.minOrder) {
-                        showToast(`Coupon requires minimum order of ₹${appliedCoupon.minOrder}`, 'error');
-                        return;
-                    }
                 }
                 
                 const user = auth.currentUser;
@@ -4647,7 +4564,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 closeEditProfileModal();
                 
             } catch (error) {
-                console.error("❌ Profile update error:", error);
+                console.error("Profile update error:", error);
                 showToast("Error updating profile: " + error.message, 'error');
             }
         }
@@ -4742,7 +4659,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 closeChangePasswordModal();
                 
             } catch (error) {
-                console.error('❌ Password change error:', error);
+                console.error('Password change error:', error);
                 
                 let errorMessage = 'Error changing password: ';
                 switch(error.code) {
@@ -4823,6 +4740,9 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 fillCheckoutForm(addresses.find(addr => addr.id === selectedAddress));
             }
             renderAddresses();
+            
+            // Update coupon section when bottom sheet opens
+            updateCouponSection();
         }
 
         function closeBottomSheet() {
@@ -4849,13 +4769,23 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             }
         }
 
-        // Coupon functions
+        // Coupon functions - UPDATED VERSION
         function updateCouponSection() {
             const couponSection = document.querySelector('.coupon-section');
             const applyCouponBtn = document.getElementById('applyCouponBtn');
-            const couponLoginRequired = document.getElementById('couponLoginRequired');
             
-            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
+            if (!SHOP_DATA) {
+                // Shop data not loaded yet, disable coupon section
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                }
+                return;
+            }
+            
+            // Check if shop has coupons enabled
+            const couponsEnabled = SHOP_DATA.couponEnabled || false;
+            
+            if (!couponsEnabled) {
                 if (couponSection) {
                     couponSection.innerHTML = `
                         <div class="text-center text-muted p-3">
@@ -4866,19 +4796,17 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 }
                 if (applyCouponBtn) {
                     applyCouponBtn.disabled = true;
-                    applyCouponBtn.style.display = 'none';
                 }
-                if (couponLoginRequired) {
-                    couponLoginRequired.style.display = 'none';
-                }
-            } else if (SHOP_COUPONS.length > 0 || DEMO_COUPONS.length > 0) {
-                // Shop has coupons or demo coupons are available
+                return;
+            }
+            
+            // Shop has coupons enabled, show coupon input
+            const hasCoupons = SHOP_DATA.couponCode || SHOP_DATA.couponSettings;
+            
+            if (hasCoupons) {
+                // Enable coupon section
                 if (applyCouponBtn) {
                     applyCouponBtn.disabled = !currentUser;
-                    applyCouponBtn.style.display = 'block';
-                }
-                if (couponLoginRequired) {
-                    couponLoginRequired.style.display = currentUser ? 'none' : 'block';
                 }
             } else {
                 // No coupons available
@@ -4892,17 +4820,13 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 }
                 if (applyCouponBtn) {
                     applyCouponBtn.disabled = true;
-                    applyCouponBtn.style.display = 'none';
-                }
-                if (couponLoginRequired) {
-                    couponLoginRequired.style.display = 'none';
                 }
             }
         }
 
         function applyCoupon() {
             // Check if shop has coupons enabled
-            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
+            if (!SHOP_DATA || !SHOP_DATA.couponEnabled) {
                 showToast('Coupons are currently disabled by the shopkeeper', 'warning');
                 return;
             }
@@ -4923,16 +4847,42 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 return;
             }
             
-            // Check shop coupons first
-            let coupon = SHOP_COUPONS.find(c => c.code === couponCode && c.isActive !== false);
+            // Check shop coupon settings
+            let coupon = null;
+            const shopCouponCode = SHOP_DATA.couponCode;
+            const shopCouponSettings = SHOP_DATA.couponSettings;
             
-            // If not found in shop coupons, check demo coupons
-            if (!coupon && SHOP_CONFIG.couponsEnabled) {
-                coupon = DEMO_COUPONS.find(c => c.code === couponCode);
+            // First check shop's own coupon
+            if (shopCouponCode && shopCouponCode.toUpperCase() === couponCode) {
+                if (shopCouponSettings) {
+                    coupon = {
+                        code: shopCouponCode,
+                        type: shopCouponSettings.discountType || 'percentage',
+                        value: shopCouponSettings.value || 0,
+                        minOrder: shopCouponSettings.minOrder || 0,
+                        maxDiscount: shopCouponSettings.maxDiscount || 0,
+                        description: shopCouponSettings.description || 'Shop coupon applied',
+                        active: shopCouponSettings.active !== false
+                    };
+                }
+            }
+            
+            // If not found in shop coupons, check default coupons
+            if (!coupon) {
+                coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
             }
             
             if (!coupon) {
-                couponMessage.textContent = 'Invalid or expired coupon code';
+                couponMessage.textContent = 'Invalid coupon code';
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
+            
+            // Check if coupon is active
+            if (coupon.active === false) {
+                couponMessage.textContent = 'Coupon is no longer active';
                 couponMessage.className = 'coupon-error';
                 appliedCoupon = null;
                 updateOrderSummary();
@@ -4941,6 +4891,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
+            // Check minimum order amount
             if (subtotal < coupon.minOrder) {
                 couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
                 couponMessage.className = 'coupon-error';
@@ -4950,10 +4901,10 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             }
             
             appliedCoupon = coupon;
-            couponMessage.textContent = `🎉 ${coupon.description}`;
+            couponMessage.textContent = `🎉 ${coupon.description || 'Coupon applied!'}`;
             couponMessage.className = 'coupon-success';
             updateOrderSummary();
-            showToast('Coupon applied successfully!', 'success');
+            showToast('Coupon applied successfully!');
         }
 
         function updateCouponAuth() {
@@ -5108,6 +5059,8 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                             <li>Availability is subject to stock</li>
                             <li>Delivery times are estimates</li>
                             <li>Shopkeepers may cancel orders</li>
+                            </ul>
+                        <p>Contact : manager.dukaan@gmail.com</p>
                         </ul>
                     </div>
                 `;
@@ -5130,6 +5083,8 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                             <li>Wait for verification</li>
                         </ul>
                         <p>Partial refunds may be issued for damaged items.</p>
+                        </ul>
+                        <p>Contact : manager.dukaan@gmail.com</p>
                     </div>
                 `;
             }
@@ -5143,11 +5098,10 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         // Logout
         function logout() {
-            console.log("🔓 Logout function called");
+            console.log("Logout function called");
             
             if (firebase.auth().currentUser) {
                 firebase.auth().signOut().then(() => {
-                    console.log("✅ Logout successful");
                     showToast("Logged out successfully!", 'success');
                     
                     document.getElementById('appScreen').style.display = 'none';
@@ -5160,7 +5114,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                     document.getElementById('signupFooter').style.display = 'none';
                     
                 }).catch((error) => {
-                    console.error("❌ Logout error:", error);
+                    console.error("Logout error:", error);
                     showToast("Error logging out: " + error.message, 'error');
                 });
             } else {
@@ -5174,9 +5128,9 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
         function setupPushNotifications() {
             if ('Notification' in window) {
                 if (Notification.permission === 'granted') {
-                    console.log('✅ Push notifications already granted');
+                    console.log('Push notifications already granted');
                 } else if (Notification.permission !== 'denied') {
-                    console.log('ℹ️ Push notifications available');
+                    console.log('Push notifications available');
                 }
             }
         }
@@ -5311,7 +5265,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             if (type === 'warning') bgColor = 'var(--warning)';
             
             toast.innerHTML = `
-                <div class="toast show" role="alert" style="background: ${bgColor}; color: white; border: none; min-width: 300px;">
+                <div class="toast show" role="alert" style="background: ${bgColor}; color: white; border: none;">
                     <div class="toast-body d-flex justify-content-between align-items-center">
                         <span>${message}</span>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
@@ -5328,22 +5282,16 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         // Initialize app
         function initApp() {
-            console.log('🚀 Initializing app...');
-            
             // Setup event listeners
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('signupForm').addEventListener('submit', handleSignup);
-            
-            document.getElementById('showSignup').addEventListener('click', (e) => {
-                e.preventDefault();
+            document.getElementById('showSignup').addEventListener('click', () => {
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('signupForm').style.display = 'block';
                 document.getElementById('loginFooter').style.display = 'none';
                 document.getElementById('signupFooter').style.display = 'block';
             });
-            
-            document.getElementById('showLogin').addEventListener('click', (e) => {
-                e.preventDefault();
+            document.getElementById('showLogin').addEventListener('click', () => {
                 document.getElementById('loginForm').style.display = 'block';
                 document.getElementById('signupForm').style.display = 'none';
                 document.getElementById('loginFooter').style.display = 'block';
@@ -5425,6 +5373,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             
             // Load shop configuration
             loadShopConfig();
+            loadShopData();
             
             // Load products
             loadProductsFromFirebase();
@@ -5434,8 +5383,6 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             updateWishlistUI();
             renderOrders();
             renderAddresses();
-            
-            console.log('✅ App initialized successfully');
         }
 
         // Handle search
@@ -5491,7 +5438,6 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         // Start app when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM loaded, starting app...');
             initApp();
         });
     </script>
