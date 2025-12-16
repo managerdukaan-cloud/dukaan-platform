@@ -2246,90 +2246,58 @@
         let SHOP_CONFIG = null;
         let SHOP_COUPONS = [];
 
-        // यह फ़ंक्शन getDefaultShopConfig() को loadShopConfig() फ़ंक्शन के ऊपर डालें
-function getDefaultShopConfig() {
-    return {
-        upiId: 'shopkeeper@upi',
-        couponsEnabled: false,
-        multipleShopsAllowed: false,
-        deliveryCharge: 0,
-        shopName: 'Raashanmart'
-    };
-}
-
-async function loadShopConfig() {
-    try {
-        console.log('🔄 Loading shop configuration...');
-        
-        // Realtime listener setup करें - यह पूरा नया कोड है
-        db.collection('shop_config').doc('settings')
-            .onSnapshot((doc) => {
-                if (doc.exists) {
-                    SHOP_CONFIG = doc.data();
-                    console.log('✅ Shop config updated:', SHOP_CONFIG);
+        // Load shop configuration from Firebase
+        async function loadShopConfig() {
+            try {
+                console.log('🔄 Loading shop configuration...');
+                const configDoc = await db.collection('shop_config').doc('settings').get();
+                
+                if (configDoc.exists) {
+                    SHOP_CONFIG = configDoc.data();
+                    console.log('✅ Shop config loaded:', SHOP_CONFIG);
                     
-                    // QR कोड और UPI ID अपडेट करें
+                    // Update QR code UPI ID if available
                     updateQRCode();
+                    
+                    // Load shop coupons
+                    await loadShopCoupons();
+                    
+                    // Update coupon section based on shop settings
                     updateCouponSection();
                     
-                    // UI अपडेट करें
-                    const upiElement = document.getElementById('dynamicUpiId');
-                    if (upiElement && SHOP_CONFIG.upiId) {
-                        upiElement.textContent = SHOP_CONFIG.upiId;
-                    }
-                    
-                    // QR कोड की छवि अपडेट करें
-                    const totalAmount = getCurrentCartTotal();
-                    updateQRCodeWithAmount(totalAmount);
                 } else {
-                    SHOP_CONFIG = getDefaultShopConfig();
+                    // Default configuration
+                    SHOP_CONFIG = {
+                        upiId: 'shopkeeper@upi',
+                        couponsEnabled: false,
+                        multipleShopsAllowed: false,
+                        deliveryCharge: 0,
+                        shopName: 'Raashanmart'
+                    };
                     console.log('⚠️ Using default shop config');
                     updateCouponSection();
                 }
-            }, (error) => {
-                console.error('❌ Error in shop config listener:', error);
-                SHOP_CONFIG = getDefaultShopConfig();
+            } catch (error) {
+                console.error('❌ Error loading shop config:', error);
+                SHOP_CONFIG = {
+                    upiId: 'shopkeeper@upi',
+                    couponsEnabled: false,
+                    multipleShopsAllowed: false,
+                    deliveryCharge: 0,
+                    shopName: 'Raashanmart'
+                };
                 updateCouponSection();
-            });
-        
-        // Coupons भी रियल-टाइम में लोड करें
-        await loadShopCoupons();
-        
-    } catch (error) {
-        console.error('❌ Error loading shop config:', error);
-        SHOP_CONFIG = getDefaultShopConfig();
-        updateCouponSection();
-    }
-}
-
-// यह नया हेल्पर फ़ंक्शन loadShopConfig() के नीचे डालें
-function getCurrentCartTotal() {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let discount = 0;
-    
-    if (appliedCoupon) {
-        if (appliedCoupon.type === 'percentage') {
-            discount = (subtotal * appliedCoupon.value) / 100;
-        } else {
-            discount = appliedCoupon.value;
+            }
         }
-        discount = Math.min(discount, subtotal);
-    }
-    
-    return Math.max(0, subtotal - discount);
-}
 
         // Load shop coupons
         async function loadShopCoupons() {
-    try {
-        console.log('🔄 Setting up coupons listener...');
-        
-        // Realtime listener for coupons - यह पूरा नया कोड है
-        db.collection('coupons')
-            .onSnapshot((snapshot) => {
+            try {
+                console.log('🔄 Loading shop coupons...');
+                const couponsSnapshot = await db.collection('coupons').get();
                 SHOP_COUPONS = [];
                 
-                snapshot.forEach(doc => {
+                couponsSnapshot.forEach(doc => {
                     SHOP_COUPONS.push({ 
                         id: doc.id, 
                         ...doc.data(),
@@ -2338,7 +2306,7 @@ function getCurrentCartTotal() {
                     });
                 });
                 
-                console.log(`✅ ${SHOP_COUPONS.length} coupons loaded (realtime)`);
+                console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded`);
                 
                 // Sort coupons by isActive (active coupons first)
                 SHOP_COUPONS.sort((a, b) => {
@@ -2346,21 +2314,11 @@ function getCurrentCartTotal() {
                     return a.isActive ? -1 : 1;
                 });
                 
-                // Coupon section अपडेट करें
-                updateCouponSection();
-                
-            }, (error) => {
-                console.error('❌ Error in coupons listener:', error);
+            } catch (error) {
+                console.error('❌ Error loading coupons:', error);
                 SHOP_COUPONS = [];
-                updateCouponSection();
-            });
-        
-    } catch (error) {
-        console.error('❌ Error setting up coupons listener:', error);
-        SHOP_COUPONS = [];
-        updateCouponSection();
-    }
-}
+            }
+        }
 
         function updateQRCode() {
             if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
@@ -3097,83 +3055,7 @@ function getCurrentCartTotal() {
                         shopName: product.shopName
                     });
                 }
-        function updateOrderSummary() {
-    const orderList = document.getElementById('orderList');
-    if (!orderList) return;
-    
-    orderList.innerHTML = '';
-    let subtotal = 0;
-    
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        subtotal += itemTotal;
-        
-        const orderItem = document.createElement('div');
-        orderItem.className = 'order-item-summary';
-        orderItem.innerHTML = `
-            <div style="flex: 1;">
-                <strong>${item.name}</strong>
-                <div class="text-muted">₹${item.price} each</div>
-                <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
-                    <button onclick="updateCartQuantity(${index}, -1)" 
-                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">-</button>
-                    <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
-                    <button onclick="updateCartQuantity(${index}, 1)" 
-                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">+</button>
-                </div>
-            </div>
-            <div>₹${itemTotal}</div>
-        `;
-        orderList.appendChild(orderItem);
-    });
-    
-    let discount = 0;
-    if (appliedCoupon) {
-        // Validate coupon minimum order value at checkout time
-        if (subtotal < appliedCoupon.minOrder) {
-            // Remove coupon if cart value is below minimum
-            appliedCoupon = null;
-            document.getElementById('couponCode').value = '';
-            document.getElementById('couponMessage').textContent = 'Cart value is below coupon minimum. Coupon removed.';
-            document.getElementById('couponMessage').className = 'coupon-error';
-            showToast('Coupon removed due to low cart value', 'warning');
-        } else {
-            if (appliedCoupon.type === 'percentage') {
-                discount = (subtotal * appliedCoupon.value) / 100;
-            } else {
-                discount = appliedCoupon.value;
-            }
-            discount = Math.min(discount, subtotal);
-        }
-    }
-    
-    const total = subtotal - discount;
-    const orderTotal = document.getElementById('orderTotal');
-    const qrAmount = document.getElementById('qrAmount');
-    
-    if (orderTotal) orderTotal.textContent = `₹${Math.max(0, total)}`;
-    if (qrAmount) qrAmount.textContent = `₹${Math.max(0, total)}`;
-    
-    // ✅ यह नया कोड जोड़ें - QR code अपडेट करें
-    updateQRCodeWithAmount(total);
-    
-    const placeOrderBtn = document.getElementById('placeOrderBtn');
-    if (placeOrderBtn) {
-        placeOrderBtn.disabled = cart.length === 0;
-    }
-    
-    // Show/hide discount section
-    const discountSection = document.getElementById('discountSection');
-    const discountAmount = document.getElementById('discountAmount');
-    if (discountSection && discountAmount) {
-        if (discount > 0) {
-            discountSection.style.display = 'flex';
-            discountAmount.textContent = `-₹${discount}`;
-        } else {
-            discountSection.style.display = 'none';
-        }
-    }
-        }        
+                
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
                 showToast('Product added to cart!', 'success');
@@ -3198,35 +3080,93 @@ function getCurrentCartTotal() {
         }
 
         // Update order summary in cart
-        
+        function updateOrderSummary() {
+            const orderList = document.getElementById('orderList');
+            if (!orderList) return;
+            
+            orderList.innerHTML = '';
+            let subtotal = 0;
+            
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item-summary';
+                orderItem.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong>${item.name}</strong>
+                        <div class="text-muted">₹${item.price} each</div>
+                        <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                            <button onclick="updateCartQuantity(${index}, -1)" 
+                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">-</button>
+                            <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
+                            <button onclick="updateCartQuantity(${index}, 1)" 
+                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">+</button>
+                        </div>
+                    </div>
+                    <div>₹${itemTotal}</div>
+                `;
+                orderList.appendChild(orderItem);
+            });
+            
+            let discount = 0;
+            if (appliedCoupon) {
+                // Validate coupon minimum order value at checkout time
+                if (subtotal < appliedCoupon.minOrder) {
+                    // Remove coupon if cart value is below minimum
+                    appliedCoupon = null;
+                    document.getElementById('couponCode').value = '';
+                    document.getElementById('couponMessage').textContent = 'Cart value is below coupon minimum. Coupon removed.';
+                    document.getElementById('couponMessage').className = 'coupon-error';
+                    showToast('Coupon removed due to low cart value', 'warning');
+                } else {
+                    if (appliedCoupon.type === 'percentage') {
+                        discount = (subtotal * appliedCoupon.value) / 100;
+                    } else {
+                        discount = appliedCoupon.value;
+                    }
+                    discount = Math.min(discount, subtotal);
+                }
+            }
+            
+            // Remove delivery charge
+            const total = subtotal - discount;
+            const orderTotal = document.getElementById('orderTotal');
+            const qrAmount = document.getElementById('qrAmount');
+            
+            if (orderTotal) orderTotal.textContent = `₹${Math.max(0, total)}`;
+            if (qrAmount) qrAmount.textContent = `₹${Math.max(0, total)}`;
+            
+            // Update QR code with shopkeeper's UPI ID
+            updateQRCodeWithAmount(total);
+            
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+            if (placeOrderBtn) {
+                placeOrderBtn.disabled = cart.length === 0;
+            }
+            
+            // Show/hide discount section
+            const discountSection = document.getElementById('discountSection');
+            const discountAmount = document.getElementById('discountAmount');
+            if (discountSection && discountAmount) {
+                if (discount > 0) {
+                    discountSection.style.display = 'flex';
+                    discountAmount.textContent = `-₹${discount}`;
+                } else {
+                    discountSection.style.display = 'none';
+                }
+            }
+        }
 
         function updateQRCodeWithAmount(amount) {
-    if (!SHOP_CONFIG) return;
-    
-    const upiId = SHOP_CONFIG.upiId || 'shopkeeper@upi';
-    const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
-    const qrImage = document.getElementById('dynamicQRCode');
-    
-    if (!qrImage) return;
-    
-    // QR कोड URL बनाएं
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR`;
-    
-    // QR कोड सेट करें
-    qrImage.src = qrUrl;
-    
-    // UPI ID अपडेट करें
-    const upiElement = document.getElementById('dynamicUpiId');
-    if (upiElement) {
-        upiElement.textContent = upiId;
-    }
-    
-    // Amount display अपडेट करें
-    const qrAmountElement = document.getElementById('qrAmount');
-    if (qrAmountElement) {
-        qrAmountElement.textContent = `₹${amount}`;
-    }
-}
+            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
+                const qrImage = document.getElementById('dynamicQRCode');
+                if (qrImage) {
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=${SHOP_CONFIG.shopName || 'Raashanmart'}&am=${amount}&tn=Order%20Payment`;
+                }
+            }
+        }
 
         // Update cart quantity
         function updateCartQuantity(index, change) {
@@ -4544,229 +4484,110 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         // Coupon functions
         function updateCouponSection() {
-    const couponSection = document.querySelector('.coupon-section');
-    const applyCouponBtn = document.getElementById('applyCouponBtn');
-    const couponLoginRequired = document.getElementById('couponLoginRequired');
-    
-    // कोई coupon section नहीं है तो return
-    if (!couponSection) return;
-    
-    // Check if shop config is loaded
-    if (!SHOP_CONFIG) {
-        couponSection.innerHTML = `
-            <div class="text-center text-muted p-3">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Loading coupon settings...</p>
-            </div>
-        `;
-        if (applyCouponBtn) applyCouponBtn.disabled = true;
-        return;
-    }
-    
-    // Shopkeeper ने coupons disable किया है
-    if (!SHOP_CONFIG.couponsEnabled) {
-        couponSection.innerHTML = `
-            <div class="text-center text-muted p-3">
-                <i class="fas fa-tag-slash" style="font-size: 24px; margin-bottom: 10px;"></i>
-                <p>Coupons are currently disabled by the shopkeeper</p>
-                <small>Try again later</small>
-            </div>
-        `;
-        if (applyCouponBtn) {
-            applyCouponBtn.disabled = true;
-            applyCouponBtn.style.display = 'none';
-        }
-        if (couponLoginRequired) {
-            couponLoginRequired.style.display = 'none';
-        }
-        return;
-    }
-    
-    // Coupons available हैं
-    const availableCoupons = SHOP_COUPONS.filter(c => c.isActive !== false);
-    
-    if (availableCoupons.length > 0 || DEMO_COUPONS.length > 0) {
-        // Coupon input HTML
-        const couponHTML = `
-            <div class="coupon-input-group">
-                <input type="text" id="couponCode" class="coupon-input" 
-                       placeholder="Enter coupon code" 
-                       ${!currentUser ? 'disabled' : ''}
-                       value="${appliedCoupon ? appliedCoupon.code : ''}">
-                <button id="applyCouponBtn" class="btn-apply-coupon"
-                        ${!currentUser ? 'disabled' : ''}>
-                    ${appliedCoupon ? 'Remove' : 'Apply'}
-                </button>
-            </div>
-            <div id="couponMessage"></div>
-            ${!currentUser ? `
-                <div id="couponLoginRequired" class="coupon-login-required">
-                    <i class="fas fa-info-circle"></i> Please login to apply coupons
-                </div>
-            ` : ''}
-            <div class="mt-3">
-                <small class="text-muted">
-                    <i class="fas fa-tag"></i> ${availableCoupons.length} active coupon(s) available
-                </small>
-            </div>
-        `;
-        
-        couponSection.innerHTML = couponHTML;
-        
-        // Apply coupon button को फिर से attach करें
-        setTimeout(() => {
-            const newApplyBtn = document.getElementById('applyCouponBtn');
-            const newCouponInput = document.getElementById('couponCode');
+            const couponSection = document.querySelector('.coupon-section');
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            const couponLoginRequired = document.getElementById('couponLoginRequired');
             
-            if (newApplyBtn) {
-                newApplyBtn.onclick = applyCoupon;
+            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
+                if (couponSection) {
+                    couponSection.innerHTML = `
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>Coupons are currently disabled by the shopkeeper</p>
+                        </div>
+                    `;
+                }
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                    applyCouponBtn.style.display = 'none';
+                }
+                if (couponLoginRequired) {
+                    couponLoginRequired.style.display = 'none';
+                }
+            } else if (SHOP_COUPONS.length > 0 || DEMO_COUPONS.length > 0) {
+                // Shop has coupons or demo coupons are available
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = !currentUser;
+                    applyCouponBtn.style.display = 'block';
+                }
+                if (couponLoginRequired) {
+                    couponLoginRequired.style.display = currentUser ? 'none' : 'block';
+                }
+            } else {
+                // No coupons available
+                if (couponSection) {
+                    couponSection.innerHTML = `
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>No coupons available at the moment</p>
+                        </div>
+                    `;
+                }
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                    applyCouponBtn.style.display = 'none';
+                }
+                if (couponLoginRequired) {
+                    couponLoginRequired.style.display = 'none';
+                }
             }
-            
-            if (newCouponInput) {
-                newCouponInput.onkeypress = (e) => {
-                    if (e.key === 'Enter') {
-                        applyCoupon();
-                    }
-                };
-            }
-        }, 50);
-        
-    } else {
-        // कोई coupons नहीं हैं
-        couponSection.innerHTML = `
-            <div class="text-center text-muted p-3">
-                <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
-                <p>No coupons available at the moment</p>
-                <small>Check back later for discounts</small>
-            </div>
-        `;
-        if (applyCouponBtn) {
-            applyCouponBtn.disabled = true;
-            applyCouponBtn.style.display = 'none';
         }
-        if (couponLoginRequired) {
-            couponLoginRequired.style.display = 'none';
-        }
-    }
-}
 
         function applyCoupon() {
-    const couponCodeInput = document.getElementById('couponCode');
-    const couponMessage = document.getElementById('couponMessage');
-    
-    if (!couponCodeInput || !couponMessage) {
-        console.log('❌ Coupon elements not found');
-        return;
-    }
-    
-    const couponCode = couponCodeInput.value.trim().toUpperCase();
-    
-    // ✅ नया कोड: Check if shop has coupons enabled
-    if (!SHOP_CONFIG) {
-        couponMessage.textContent = 'Shop configuration not loaded yet';
-        couponMessage.className = 'coupon-error';
-        showToast('Please wait, loading shop settings...', 'warning');
-        return;
-    }
-    
-    if (!SHOP_CONFIG.couponsEnabled) {
-        couponMessage.textContent = 'Coupons are currently disabled by the shopkeeper';
-        couponMessage.className = 'coupon-error';
-        showToast('Coupons are disabled by shopkeeper', 'warning');
-        return;
-    }
-    
-    if (!currentUser) {
-        couponMessage.textContent = 'Please login to apply coupons';
-        couponMessage.className = 'coupon-error';
-        showToast('Please login to apply coupons');
-        return;
-    }
-    
-    // If coupon code is empty and we have an applied coupon, remove it
-    if (!couponCode && appliedCoupon) {
-        appliedCoupon = null;
-        couponMessage.textContent = 'Coupon removed';
-        couponMessage.className = 'coupon-success';
-        updateOrderSummary();
-        
-        // Update button text
-        const applyBtn = document.getElementById('applyCouponBtn');
-        if (applyBtn) {
-            applyBtn.textContent = 'Apply';
+            // Check if shop has coupons enabled
+            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
+                showToast('Coupons are currently disabled by the shopkeeper', 'warning');
+                return;
+            }
+            
+            if (!currentUser) {
+                showToast('Please login to apply coupons');
+                return;
+            }
+            
+            const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
+            const couponMessage = document.getElementById('couponMessage');
+            
+            if (!couponCode) {
+                appliedCoupon = null;
+                couponMessage.textContent = '';
+                updateOrderSummary();
+                showToast('Coupon removed');
+                return;
+            }
+            
+            // Check shop coupons first
+            let coupon = SHOP_COUPONS.find(c => c.code === couponCode && c.isActive !== false);
+            
+            // If not found in shop coupons, check demo coupons
+            if (!coupon && SHOP_CONFIG.couponsEnabled) {
+                coupon = DEMO_COUPONS.find(c => c.code === couponCode);
+            }
+            
+            if (!coupon) {
+                couponMessage.textContent = 'Invalid or expired coupon code';
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (subtotal < coupon.minOrder) {
+                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
+            
+            appliedCoupon = coupon;
+            couponMessage.textContent = `🎉 ${coupon.description}`;
+            couponMessage.className = 'coupon-success';
+            updateOrderSummary();
+            showToast('Coupon applied successfully!', 'success');
         }
-        
-        showToast('Coupon removed', 'success');
-        return;
-    }
-    
-    if (!couponCode) {
-        couponMessage.textContent = 'Please enter a coupon code';
-        couponMessage.className = 'coupon-error';
-        return;
-    }
-    
-    // Check shop coupons first
-    let coupon = SHOP_COUPONS.find(c => 
-        c.code === couponCode && c.isActive !== false
-    );
-    
-    // If not found in shop coupons, check demo coupons
-    if (!coupon) {
-        coupon = DEMO_COUPONS.find(c => c.code === couponCode);
-    }
-    
-    if (!coupon) {
-        couponMessage.textContent = 'Invalid or expired coupon code';
-        couponMessage.className = 'coupon-error';
-        appliedCoupon = null;
-        updateOrderSummary();
-        return;
-    }
-    
-    // Check if coupon is already applied
-    if (appliedCoupon && appliedCoupon.code === couponCode) {
-        // Remove coupon
-        appliedCoupon = null;
-        couponCodeInput.value = '';
-        couponMessage.textContent = 'Coupon removed';
-        couponMessage.className = 'coupon-success';
-        
-        // Update button text
-        const applyBtn = document.getElementById('applyCouponBtn');
-        if (applyBtn) {
-            applyBtn.textContent = 'Apply';
-        }
-        
-        updateOrderSummary();
-        showToast('Coupon removed', 'success');
-        return;
-    }
-    
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    if (subtotal < coupon.minOrder) {
-        couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
-        couponMessage.className = 'coupon-error';
-        appliedCoupon = null;
-        updateOrderSummary();
-        return;
-    }
-    
-    // Apply the coupon
-    appliedCoupon = coupon;
-    couponMessage.textContent = `🎉 ${coupon.description || 'Coupon applied successfully!'}`;
-    couponMessage.className = 'coupon-success';
-    
-    // Update button text
-    const applyBtn = document.getElementById('applyCouponBtn');
-    if (applyBtn) {
-        applyBtn.textContent = 'Remove';
-    }
-    
-    updateOrderSummary();
-    showToast('Coupon applied successfully!', 'success');
-}
 
         function updateCouponAuth() {
             const couponCodeInput = document.getElementById('couponCode');
@@ -5140,157 +4961,114 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         // Initialize app
         function initApp() {
-    console.log('🚀 Initializing app...');
-    
-    // Setup event listeners
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('signupForm').addEventListener('submit', handleSignup);
-    
-    document.getElementById('showSignup').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('signupForm').style.display = 'block';
-        document.getElementById('loginFooter').style.display = 'none';
-        document.getElementById('signupFooter').style.display = 'block';
-    });
-    
-    document.getElementById('showLogin').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('signupForm').style.display = 'none';
-        document.getElementById('loginFooter').style.display = 'block';
-        document.getElementById('signupFooter').style.display = 'none';
-    });
+            console.log('🚀 Initializing app...');
+            
+            // Setup event listeners
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('signupForm').addEventListener('submit', handleSignup);
+            
+            document.getElementById('showSignup').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('signupForm').style.display = 'block';
+                document.getElementById('loginFooter').style.display = 'none';
+                document.getElementById('signupFooter').style.display = 'block';
+            });
+            
+            document.getElementById('showLogin').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('signupForm').style.display = 'none';
+                document.getElementById('loginFooter').style.display = 'block';
+                document.getElementById('signupFooter').style.display = 'none';
+            });
 
-    // Navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = item.getAttribute('data-page');
-            navigateToPage(page);
-        });
-    });
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = item.getAttribute('data-page');
+                    navigateToPage(page);
+                });
+            });
 
-    // Bottom sheet
-    document.getElementById('closeB').addEventListener('click', closeBottomSheet);
-    document.getElementById('bottomNavCart').addEventListener('click', (e) => {
-        e.preventDefault();
-        openBottomSheet();
-    });
+            // Bottom sheet
+            document.getElementById('closeB').addEventListener('click', closeBottomSheet);
+            document.getElementById('bottomNavCart').addEventListener('click', (e) => {
+                e.preventDefault();
+                openBottomSheet();
+            });
 
-    // Payment methods
-    document.querySelectorAll('.payment-option').forEach(option => {
-        option.addEventListener('click', () => {
-            selectPaymentMethod(option.getAttribute('data-method'));
-        });
-    });
+            // Payment methods
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    selectPaymentMethod(option.getAttribute('data-method'));
+                });
+            });
 
-    // ✅ नया कोड: Dynamic coupon button के लिए event delegation
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.id === 'applyCouponBtn') {
-            applyCoupon();
-        }
-    });
-    
-    // ✅ नया कोड: Dynamic coupon input के लिए Enter key support
-    document.addEventListener('keypress', function(e) {
-        if (e.target && e.target.id === 'couponCode' && e.key === 'Enter') {
-            applyCoupon();
-        }
-    });
+            // Coupon
+            document.getElementById('applyCouponBtn').addEventListener('click', applyCoupon);
 
-    // ✅ नया कोड: Apply coupon button के लिए event listener
-    const applyCouponBtn = document.getElementById('applyCouponBtn');
-    if (applyCouponBtn) {
-        applyCouponBtn.addEventListener('click', applyCoupon);
-    }
+            // QR payment
+            document.getElementById('confirmQrPayment').addEventListener('click', confirmQRPayment);
 
-    // ✅ नया कोड: Coupon input के लिए Enter key listener
-    const couponInput = document.getElementById('couponCode');
-    if (couponInput) {
-        couponInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                applyCoupon();
+            // Filters
+            document.getElementById('shopFilter').addEventListener('change', applyFilters);
+            document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+            document.getElementById('sortSelect').addEventListener('change', applyFilters);
+
+            // Search
+            document.getElementById('search').addEventListener('input', handleSearch);
+
+            // Notification toggles
+            const orderUpdatesToggle = document.getElementById('orderUpdatesToggle');
+            const priceAlertsToggle = document.getElementById('priceAlertsToggle');
+            const promotionsToggle = document.getElementById('promotionsToggle');
+            const pushNotificationsToggle = document.getElementById('pushNotificationsToggle');
+            
+            if (orderUpdatesToggle) {
+                orderUpdatesToggle.addEventListener('change', function() {
+                    updateNotificationPreference('orderUpdates', this.checked);
+                });
             }
-        });
-    }
+            if (priceAlertsToggle) {
+                priceAlertsToggle.addEventListener('change', function() {
+                    updateNotificationPreference('priceAlerts', this.checked);
+                });
+            }
+            if (promotionsToggle) {
+                promotionsToggle.addEventListener('change', function() {
+                    updateNotificationPreference('promotions', this.checked);
+                });
+            }
+            if (pushNotificationsToggle) {
+                pushNotificationsToggle.addEventListener('change', togglePushNotifications);
+            }
 
-    // QR payment
-    const confirmQrPaymentBtn = document.getElementById('confirmQrPayment');
-    if (confirmQrPaymentBtn) {
-        confirmQrPaymentBtn.addEventListener('click', confirmQRPayment);
-    }
+            // Clear notifications
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', clearAllNotifications);
+            }
 
-    // Filters
-    const shopFilter = document.getElementById('shopFilter');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const sortSelect = document.getElementById('sortSelect');
-    
-    if (shopFilter) {
-        shopFilter.addEventListener('change', applyFilters);
-    }
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', applyFilters);
-    }
-    if (sortSelect) {
-        sortSelect.addEventListener('change', applyFilters);
-    }
-
-    // Search
-    const searchInput = document.getElementById('search');
-    if (searchInput) {
-        searchInput.addEventListener('input', handleSearch);
-    }
-
-    // Notification toggles
-    const orderUpdatesToggle = document.getElementById('orderUpdatesToggle');
-    const priceAlertsToggle = document.getElementById('priceAlertsToggle');
-    const promotionsToggle = document.getElementById('promotionsToggle');
-    const pushNotificationsToggle = document.getElementById('pushNotificationsToggle');
-    
-    if (orderUpdatesToggle) {
-        orderUpdatesToggle.addEventListener('change', function() {
-            updateNotificationPreference('orderUpdates', this.checked);
-        });
-    }
-    if (priceAlertsToggle) {
-        priceAlertsToggle.addEventListener('change', function() {
-            updateNotificationPreference('priceAlerts', this.checked);
-        });
-    }
-    if (promotionsToggle) {
-        promotionsToggle.addEventListener('change', function() {
-            updateNotificationPreference('promotions', this.checked);
-        });
-    }
-    if (pushNotificationsToggle) {
-        pushNotificationsToggle.addEventListener('change', togglePushNotifications);
-    }
-
-    // Clear notifications
-    const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
-    if (clearNotificationsBtn) {
-        clearNotificationsBtn.addEventListener('click', clearAllNotifications);
-    }
-
-    // Setup Firebase
-    setupFirebaseAuth();
-    setupOfflineDetection();
-    setupPushNotifications();
-    
-    // Load shop configuration
-    loadShopConfig();
-    
-    // Load products
-    loadProductsFromFirebase();
-    
-    // Initial UI updates
-    updateCartUI();
-    updateWishlistUI();
-    renderOrders();
-    renderAddresses();
-    
-    console.log('✅ App initialized successfully');
+            // Setup Firebase
+            setupFirebaseAuth();
+            setupOfflineDetection();
+            setupPushNotifications();
+            
+            // Load shop configuration
+            loadShopConfig();
+            
+            // Load products
+            loadProductsFromFirebase();
+            
+            // Initial UI updates
+            updateCartUI();
+            updateWishlistUI();
+            renderOrders();
+            renderAddresses();
+            
+            console.log('✅ App initialized successfully');
         }
 
         // Handle search
