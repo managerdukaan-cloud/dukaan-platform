@@ -2773,90 +2773,55 @@
             localStorage.setItem('lastUpiId', currentUpiId);
         }
 
-                // Load shop configuration from Firebase
-        async function loadShopConfig() {
-            try {
-                console.log('🔄 Loading shop configuration...');
-                const configDoc = await db.collection('shop_config').doc('settings').get();
-                
-                if (configDoc.exists) {
-                    SHOP_CONFIG = configDoc.data();
-                    console.log('✅ Shop config loaded:', SHOP_CONFIG);
-                    
-                    // Ensure default values
-                    SHOP_CONFIG.upiId = SHOP_CONFIG.upiId || 'shopkeeper@upi';
-                    SHOP_CONFIG.couponsEnabled = SHOP_CONFIG.couponsEnabled !== false;
-                    SHOP_CONFIG.shopName = SHOP_CONFIG.shopName || 'Raashanmart';
-                    
-                    // Update QR code UPI ID if available
-                    updateQRCode();
-                    
-                    // Load shop coupons
-                    await loadShopCoupons();
-                    
-                    // Update coupon section based on shop settings
-                    updateCouponSection();
-                    
-                    // Setup real-time listeners
-                    setupShopConfigListener();
-                    setupCouponsListener();
-                    
-                } else {
-                    // Default configuration
-                    SHOP_CONFIG = {
-                        upiId: 'shopkeeper@upi',
-                        couponsEnabled: false,
-                        multipleShopsAllowed: false,
-                        deliveryCharge: 0,
-                        shopName: 'Raashanmart'
-                    };
-                    console.log('⚠️ Using default shop config');
-                    updateCouponSection();
-                    
-                    // Setup real-time listeners even with default config
-                    setupShopConfigListener();
-                    setupCouponsListener();
-                }
-                
-                // Initialize last known states
-                localStorage.setItem('lastCouponsStatus', SHOP_CONFIG.couponsEnabled.toString());
-                localStorage.setItem('lastUpiId', SHOP_CONFIG.upiId || '');
-                
-            } catch (error) {
-                console.error('❌ Error loading shop config:', error);
-                SHOP_CONFIG = {
-                    upiId: 'shopkeeper@upi',
-                    couponsEnabled: false,
-                    multipleShopsAllowed: false,
-                    deliveryCharge: 0,
-                    shopName: 'Raashanmart'
-                };
-                updateCouponSection();
-            }
-        }
-                    
-                    // Setup real-time listeners even with default config
-                    setupShopConfigListener();
-                    setupCouponsListener();
-                }
-                
-                // Initialize last known states
-                localStorage.setItem('lastCouponsStatus', SHOP_CONFIG.couponsEnabled.toString());
-                localStorage.setItem('lastUpiId', SHOP_CONFIG.upiId || '');
-                
-            } catch (error) {
-                console.error('❌ Error loading shop config:', error);
-                SHOP_CONFIG = {
-                    upiId: 'shopkeeper@upi',
-                    couponsEnabled: false,
-                    multipleShopsAllowed: false,
-                    deliveryCharge: 0,
-                    shopName: 'Raashanmart'
-                };
-                updateCouponSection();
-            }
+                // Load shop config
+async function loadShopConfig() {
+    try {
+        console.log('🔄 Loading shop config...');
+        
+        const doc = await db.collection('shopConfig').doc('main').get();
+
+        if (doc.exists) {
+            SHOP_CONFIG = doc.data();
+        } else {
+            SHOP_CONFIG = {
+                upiId: 'shopkeeper@upi',
+                couponsEnabled: false,
+                multipleShopsAllowed: false,
+                deliveryCharge: 0,
+                shopName: 'Raashanmart'
+            };
         }
 
+        updateCouponSection();
+
+        // Setup real-time listeners
+        setupShopConfigListener();
+        setupCouponsListener();
+
+        // Save last known state
+        localStorage.setItem(
+            'lastCouponsStatus',
+            SHOP_CONFIG.couponsEnabled.toString()
+        );
+        localStorage.setItem(
+            'lastUpiId',
+            SHOP_CONFIG.upiId || ''
+        );
+
+    } catch (error) {
+        console.error('❌ Error loading shop config:', error);
+
+        SHOP_CONFIG = {
+            upiId: 'shopkeeper@upi',
+            couponsEnabled: false,
+            multipleShopsAllowed: false,
+            deliveryCharge: 0,
+            shopName: 'Raashanmart'
+        };
+
+        updateCouponSection();
+    }
+}
                         // Load shop coupons - SINGLE VERSION
         async function loadShopCoupons() {
             try {
