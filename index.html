@@ -3097,7 +3097,83 @@ function getCurrentCartTotal() {
                         shopName: product.shopName
                     });
                 }
-                
+        function updateOrderSummary() {
+    const orderList = document.getElementById('orderList');
+    if (!orderList) return;
+    
+    orderList.innerHTML = '';
+    let subtotal = 0;
+    
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        
+        const orderItem = document.createElement('div');
+        orderItem.className = 'order-item-summary';
+        orderItem.innerHTML = `
+            <div style="flex: 1;">
+                <strong>${item.name}</strong>
+                <div class="text-muted">₹${item.price} each</div>
+                <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                    <button onclick="updateCartQuantity(${index}, -1)" 
+                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">-</button>
+                    <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
+                    <button onclick="updateCartQuantity(${index}, 1)" 
+                            style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">+</button>
+                </div>
+            </div>
+            <div>₹${itemTotal}</div>
+        `;
+        orderList.appendChild(orderItem);
+    });
+    
+    let discount = 0;
+    if (appliedCoupon) {
+        // Validate coupon minimum order value at checkout time
+        if (subtotal < appliedCoupon.minOrder) {
+            // Remove coupon if cart value is below minimum
+            appliedCoupon = null;
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponMessage').textContent = 'Cart value is below coupon minimum. Coupon removed.';
+            document.getElementById('couponMessage').className = 'coupon-error';
+            showToast('Coupon removed due to low cart value', 'warning');
+        } else {
+            if (appliedCoupon.type === 'percentage') {
+                discount = (subtotal * appliedCoupon.value) / 100;
+            } else {
+                discount = appliedCoupon.value;
+            }
+            discount = Math.min(discount, subtotal);
+        }
+    }
+    
+    const total = subtotal - discount;
+    const orderTotal = document.getElementById('orderTotal');
+    const qrAmount = document.getElementById('qrAmount');
+    
+    if (orderTotal) orderTotal.textContent = `₹${Math.max(0, total)}`;
+    if (qrAmount) qrAmount.textContent = `₹${Math.max(0, total)}`;
+    
+    // ✅ यह नया कोड जोड़ें - QR code अपडेट करें
+    updateQRCodeWithAmount(total);
+    
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    if (placeOrderBtn) {
+        placeOrderBtn.disabled = cart.length === 0;
+    }
+    
+    // Show/hide discount section
+    const discountSection = document.getElementById('discountSection');
+    const discountAmount = document.getElementById('discountAmount');
+    if (discountSection && discountAmount) {
+        if (discount > 0) {
+            discountSection.style.display = 'flex';
+            discountAmount.textContent = `-₹${discount}`;
+        } else {
+            discountSection.style.display = 'none';
+        }
+    }
+        }        
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
                 showToast('Product added to cart!', 'success');
@@ -3122,84 +3198,7 @@ function getCurrentCartTotal() {
         }
 
         // Update order summary in cart
-        function updateOrderSummary() {
-            const orderList = document.getElementById('orderList');
-            if (!orderList) return;
-            
-            orderList.innerHTML = '';
-            let subtotal = 0;
-            
-            cart.forEach((item, index) => {
-                const itemTotal = item.price * item.quantity;
-                subtotal += itemTotal;
-                
-                const orderItem = document.createElement('div');
-                orderItem.className = 'order-item-summary';
-                orderItem.innerHTML = `
-                    <div style="flex: 1;">
-                        <strong>${item.name}</strong>
-                        <div class="text-muted">₹${item.price} each</div>
-                        <div class="quantity-controls" style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
-                            <button onclick="updateCartQuantity(${index}, -1)" 
-                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">-</button>
-                            <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.quantity}</span>
-                            <button onclick="updateCartQuantity(${index}, 1)" 
-                                    style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--neutral); display: flex; align-items: center; justify-content: center;">+</button>
-                        </div>
-                    </div>
-                    <div>₹${itemTotal}</div>
-                `;
-                orderList.appendChild(orderItem);
-            });
-            
-            let discount = 0;
-            if (appliedCoupon) {
-                // Validate coupon minimum order value at checkout time
-                if (subtotal < appliedCoupon.minOrder) {
-                    // Remove coupon if cart value is below minimum
-                    appliedCoupon = null;
-                    document.getElementById('couponCode').value = '';
-                    document.getElementById('couponMessage').textContent = 'Cart value is below coupon minimum. Coupon removed.';
-                    document.getElementById('couponMessage').className = 'coupon-error';
-                    showToast('Coupon removed due to low cart value', 'warning');
-                } else {
-                    if (appliedCoupon.type === 'percentage') {
-                        discount = (subtotal * appliedCoupon.value) / 100;
-                    } else {
-                        discount = appliedCoupon.value;
-                    }
-                    discount = Math.min(discount, subtotal);
-                }
-            }
-            
-            // Remove delivery charge
-            const total = subtotal - discount;
-            const orderTotal = document.getElementById('orderTotal');
-            const qrAmount = document.getElementById('qrAmount');
-            
-            if (orderTotal) orderTotal.textContent = `₹${Math.max(0, total)}`;
-            if (qrAmount) qrAmount.textContent = `₹${Math.max(0, total)}`;
-            
-            // Update QR code with shopkeeper's UPI ID
-            updateQRCodeWithAmount(total);
-            
-            const placeOrderBtn = document.getElementById('placeOrderBtn');
-            if (placeOrderBtn) {
-                placeOrderBtn.disabled = cart.length === 0;
-            }
-            
-            // Show/hide discount section
-            const discountSection = document.getElementById('discountSection');
-            const discountAmount = document.getElementById('discountAmount');
-            if (discountSection && discountAmount) {
-                if (discount > 0) {
-                    discountSection.style.display = 'flex';
-                    discountAmount.textContent = `-₹${discount}`;
-                } else {
-                    discountSection.style.display = 'none';
-                }
-            }
-        }
+        
 
         function updateQRCodeWithAmount(amount) {
     if (!SHOP_CONFIG) return;
