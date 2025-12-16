@@ -2957,7 +2957,7 @@
             pushEnabled: false
         };
 
-        // Load products from Firebase
+                // Load products from Firebase - FIXED VERSION
         async function loadProductsFromFirebase() {
             try {
                 console.log('📦 Loading products from Firebase...');
@@ -2999,24 +2999,102 @@
                 });
                 
                 console.log('✅ Products loaded:', PRODUCTS.length);
+                
+                // IF NO PRODUCTS LOADED, USE DEMO PRODUCTS
+                if (PRODUCTS.length === 0) {
+                    console.log('⚠️ No products found in Firebase, using demo products');
+                    PRODUCTS = getDemoProducts();
+                    
+                    // Add categories from demo products
+                    PRODUCTS.forEach(product => {
+                        if (product.category) {
+                            ALL_CATEGORIES.add(product.category);
+                        }
+                    });
+                }
+                
                 console.log('📋 Categories:', Array.from(ALL_CATEGORIES));
                 
                 updateDynamicShops();
                 updateShopAndCategoryFilters();
                 
+                // ALWAYS RENDER PRODUCTS
                 if (typeof renderProducts === 'function') {
                     renderProducts(PRODUCTS);
+                } else {
+                    console.error('❌ renderProducts function not found!');
+                    // Emergency fallback - render directly
+                    renderProductsDirectly(PRODUCTS);
                 }
                 
             } catch (error) {
-                console.error('Error loading products:', error);
+                console.error('❌ Error loading products:', error);
+                
+                // USE DEMO PRODUCTS ON ERROR
                 PRODUCTS = getDemoProducts();
+                ALL_CATEGORIES.clear();
+                
+                PRODUCTS.forEach(product => {
+                    if (product.category) {
+                        ALL_CATEGORIES.add(product.category);
+                    }
+                });
+                
+                console.log('⚠️ Using demo products due to error');
+                
                 updateDynamicShops();
                 updateShopAndCategoryFilters();
+                
                 if (typeof renderProducts === 'function') {
                     renderProducts(PRODUCTS);
+                } else {
+                    console.error('❌ renderProducts function not found!');
+                    // Emergency fallback
+                    renderProductsDirectly(PRODUCTS);
                 }
             }
+        }
+
+        // Emergency fallback render function
+        function renderProductsDirectly(products) {
+            const productGrid = document.getElementById('productGrid');
+            if (!productGrid) {
+                console.error('❌ productGrid element not found!');
+                return;
+            }
+            
+            productGrid.innerHTML = '';
+            
+            if (products.length === 0) {
+                productGrid.innerHTML = '<p class="text-center text-muted">No products available</p>';
+                return;
+            }
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="shop-badge">${product.shopName}</div>
+                    <button class="wishlist-btn" onclick="toggleWishlist('${product.id}')">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
+                    <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
+                    <p class="product-category">${product.category} • ${product.deliveryTime}</p>
+                    <div class="product-price">
+                        <span class="current-price">₹${product.price}</span>
+                        ${product.mrp ? `<span class="original-price">₹${product.mrp}</span>` : ''}
+                        ${product.mrp && product.price < product.mrp ? 
+                            `<span class="discount">${Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF</span>` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-add-cart" onclick="addToCart('${product.id}')">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                productGrid.appendChild(productCard);
+            });
         }
 
         function getDemoProducts() {
@@ -3046,6 +3124,32 @@
                     description: 'Moisturizing face cream with SPF protection.', 
                     stock: 30,
                     deliveryTime: '15-20 min'
+                },
+                { 
+                    id: 'demo3', 
+                    name: 'Brown Bread', 
+                    price: 40, 
+                    mrp: 50, 
+                    category: 'bakery', 
+                    shopId: 'freshmart', 
+                    shopName: 'FreshMart', 
+                    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop', 
+                    description: 'Fresh whole wheat brown bread.', 
+                    stock: 25,
+                    deliveryTime: '10-15 min'
+                },
+                { 
+                    id: 'demo4', 
+                    name: 'Apple Juice', 
+                    price: 80, 
+                    mrp: 100, 
+                    category: 'beverages', 
+                    shopId: 'freshmart', 
+                    shopName: 'FreshMart', 
+                    image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop', 
+                    description: '100% pure apple juice without added sugar.', 
+                    stock: 40,
+                    deliveryTime: '10-15 min'
                 }
             ];
         }
