@@ -5078,114 +5078,157 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         // Initialize app
         function initApp() {
-            console.log('🚀 Initializing app...');
-            
-            // Setup event listeners
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('signupForm').addEventListener('submit', handleSignup);
-            
-            document.getElementById('showSignup').addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('signupForm').style.display = 'block';
-                document.getElementById('loginFooter').style.display = 'none';
-                document.getElementById('signupFooter').style.display = 'block';
-            });
-            
-            document.getElementById('showLogin').addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('loginForm').style.display = 'block';
-                document.getElementById('signupForm').style.display = 'none';
-                document.getElementById('loginFooter').style.display = 'block';
-                document.getElementById('signupFooter').style.display = 'none';
-            });
+    console.log('🚀 Initializing app...');
+    
+    // Setup event listeners
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('signupForm').addEventListener('submit', handleSignup);
+    
+    document.getElementById('showSignup').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+        document.getElementById('loginFooter').style.display = 'none';
+        document.getElementById('signupFooter').style.display = 'block';
+    });
+    
+    document.getElementById('showLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+        document.getElementById('loginFooter').style.display = 'block';
+        document.getElementById('signupFooter').style.display = 'none';
+    });
 
-            // Navigation
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const page = item.getAttribute('data-page');
-                    navigateToPage(page);
-                });
-            });
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = item.getAttribute('data-page');
+            navigateToPage(page);
+        });
+    });
 
-            // Bottom sheet
-            document.getElementById('closeB').addEventListener('click', closeBottomSheet);
-            document.getElementById('bottomNavCart').addEventListener('click', (e) => {
-                e.preventDefault();
-                openBottomSheet();
-            });
+    // Bottom sheet
+    document.getElementById('closeB').addEventListener('click', closeBottomSheet);
+    document.getElementById('bottomNavCart').addEventListener('click', (e) => {
+        e.preventDefault();
+        openBottomSheet();
+    });
 
-            // Payment methods
-            document.querySelectorAll('.payment-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    selectPaymentMethod(option.getAttribute('data-method'));
-                });
-            });
+    // Payment methods
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', () => {
+            selectPaymentMethod(option.getAttribute('data-method'));
+        });
+    });
 
-            // Coupon
-            document.getElementById('applyCouponBtn').addEventListener('click', applyCoupon);
+    // ✅ नया कोड: Dynamic coupon button के लिए event delegation
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'applyCouponBtn') {
+            applyCoupon();
+        }
+    });
+    
+    // ✅ नया कोड: Dynamic coupon input के लिए Enter key support
+    document.addEventListener('keypress', function(e) {
+        if (e.target && e.target.id === 'couponCode' && e.key === 'Enter') {
+            applyCoupon();
+        }
+    });
 
-            // QR payment
-            document.getElementById('confirmQrPayment').addEventListener('click', confirmQRPayment);
+    // ✅ नया कोड: Apply coupon button के लिए event listener
+    const applyCouponBtn = document.getElementById('applyCouponBtn');
+    if (applyCouponBtn) {
+        applyCouponBtn.addEventListener('click', applyCoupon);
+    }
 
-            // Filters
-            document.getElementById('shopFilter').addEventListener('change', applyFilters);
-            document.getElementById('categoryFilter').addEventListener('change', applyFilters);
-            document.getElementById('sortSelect').addEventListener('change', applyFilters);
-
-            // Search
-            document.getElementById('search').addEventListener('input', handleSearch);
-
-            // Notification toggles
-            const orderUpdatesToggle = document.getElementById('orderUpdatesToggle');
-            const priceAlertsToggle = document.getElementById('priceAlertsToggle');
-            const promotionsToggle = document.getElementById('promotionsToggle');
-            const pushNotificationsToggle = document.getElementById('pushNotificationsToggle');
-            
-            if (orderUpdatesToggle) {
-                orderUpdatesToggle.addEventListener('change', function() {
-                    updateNotificationPreference('orderUpdates', this.checked);
-                });
+    // ✅ नया कोड: Coupon input के लिए Enter key listener
+    const couponInput = document.getElementById('couponCode');
+    if (couponInput) {
+        couponInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyCoupon();
             }
-            if (priceAlertsToggle) {
-                priceAlertsToggle.addEventListener('change', function() {
-                    updateNotificationPreference('priceAlerts', this.checked);
-                });
-            }
-            if (promotionsToggle) {
-                promotionsToggle.addEventListener('change', function() {
-                    updateNotificationPreference('promotions', this.checked);
-                });
-            }
-            if (pushNotificationsToggle) {
-                pushNotificationsToggle.addEventListener('change', togglePushNotifications);
-            }
+        });
+    }
 
-            // Clear notifications
-            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
-            if (clearNotificationsBtn) {
-                clearNotificationsBtn.addEventListener('click', clearAllNotifications);
-            }
+    // QR payment
+    const confirmQrPaymentBtn = document.getElementById('confirmQrPayment');
+    if (confirmQrPaymentBtn) {
+        confirmQrPaymentBtn.addEventListener('click', confirmQRPayment);
+    }
 
-            // Setup Firebase
-            setupFirebaseAuth();
-            setupOfflineDetection();
-            setupPushNotifications();
-            
-            // Load shop configuration
-            loadShopConfig();
-            
-            // Load products
-            loadProductsFromFirebase();
-            
-            // Initial UI updates
-            updateCartUI();
-            updateWishlistUI();
-            renderOrders();
-            renderAddresses();
-            
-            console.log('✅ App initialized successfully');
+    // Filters
+    const shopFilter = document.getElementById('shopFilter');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const sortSelect = document.getElementById('sortSelect');
+    
+    if (shopFilter) {
+        shopFilter.addEventListener('change', applyFilters);
+    }
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', applyFilters);
+    }
+    if (sortSelect) {
+        sortSelect.addEventListener('change', applyFilters);
+    }
+
+    // Search
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+
+    // Notification toggles
+    const orderUpdatesToggle = document.getElementById('orderUpdatesToggle');
+    const priceAlertsToggle = document.getElementById('priceAlertsToggle');
+    const promotionsToggle = document.getElementById('promotionsToggle');
+    const pushNotificationsToggle = document.getElementById('pushNotificationsToggle');
+    
+    if (orderUpdatesToggle) {
+        orderUpdatesToggle.addEventListener('change', function() {
+            updateNotificationPreference('orderUpdates', this.checked);
+        });
+    }
+    if (priceAlertsToggle) {
+        priceAlertsToggle.addEventListener('change', function() {
+            updateNotificationPreference('priceAlerts', this.checked);
+        });
+    }
+    if (promotionsToggle) {
+        promotionsToggle.addEventListener('change', function() {
+            updateNotificationPreference('promotions', this.checked);
+        });
+    }
+    if (pushNotificationsToggle) {
+        pushNotificationsToggle.addEventListener('change', togglePushNotifications);
+    }
+
+    // Clear notifications
+    const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+    if (clearNotificationsBtn) {
+        clearNotificationsBtn.addEventListener('click', clearAllNotifications);
+    }
+
+    // Setup Firebase
+    setupFirebaseAuth();
+    setupOfflineDetection();
+    setupPushNotifications();
+    
+    // Load shop configuration
+    loadShopConfig();
+    
+    // Load products
+    loadProductsFromFirebase();
+    
+    // Initial UI updates
+    updateCartUI();
+    updateWishlistUI();
+    renderOrders();
+    renderAddresses();
+    
+    console.log('✅ App initialized successfully');
         }
 
         // Handle search
