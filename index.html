@@ -2321,12 +2321,15 @@ function getCurrentCartTotal() {
 
         // Load shop coupons
         async function loadShopCoupons() {
-            try {
-                console.log('🔄 Loading shop coupons...');
-                const couponsSnapshot = await db.collection('coupons').get();
+    try {
+        console.log('🔄 Setting up coupons listener...');
+        
+        // Realtime listener for coupons - यह पूरा नया कोड है
+        db.collection('coupons')
+            .onSnapshot((snapshot) => {
                 SHOP_COUPONS = [];
                 
-                couponsSnapshot.forEach(doc => {
+                snapshot.forEach(doc => {
                     SHOP_COUPONS.push({ 
                         id: doc.id, 
                         ...doc.data(),
@@ -2335,7 +2338,7 @@ function getCurrentCartTotal() {
                     });
                 });
                 
-                console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded`);
+                console.log(`✅ ${SHOP_COUPONS.length} coupons loaded (realtime)`);
                 
                 // Sort coupons by isActive (active coupons first)
                 SHOP_COUPONS.sort((a, b) => {
@@ -2343,11 +2346,21 @@ function getCurrentCartTotal() {
                     return a.isActive ? -1 : 1;
                 });
                 
-            } catch (error) {
-                console.error('❌ Error loading coupons:', error);
+                // Coupon section अपडेट करें
+                updateCouponSection();
+                
+            }, (error) => {
+                console.error('❌ Error in coupons listener:', error);
                 SHOP_COUPONS = [];
-            }
-        }
+                updateCouponSection();
+            });
+        
+    } catch (error) {
+        console.error('❌ Error setting up coupons listener:', error);
+        SHOP_COUPONS = [];
+        updateCouponSection();
+    }
+}
 
         function updateQRCode() {
             if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
