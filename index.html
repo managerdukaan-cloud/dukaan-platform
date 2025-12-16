@@ -2638,17 +2638,155 @@
         let selectedRating = 0;
         let isOnline = navigator.onLine;
         let currentTrackingOrder = null;
-        let SHOP_CONFIG = null;
+        let SHOP_CONFIG = {
+            upiId: 'shopkeeper@upi',
+            couponsEnabled: false,
+            multipleShopsAllowed: false,
+            deliveryCharge: 0,
+            shopName: 'Raashanmart'
+        };
         let SHOP_COUPONS = [];
-        let SHOP_DATA = null; // Store shop data for coupon validation
+
+        // Real-time shop config listener
+        function setupShopConfigListener() {
+            console.log('🔔 Setting up real-time shop config listener...');
+            
+            db.collection('shop_config').doc('settings')
+                .onSnapshot((doc) => {
+                    console.log('🔄 Shop config updated in real-time');
+                    
+                    if (doc.exists) {
+                        SHOP_CONFIG = doc.data();
+                        console.log('✅ Shop config updated:', SHOP_CONFIG);
+                        
+                        // Ensure default values
+                        SHOP_CONFIG.upiId = SHOP_CONFIG.upiId || 'shopkeeper@upi';
+                        SHOP_CONFIG.couponsEnabled = SHOP_CONFIG.couponsEnabled !== false;
+                        SHOP_CONFIG.shopName = SHOP_CONFIG.shopName || 'Raashanmart';
+                        
+                        // Update UPI ID in real-time
+                        updateQRCode();
+                        
+                        // Update coupon section in real-time
+                        updateCouponSection();
+                        
+                        // Show notification if coupons status changed
+                        showCouponStatusNotification();
+                        
+                        // Show notification if UPI changed
+                        showUPIUpdateNotification();
+                        
+                    } else {
+                        // Default configuration if no config exists
+                        SHOP_CONFIG = {
+                            upiId: 'shopkeeper@upi',
+                            couponsEnabled: false,
+                            multipleShopsAllowed: false,
+                            deliveryCharge: 0,
+                            shopName: 'Raashanmart'
+                        };
+                        console.log('⚠️ Using default shop config');
+                        updateCouponSection();
+                    }
+                }, (error) => {
+                    console.error('❌ Error in real-time shop config listener:', error);
+                });
+        }
+
+        // Real-time coupons listener
+        function setupCouponsListener() {
+            console.log('🔔 Setting up real-time coupons listener...');
+            
+            db.collection('coupons')
+                .onSnapshot((snapshot) => {
+                    console.log('🔄 Coupons updated in real-time');
+                    
+                    SHOP_COUPONS = [];
+                    
+                    snapshot.forEach(doc => {
+                        const couponData = doc.data();
+                        SHOP_COUPONS.push({ 
+                            id: doc.id, 
+                            ...couponData,
+                            code: couponData.code || doc.id,
+                            isActive: couponData.isActive !== false
+                        });
+                    });
+                    
+                    console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded in real-time`);
+                    
+                    // Sort coupons by isActive (active coupons first)
+                    SHOP_COUPONS.sort((a, b) => {
+                        if (a.isActive === b.isActive) return 0;
+                        return a.isActive ? -1 : 1;
+                    });
+                    
+                    // Update coupon section
+                    updateCouponSection();
+                    
+                }, (error) => {
+                    console.error('❌ Error in real-time coupons listener:', error);
+                    SHOP_COUPONS = [];
+                });
+        }
+
+        // Show notification when coupon status changes
+        function showCouponStatusNotification() {
+            const wasCouponsEnabled = localStorage.getItem('lastCouponsStatus') === 'true';
+            const isCouponsEnabled = SHOP_CONFIG.couponsEnabled;
+            
+            if (wasCouponsEnabled !== undefined && wasCouponsEnabled !== isCouponsEnabled) {
+                if (isCouponsEnabled) {
+                    showToast('🎉 Coupons are now enabled! You can apply coupon codes.', 'success');
+                } else {
+                    showToast('⚠️ Coupons are now disabled by shopkeeper.', 'warning');
+                    
+                    // Clear any applied coupon if disabled
+                    if (appliedCoupon) {
+                        appliedCoupon = null;
+                        const couponCodeInput = document.getElementById('couponCode');
+                        const couponMessage = document.getElementById('couponMessage');
+                        if (couponCodeInput) couponCodeInput.value = '';
+                        if (couponMessage) {
+                            couponMessage.textContent = 'Coupons disabled by shopkeeper';
+                            couponMessage.className = 'coupon-error';
+                        }
+                        updateOrderSummary();
+                    }
+                }
+            }
+            
+            // Store current status
+            localStorage.setItem('lastCouponsStatus', isCouponsEnabled.toString());
+        }
+
+        // Show notification when UPI ID changes
+        function showUPIUpdateNotification() {
+            const lastUpiId = localStorage.getItem('lastUpiId');
+            const currentUpiId = SHOP_CONFIG?.upiId || '';
+            
+            if (lastUpiId && lastUpiId !== currentUpiId) {
+                showToast('ℹ️ Shopkeeper has updated payment UPI ID', 'info');
+            }
+            
+            // Store current UPI ID
+            localStorage.setItem('lastUpiId', currentUpiId);
+        }
 
         // Load shop configuration from Firebase
         async function loadShopConfig() {
             try {
+                console.log('🔄 Loading shop configuration...');
                 const configDoc = await db.collection('shop_config').doc('settings').get();
+                
                 if (configDoc.exists) {
                     SHOP_CONFIG = configDoc.data();
-                    console.log('Shop config loaded:', SHOP_CONFIG);
+                    console.log('✅ Shop config loaded:', SHOP_CONFIG);
+                    
+                    // Ensure default values
+                    SHOP_CONFIG.upiId = SHOP_CONFIG.upiId || 'shopkeeper@upi';
+                    SHOP_CONFIG.couponsEnabled = SHOP_CONFIG.couponsEnabled !== false;
+                    SHOP_CONFIG.shopName = SHOP_CONFIG.shopName || 'Raashanmart';
                     
                     // Update QR code UPI ID if available
                     updateQRCode();
@@ -2656,79 +2794,160 @@
                     // Load shop coupons
                     await loadShopCoupons();
                     
+                    // Update coupon section based on shop settings
+                    updateCouponSection();
+                    
+                    // Setup real-time listeners
+                    setupShopConfigListener();
+                    setupCouponsListener();
+                    
                 } else {
+                    // Default configuration
                     SHOP_CONFIG = {
                         upiId: 'shopkeeper@upi',
                         couponsEnabled: false,
                         multipleShopsAllowed: false,
-                        deliveryCharge: 0
+                        deliveryCharge: 0,
+                        shopName: 'Raashanmart'
                     };
+                    console.log('⚠️ Using default shop config');
+                    updateCouponSection();
+                    
+                    // Setup real-time listeners even with default config
+                    setupShopConfigListener();
+                    setupCouponsListener();
                 }
+                
+                // Initialize last known states
+                localStorage.setItem('lastCouponsStatus', SHOP_CONFIG.couponsEnabled.toString());
+                localStorage.setItem('lastUpiId', SHOP_CONFIG.upiId || '');
+                
             } catch (error) {
-                console.error('Error loading shop config:', error);
+                console.error('❌ Error loading shop config:', error);
                 SHOP_CONFIG = {
                     upiId: 'shopkeeper@upi',
                     couponsEnabled: false,
                     multipleShopsAllowed: false,
-                    deliveryCharge: 0
+                    deliveryCharge: 0,
+                    shopName: 'Raashanmart'
                 };
-            }
-        }
-
-        // Load shop data including coupon settings
-        async function loadShopData() {
-            try {
-                // Get shop ID from products (if available)
-                let shopId = 'default_shop';
-                if (cart.length > 0) {
-                    shopId = cart[0].shopId;
-                } else if (PRODUCTS.length > 0) {
-                    shopId = PRODUCTS[0].shopId;
-                }
-                
-                const shopDoc = await db.collection('shops').doc(shopId).get();
-                if (shopDoc.exists) {
-                    SHOP_DATA = shopDoc.data();
-                    console.log('✅ Shop data loaded:', SHOP_DATA);
-                    
-                    // Update coupon section based on shop data
-                    updateCouponSection();
-                }
-            } catch (error) {
-                console.error('Error loading shop data:', error);
-                SHOP_DATA = null;
+                updateCouponSection();
             }
         }
 
         // Load shop coupons
         async function loadShopCoupons() {
             try {
+                console.log('🔄 Loading shop coupons...');
                 const couponsSnapshot = await db.collection('coupons').get();
                 SHOP_COUPONS = [];
+                
                 couponsSnapshot.forEach(doc => {
-                    SHOP_COUPONS.push({ id: doc.id, ...doc.data() });
+                    const couponData = doc.data();
+                    SHOP_COUPONS.push({ 
+                        id: doc.id, 
+                        ...couponData,
+                        code: couponData.code || doc.id,
+                        isActive: couponData.isActive !== false
+                    });
                 });
-                console.log('Shop coupons loaded:', SHOP_COUPONS.length);
+                
+                console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded`);
+                
+                // Sort coupons by isActive (active coupons first)
+                SHOP_COUPONS.sort((a, b) => {
+                    if (a.isActive === b.isActive) return 0;
+                    return a.isActive ? -1 : 1;
+                });
+                
             } catch (error) {
-                console.error('Error loading coupons:', error);
+                console.error('❌ Error loading coupons:', error);
                 SHOP_COUPONS = [];
             }
         }
 
         function updateQRCode() {
+            console.log('🔄 Updating QR code with UPI:', SHOP_CONFIG?.upiId);
+            
             if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-                document.getElementById('dynamicUpiId').textContent = SHOP_CONFIG.upiId;
+                const upiIdElement = document.getElementById('dynamicUpiId');
+                if (upiIdElement) {
+                    upiIdElement.textContent = SHOP_CONFIG.upiId;
+                }
+                
                 const qrImage = document.getElementById('dynamicQRCode');
                 if (qrImage) {
-                    const amount = document.getElementById('qrAmount').textContent.replace('₹', '');
-                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${amount}&tn=Order%20Payment`;
+                    // Get amount from order summary or use default
+                    const orderTotal = document.getElementById('orderTotal');
+                    const qrAmount = document.getElementById('qrAmount');
+                    let amount = '0';
+                    
+                    if (orderTotal) {
+                        amount = orderTotal.textContent.replace('₹', '').trim();
+                    } else if (qrAmount) {
+                        amount = qrAmount.textContent.replace('₹', '').trim();
+                    }
+                    
+                    // Ensure amount is numeric
+                    if (!amount || isNaN(parseFloat(amount))) {
+                        amount = '0';
+                    }
+                    
+                    const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
+                    const upiId = SHOP_CONFIG.upiId;
+                    
+                    // Generate QR code URL
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR&t=${Date.now()}`;
+                    
+                    console.log('📱 Generated QR URL:', qrUrl);
+                    qrImage.src = qrUrl;
                 }
             }
         }
 
+        // Enhanced updateQRCodeWithAmount function for real-time updates
+        function updateQRCodeWithAmount(amount) {
+            console.log('💸 Updating QR with amount:', amount);
+            
+            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
+                const qrImage = document.getElementById('dynamicQRCode');
+                const qrAmountElement = document.getElementById('qrAmount');
+                
+                if (qrAmountElement) {
+                    qrAmountElement.textContent = `₹${amount}`;
+                }
+                
+                if (qrImage) {
+                    const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
+                    const upiId = SHOP_CONFIG.upiId;
+                    
+                    // Generate QR code with current UPI ID
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR&t=${Date.now()}`;
+                    
+                    console.log('🔄 QR code updated:', qrUrl);
+                    qrImage.src = qrUrl;
+                }
+            }
+        }
+
+        // Demo coupons (only used if shop doesn't have any)
         const AVAILABLE_COUPONS = [
-            { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
-            { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" }
+            { 
+                code: "WELCOME10", 
+                type: "percentage", 
+                value: 10, 
+                minOrder: 500, 
+                description: "Get 10% OFF on orders above ₹500",
+                isActive: true 
+            },
+            { 
+                code: "FLAT50", 
+                type: "fixed", 
+                value: 50, 
+                minOrder: 300, 
+                description: "Get ₹50 OFF on orders above ₹300",
+                isActive: true 
+            }
         ];
 
         const notificationPreferences = JSON.parse(localStorage.getItem('dukaan_notification_prefs')) || {
@@ -4311,7 +4530,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             });
         }
 
-        // Place order function
+                // Fix for placeOrder function - handle null elements properly
         async function placeOrder() {
             if (!isOnline) {
                 showToast('Cannot place order while offline', 'error');
@@ -4345,6 +4564,15 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 if (cart.length === 0) {
                     showToast('Your cart is empty', 'error');
                     return;
+                }
+                
+                // Final coupon validation at checkout
+                if (appliedCoupon) {
+                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    if (subtotal < appliedCoupon.minOrder) {
+                        showToast(`Coupon requires minimum order of ₹${appliedCoupon.minOrder}`, 'error');
+                        return;
+                    }
                 }
                 
                 const user = auth.currentUser;
@@ -4430,12 +4658,24 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 const docRef = await db.collection('orders').add(orderData);
                 console.log('✅ Order created:', docRef.id);
                 
+                // Clear cart and coupon - FIXED: Check if elements exist before setting values
                 cart = [];
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
+                
                 appliedCoupon = null;
-                document.getElementById('couponCode').value = '';
-                document.getElementById('couponMessage').textContent = '';
+                
+                // Only try to clear coupon input if it exists
+                const couponCodeInput = document.getElementById('couponCode');
+                const couponMessage = document.getElementById('couponMessage');
+                
+                if (couponCodeInput) {
+                    couponCodeInput.value = '';
+                }
+                
+                if (couponMessage) {
+                    couponMessage.textContent = '';
+                }
                 
                 showLoading(false);
                 showToast(`✅ Order placed successfully! Order ID: ${unifiedOrderId}`, 'success');
