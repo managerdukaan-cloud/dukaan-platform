@@ -2601,495 +2601,204 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyD2-yz4xwYD5S_oXs6ryhNP8XIC94jzda4",
-    authDomain: "dukaan-platform.firebaseapp.com",
-    projectId: "dukaan-platform",
-    storageBucket: "dukaan-platform.firebasestorage.app",
-    messagingSenderId: "75765851780",
-    appId: "1:75765851780:web:dd9567db1d39c3b09c84d1"
-};
-
-try {
-    firebase.initializeApp(firebaseConfig);
-    console.log('Firebase initialized successfully');
-} catch (error) {
-    console.log('Firebase already initialized');
-}
-const auth = firebase.auth();
-const db = firebase.firestore();
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-// Data variables
-let SHOPS = {};
-let PRODUCTS = [];
-let ALL_CATEGORIES = new Set();
-let currentUser = null;
-let cart = JSON.parse(localStorage.getItem('dukaan_cart')) || [];
-let wishlist = JSON.parse(localStorage.getItem('dukaan_wishlist')) || [];
-let addresses = JSON.parse(localStorage.getItem('userAddresses')) || [];
-let orders = JSON.parse(localStorage.getItem('dukaan_orders')) || [];
-let productReviews = JSON.parse(localStorage.getItem('dukaan_product_reviews')) || [];
-let notifications = JSON.parse(localStorage.getItem('dukaan_notifications')) || [];
-let appliedCoupon = null;
-let selectedPaymentMethod = null;
-let selectedAddress = null;
-let currentProductDetail = null;
-let selectedRating = 0;
-let isOnline = navigator.onLine;
-let currentTrackingOrder = null;
-let SHOP_CONFIG = {
-    upiId: 'shopkeeper@upi',
-    couponsEnabled: false,
-    multipleShopsAllowed: false,
-    deliveryCharge: 0,
-    shopName: 'Raashanmart'
-};
-let SHOP_COUPONS = [];
-
-// Load shop config - SINGLE VERSION
-async function loadShopConfig() {
-    try {
-        console.log('🔄 Loading shop config...');
-        
-        const doc = await db.collection('shop_config').doc('settings').get();
-
-        if (doc.exists) {
-            SHOP_CONFIG = doc.data();
-            console.log('✅ Shop config loaded:', SHOP_CONFIG);
-        } else {
-            SHOP_CONFIG = {
-                upiId: 'shopkeeper@upi',
-                couponsEnabled: false,
-                multipleShopsAllowed: false,
-                deliveryCharge: 0,
-                shopName: 'Raashanmart'
-            };
-            console.log('⚠️ Using default shop config');
-        }
-
-        updateQRCode();
-        updateCouponSection();
-        
-        // Load coupons
-        await loadShopCoupons();
-
-        // Setup real-time listeners
-        setupShopConfigListener();
-        setupCouponsListener();
-
-        // Save last known state
-        localStorage.setItem(
-            'lastCouponsStatus',
-            SHOP_CONFIG.couponsEnabled.toString()
-        );
-        localStorage.setItem(
-            'lastUpiId',
-            SHOP_CONFIG.upiId || ''
-        );
-
-    } catch (error) {
-        console.error('❌ Error loading shop config:', error);
-
-        SHOP_CONFIG = {
-            upiId: 'shopkeeper@upi',
-            couponsEnabled: false,
-            multipleShopsAllowed: false,
-            deliveryCharge: 0,
-            shopName: 'Raashanmart'
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2-yz4xwYD5S_oXs6ryhNP8XIC94jzda4",
+            authDomain: "dukaan-platform.firebaseapp.com",
+            projectId: "dukaan-platform",
+            storageBucket: "dukaan-platform.firebasestorage.app",
+            messagingSenderId: "75765851780",
+            appId: "1:75765851780:web:dd9567db1d39c3b09c84d1"
         };
 
-        updateCouponSection();
-    }
-}
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.log('Firebase already initialized');
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-// Load shop coupons - SINGLE VERSION
-async function loadShopCoupons() {
-    try {
-        console.log('🔄 Loading shop coupons...');
-        const couponsSnapshot = await db.collection('coupons').get();
-        SHOP_COUPONS = [];
-        
-        couponsSnapshot.forEach(doc => {
-            const couponData = doc.data();
-            SHOP_COUPONS.push({ 
-                id: doc.id, 
-                ...couponData,
-                code: couponData.code || doc.id,
-                isActive: couponData.isActive !== false
-            });
-        });
-        
-        console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded`);
-        
-        // Sort coupons by isActive (active coupons first)
-        SHOP_COUPONS.sort((a, b) => {
-            if (a.isActive === b.isActive) return 0;
-            return a.isActive ? -1 : 1;
-        });
-        
-    } catch (error) {
-        console.error('❌ Error loading coupons:', error);
-        SHOP_COUPONS = [];
-    }
-}
+        // Data variables
+        let SHOPS = {};
+        let PRODUCTS = [];
+        let ALL_CATEGORIES = new Set();
+        let currentUser = null;
+        let cart = JSON.parse(localStorage.getItem('dukaan_cart')) || [];
+        let wishlist = JSON.parse(localStorage.getItem('dukaan_wishlist')) || [];
+        let addresses = JSON.parse(localStorage.getItem('userAddresses')) || [];
+        let orders = JSON.parse(localStorage.getItem('dukaan_orders')) || [];
+        let productReviews = JSON.parse(localStorage.getItem('dukaan_product_reviews')) || [];
+        let notifications = JSON.parse(localStorage.getItem('dukaan_notifications')) || [];
+        let appliedCoupon = null;
+        let selectedPaymentMethod = null;
+        let selectedAddress = null;
+        let currentProductDetail = null;
+        let selectedRating = 0;
+        let isOnline = navigator.onLine;
+        let currentTrackingOrder = null;
+        let SHOP_CONFIG = null;
+        let SHOP_COUPONS = [];
+        let SHOP_DATA = null; // Store shop data for coupon validation
 
-// Real-time shop config listener - SINGLE VERSION
-function setupShopConfigListener() {
-    console.log('🔔 Setting up real-time shop config listener...');
-    
-    db.collection('shop_config').doc('settings')
-        .onSnapshot((doc) => {
-            console.log('🔄 Shop config updated in real-time');
-            
-            if (doc.exists) {
-                SHOP_CONFIG = doc.data();
-                console.log('✅ Shop config updated:', SHOP_CONFIG);
-                
-                // Ensure default values
-                SHOP_CONFIG.upiId = SHOP_CONFIG.upiId || 'shopkeeper@upi';
-                SHOP_CONFIG.couponsEnabled = SHOP_CONFIG.couponsEnabled !== false;
-                SHOP_CONFIG.shopName = SHOP_CONFIG.shopName || 'Raashanmart';
-                
-                // Update UPI ID in real-time
-                updateQRCode();
-                
-                // Update coupon section in real-time
-                updateCouponSection();
-                
-                // Show notification if coupons status changed
-                showCouponStatusNotification();
-                
-                // Show notification if UPI changed
-                showUPIUpdateNotification();
-                
-            } else {
-                // Default configuration if no config exists
+        // Load shop configuration from Firebase
+        async function loadShopConfig() {
+            try {
+                const configDoc = await db.collection('shop_config').doc('settings').get();
+                if (configDoc.exists) {
+                    SHOP_CONFIG = configDoc.data();
+                    console.log('Shop config loaded:', SHOP_CONFIG);
+                    
+                    // Update QR code UPI ID if available
+                    updateQRCode();
+                    
+                    // Load shop coupons
+                    await loadShopCoupons();
+                    
+                } else {
+                    SHOP_CONFIG = {
+                        upiId: 'shopkeeper@upi',
+                        couponsEnabled: false,
+                        multipleShopsAllowed: false,
+                        deliveryCharge: 0
+                    };
+                }
+            } catch (error) {
+                console.error('Error loading shop config:', error);
                 SHOP_CONFIG = {
                     upiId: 'shopkeeper@upi',
                     couponsEnabled: false,
                     multipleShopsAllowed: false,
-                    deliveryCharge: 0,
-                    shopName: 'Raashanmart'
+                    deliveryCharge: 0
                 };
-                console.log('⚠️ Using default shop config');
-                updateCouponSection();
             }
-        }, (error) => {
-            console.error('❌ Error in real-time shop config listener:', error);
-        });
-}
+        }
 
-// Real-time coupons listener - SINGLE VERSION
-function setupCouponsListener() {
-    console.log('🔔 Setting up real-time coupons listener...');
-    
-    db.collection('coupons')
-        .onSnapshot((snapshot) => {
-            console.log('🔄 Coupons updated in real-time');
-            
-            SHOP_COUPONS = [];
-            
-            snapshot.forEach(doc => {
-                const couponData = doc.data();
-                SHOP_COUPONS.push({ 
-                    id: doc.id, 
-                    ...couponData,
-                    code: couponData.code || doc.id,
-                    isActive: couponData.isActive !== false
+        // Load shop data including coupon settings
+        async function loadShopData() {
+            try {
+                // Get shop ID from products (if available)
+                let shopId = 'default_shop';
+                if (cart.length > 0) {
+                    shopId = cart[0].shopId;
+                } else if (PRODUCTS.length > 0) {
+                    shopId = PRODUCTS[0].shopId;
+                }
+                
+                const shopDoc = await db.collection('shops').doc(shopId).get();
+                if (shopDoc.exists) {
+                    SHOP_DATA = shopDoc.data();
+                    console.log('✅ Shop data loaded:', SHOP_DATA);
+                    
+                    // Update coupon section based on shop data
+                    updateCouponSection();
+                }
+            } catch (error) {
+                console.error('Error loading shop data:', error);
+                SHOP_DATA = null;
+            }
+        }
+
+        // Load shop coupons
+        async function loadShopCoupons() {
+            try {
+                const couponsSnapshot = await db.collection('coupons').get();
+                SHOP_COUPONS = [];
+                couponsSnapshot.forEach(doc => {
+                    SHOP_COUPONS.push({ id: doc.id, ...doc.data() });
                 });
-            });
-            
-            console.log(`✅ ${SHOP_COUPONS.length} shop coupons loaded in real-time`);
-            
-            // Sort coupons by isActive (active coupons first)
-            SHOP_COUPONS.sort((a, b) => {
-                if (a.isActive === b.isActive) return 0;
-                return a.isActive ? -1 : 1;
-            });
-            
-            // Update coupon section
-            updateCouponSection();
-            
-        }, (error) => {
-            console.error('❌ Error in real-time coupons listener:', error);
-            SHOP_COUPONS = [];
-        });
-}
+                console.log('Shop coupons loaded:', SHOP_COUPONS.length);
+            } catch (error) {
+                console.error('Error loading coupons:', error);
+                SHOP_COUPONS = [];
+            }
+        }
 
-// Show notification when coupon status changes
-function showCouponStatusNotification() {
-    const wasCouponsEnabled = localStorage.getItem('lastCouponsStatus') === 'true';
-    const isCouponsEnabled = SHOP_CONFIG.couponsEnabled;
-    
-    if (wasCouponsEnabled !== undefined && wasCouponsEnabled !== isCouponsEnabled) {
-        if (isCouponsEnabled) {
-            showToast('🎉 Coupons are now enabled! You can apply coupon codes.', 'success');
-        } else {
-            showToast('⚠️ Coupons are now disabled by shopkeeper.', 'warning');
-            
-            // Clear any applied coupon if disabled
-            if (appliedCoupon) {
-                appliedCoupon = null;
-                const couponCodeInput = document.getElementById('couponCode');
-                const couponMessage = document.getElementById('couponMessage');
-                if (couponCodeInput) couponCodeInput.value = '';
-                if (couponMessage) {
-                    couponMessage.textContent = 'Coupons disabled by shopkeeper';
-                    couponMessage.className = 'coupon-error';
+        function updateQRCode() {
+            if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
+                document.getElementById('dynamicUpiId').textContent = SHOP_CONFIG.upiId;
+                const qrImage = document.getElementById('dynamicQRCode');
+                if (qrImage) {
+                    const amount = document.getElementById('qrAmount').textContent.replace('₹', '');
+                    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${SHOP_CONFIG.upiId}&pn=Raashanmart&am=${amount}&tn=Order%20Payment`;
                 }
-                updateOrderSummary();
             }
         }
-    }
-    
-    // Store current status
-    localStorage.setItem('lastCouponsStatus', isCouponsEnabled.toString());
-}
 
-// Show notification when UPI ID changes
-function showUPIUpdateNotification() {
-    const lastUpiId = localStorage.getItem('lastUpiId');
-    const currentUpiId = SHOP_CONFIG?.upiId || '';
-    
-    if (lastUpiId && lastUpiId !== currentUpiId) {
-        showToast('ℹ️ Shopkeeper has updated payment UPI ID', 'info');
-    }
-    
-    // Store current UPI ID
-    localStorage.setItem('lastUpiId', currentUpiId);
-}
+        const AVAILABLE_COUPONS = [
+            { code: "WELCOME10", type: "percentage", value: 10, minOrder: 500, description: "Get 10% OFF on orders above ₹500" },
+            { code: "FLAT50", type: "fixed", value: 50, minOrder: 300, description: "Get ₹50 OFF on orders above ₹300" }
+        ];
 
-function updateQRCode() {
-    console.log('🔄 Updating QR code with UPI:', SHOP_CONFIG?.upiId);
-    
-    if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-        const upiIdElement = document.getElementById('dynamicUpiId');
-        if (upiIdElement) {
-            upiIdElement.textContent = SHOP_CONFIG.upiId;
-        }
-        
-        const qrImage = document.getElementById('dynamicQRCode');
-        if (qrImage) {
-            // Get amount from order summary or use default
-            const orderTotal = document.getElementById('orderTotal');
-            const qrAmount = document.getElementById('qrAmount');
-            let amount = '0';
-            
-            if (orderTotal) {
-                amount = orderTotal.textContent.replace('₹', '').trim();
-            } else if (qrAmount) {
-                amount = qrAmount.textContent.replace('₹', '').trim();
-            }
-            
-            // Ensure amount is numeric
-            if (!amount || isNaN(parseFloat(amount))) {
-                amount = '0';
-            }
-            
-            const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
-            const upiId = SHOP_CONFIG.upiId;
-            
-            // Generate QR code URL
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR&t=${Date.now()}`;
-            
-            console.log('📱 Generated QR URL:', qrUrl);
-            qrImage.src = qrUrl;
-        }
-    }
-}
+        const notificationPreferences = JSON.parse(localStorage.getItem('dukaan_notification_prefs')) || {
+            orderUpdates: true,
+            priceAlerts: true,
+            promotions: true,
+            pushEnabled: false
+        };
 
-// Enhanced updateQRCodeWithAmount function for real-time updates - SINGLE VERSION
-function updateQRCodeWithAmount(amount) {
-    console.log('💸 Updating QR with amount:', amount);
-    
-    if (SHOP_CONFIG && SHOP_CONFIG.upiId) {
-        const qrImage = document.getElementById('dynamicQRCode');
-        const qrAmountElement = document.getElementById('qrAmount');
-        
-        if (qrAmountElement) {
-            qrAmountElement.textContent = `₹${amount}`;
-        }
-        
-        if (qrImage) {
-            const shopName = SHOP_CONFIG.shopName || 'Raashanmart';
-            const upiId = SHOP_CONFIG.upiId;
-            
-            // Generate QR code with current UPI ID
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(shopName)}&am=${amount}&tn=Order%20Payment&cu=INR&t=${Date.now()}`;
-            
-            console.log('🔄 QR code updated:', qrUrl);
-            qrImage.src = qrUrl;
-        }
-    }
-}
-
-// Demo coupons (only used if shop doesn't have any)
-const AVAILABLE_COUPONS = [
-    { 
-        code: "WELCOME10", 
-        type: "percentage", 
-        value: 10, 
-        minOrder: 500, 
-        description: "Get 10% OFF on orders above ₹500",
-        isActive: true 
-    },
-    { 
-        code: "FLAT50", 
-        type: "fixed", 
-        value: 50, 
-        minOrder: 300, 
-        description: "Get ₹50 OFF on orders above ₹300",
-        isActive: true 
-    }
-];
-
-const notificationPreferences = JSON.parse(localStorage.getItem('dukaan_notification_prefs')) || {
-    orderUpdates: true,
-    priceAlerts: true,
-    promotions: true,
-    pushEnabled: false
-};
-
-// Load products from Firebase - FIXED VERSION
-async function loadProductsFromFirebase() {
-    try {
-        console.log('📦 Loading products from Firebase...');
-        const productsSnapshot = await db.collection('products').get();
-        
-        PRODUCTS = [];
-        ALL_CATEGORIES.clear();
-        
-        productsSnapshot.forEach(doc => {
-            const firebaseProduct = doc.data();
-            
-            if (firebaseProduct.status !== 'active' || firebaseProduct.stock <= 0) {
-                return;
-            }
-            
-            const mappedProduct = {
-                id: doc.id,
-                name: firebaseProduct.name || 'Unnamed Product',
-                price: firebaseProduct.price || 0,
-                mrp: firebaseProduct.mrp || firebaseProduct.price || 0,
-                category: firebaseProduct.category || 'Uncategorized',
-                shopId: firebaseProduct.shopId || 'unknown_shop',
-                shopName: firebaseProduct.shopName || 'Unknown Shop',
-                image: firebaseProduct.image || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop',
-                stock: firebaseProduct.stock || 0,
-                description: firebaseProduct.description || 'No description available',
-                deliveryTime: firebaseProduct.deliveryTime || '10-15 min',
-                specifications: firebaseProduct.specifications || {},
-                returnPolicy: firebaseProduct.returnPolicy || 'No returns. Contact shopkeeper for any issues.',
-                brand: firebaseProduct.brand || 'Generic',
-                features: firebaseProduct.features || []
-            };
-            
-            PRODUCTS.push(mappedProduct);
-            
-            if (firebaseProduct.category) {
-                ALL_CATEGORIES.add(firebaseProduct.category);
-            }
-        });
-        
-        console.log('✅ Products loaded:', PRODUCTS.length);
-        
-        // IF NO PRODUCTS LOADED, USE DEMO PRODUCTS
-        if (PRODUCTS.length === 0) {
-            console.log('⚠️ No products found in Firebase, using demo products');
-            PRODUCTS = getDemoProducts();
-            
-            // Add categories from demo products
-            PRODUCTS.forEach(product => {
-                if (product.category) {
-                    ALL_CATEGORIES.add(product.category);
+        // Load products from Firebase
+        async function loadProductsFromFirebase() {
+            try {
+                console.log('📦 Loading products from Firebase...');
+                const productsSnapshot = await db.collection('products').get();
+                
+                PRODUCTS = [];
+                ALL_CATEGORIES.clear();
+                
+                productsSnapshot.forEach(doc => {
+                    const firebaseProduct = doc.data();
+                    
+                    if (firebaseProduct.status !== 'active' || firebaseProduct.stock <= 0) {
+                        return;
+                    }
+                    
+                    const mappedProduct = {
+                        id: doc.id,
+                        name: firebaseProduct.name || 'Unnamed Product',
+                        price: firebaseProduct.price || 0,
+                        mrp: firebaseProduct.mrp || firebaseProduct.price || 0,
+                        category: firebaseProduct.category || 'Uncategorized',
+                        shopId: firebaseProduct.shopId || 'unknown_shop',
+                        shopName: firebaseProduct.shopName || 'Unknown Shop',
+                        image: firebaseProduct.image || 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop',
+                        stock: firebaseProduct.stock || 0,
+                        description: firebaseProduct.description || 'No description available',
+                        deliveryTime: firebaseProduct.deliveryTime || '10-15 min',
+                        specifications: firebaseProduct.specifications || {},
+                        returnPolicy: firebaseProduct.returnPolicy || 'No returns. Contact shopkeeper for any issues.',
+                        brand: firebaseProduct.brand || 'Generic',
+                        features: firebaseProduct.features || []
+                    };
+                    
+                    PRODUCTS.push(mappedProduct);
+                    
+                    if (firebaseProduct.category) {
+                        ALL_CATEGORIES.add(firebaseProduct.category);
+                    }
+                });
+                
+                console.log('✅ Products loaded:', PRODUCTS.length);
+                console.log('📋 Categories:', Array.from(ALL_CATEGORIES));
+                
+                updateDynamicShops();
+                updateShopAndCategoryFilters();
+                
+                if (typeof renderProducts === 'function') {
+                    renderProducts(PRODUCTS);
                 }
-            });
-        }
-        
-        console.log('📋 Categories:', Array.from(ALL_CATEGORIES));
-        
-        updateDynamicShops();
-        updateShopAndCategoryFilters();
-        
-        // ALWAYS RENDER PRODUCTS
-        if (typeof renderProducts === 'function') {
-            renderProducts(PRODUCTS);
-        } else {
-            console.error('❌ renderProducts function not found!');
-            // Emergency fallback - render directly
-            renderProductsDirectly(PRODUCTS);
-        }
-        
-    } catch (error) {
-        console.error('❌ Error loading products:', error);
-        
-        // USE DEMO PRODUCTS ON ERROR
-        PRODUCTS = getDemoProducts();
-        ALL_CATEGORIES.clear();
-        
-        PRODUCTS.forEach(product => {
-            if (product.category) {
-                ALL_CATEGORIES.add(product.category);
+                
+            } catch (error) {
+                console.error('Error loading products:', error);
+                PRODUCTS = getDemoProducts();
+                updateDynamicShops();
+                updateShopAndCategoryFilters();
+                if (typeof renderProducts === 'function') {
+                    renderProducts(PRODUCTS);
+                }
             }
-        });
-        
-        console.log('⚠️ Using demo products due to error');
-        
-        updateDynamicShops();
-        updateShopAndCategoryFilters();
-        
-        if (typeof renderProducts === 'function') {
-            renderProducts(PRODUCTS);
-        } else {
-            console.error('❌ renderProducts function not found!');
-            // Emergency fallback
-            renderProductsDirectly(PRODUCTS);
         }
-    }
-}
-
-// Emergency fallback render function
-function renderProductsDirectly(products) {
-    const productGrid = document.getElementById('productGrid');
-    if (!productGrid) {
-        console.error('❌ productGrid element not found!');
-        return;
-    }
-    
-    productGrid.innerHTML = '';
-    
-    if (products.length === 0) {
-        productGrid.innerHTML = '<p class="text-center text-muted">No products available</p>';
-        return;
-    }
-    
-    products.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <div class="shop-badge">${product.shopName}</div>
-            <button class="wishlist-btn" onclick="toggleWishlist('${product.id}')">
-                <i class="fas fa-heart"></i>
-            </button>
-            <img src="${product.image}" alt="${product.name}" class="product-image" onclick="showProductDetail('${product.id}')">
-            <h3 class="product-title" onclick="showProductDetail('${product.id}')">${product.name}</h3>
-            <p class="product-category">${product.category} • ${product.deliveryTime}</p>
-            <div class="product-price">
-                <span class="current-price">₹${product.price}</span>
-                ${product.mrp ? `<span class="original-price">₹${product.mrp}</span>` : ''}
-                ${product.mrp && product.price < product.mrp ? 
-                    `<span class="discount">${Math.round(((product.mrp - product.price) / product.mrp) * 100)}% OFF</span>` : ''}
-            </div>
-            <div class="card-actions">
-                <button class="btn-add-cart" onclick="addToCart('${product.id}')">
-                    <i class="fas fa-shopping-cart"></i> Add to Cart
-                </button>
-            </div>
-        `;
-        productGrid.appendChild(productCard);
-    });
-}
 
         function getDemoProducts() {
             return [
@@ -3118,32 +2827,6 @@ function renderProductsDirectly(products) {
                     description: 'Moisturizing face cream with SPF protection.', 
                     stock: 30,
                     deliveryTime: '15-20 min'
-                },
-                { 
-                    id: 'demo3', 
-                    name: 'Brown Bread', 
-                    price: 40, 
-                    mrp: 50, 
-                    category: 'bakery', 
-                    shopId: 'freshmart', 
-                    shopName: 'FreshMart', 
-                    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop', 
-                    description: 'Fresh whole wheat brown bread.', 
-                    stock: 25,
-                    deliveryTime: '10-15 min'
-                },
-                { 
-                    id: 'demo4', 
-                    name: 'Apple Juice', 
-                    price: 80, 
-                    mrp: 100, 
-                    category: 'beverages', 
-                    shopId: 'freshmart', 
-                    shopName: 'FreshMart', 
-                    image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop', 
-                    description: '100% pure apple juice without added sugar.', 
-                    stock: 40,
-                    deliveryTime: '10-15 min'
                 }
             ];
         }
@@ -3447,6 +3130,7 @@ function renderProductsDirectly(products) {
                 loadOrderHistory();
                 startRealTimeOrderListener();
                 loadShopConfig();
+                loadShopData();
             }
         }
         
@@ -4627,7 +4311,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             });
         }
 
-                // Fix for placeOrder function - handle null elements properly
+        // Place order function
         async function placeOrder() {
             if (!isOnline) {
                 showToast('Cannot place order while offline', 'error');
@@ -4661,15 +4345,6 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 if (cart.length === 0) {
                     showToast('Your cart is empty', 'error');
                     return;
-                }
-                
-                // Final coupon validation at checkout
-                if (appliedCoupon) {
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    if (subtotal < appliedCoupon.minOrder) {
-                        showToast(`Coupon requires minimum order of ₹${appliedCoupon.minOrder}`, 'error');
-                        return;
-                    }
                 }
                 
                 const user = auth.currentUser;
@@ -4755,24 +4430,12 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 const docRef = await db.collection('orders').add(orderData);
                 console.log('✅ Order created:', docRef.id);
                 
-                // Clear cart and coupon - FIXED: Check if elements exist before setting values
                 cart = [];
                 localStorage.setItem('dukaan_cart', JSON.stringify(cart));
                 updateCartUI();
-                
                 appliedCoupon = null;
-                
-                // Only try to clear coupon input if it exists
-                const couponCodeInput = document.getElementById('couponCode');
-                const couponMessage = document.getElementById('couponMessage');
-                
-                if (couponCodeInput) {
-                    couponCodeInput.value = '';
-                }
-                
-                if (couponMessage) {
-                    couponMessage.textContent = '';
-                }
+                document.getElementById('couponCode').value = '';
+                document.getElementById('couponMessage').textContent = '';
                 
                 showLoading(false);
                 showToast(`✅ Order placed successfully! Order ID: ${unifiedOrderId}`, 'success');
@@ -5106,127 +4769,64 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             }
         }
 
-        // Coupon functions - UPDATED VERSION WITH REAL-TIME SUPPORT
-                function updateCouponSection() {
-            console.log('🔄 Updating coupon section, couponsEnabled:', SHOP_CONFIG?.couponsEnabled);
-            
+        // Coupon functions - UPDATED VERSION
+        function updateCouponSection() {
             const couponSection = document.querySelector('.coupon-section');
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
             
-            if (!couponSection) {
-                console.log('⚠️ Coupon section not found');
-                return;
-            }
-            
-            // If SHOP_CONFIG is not loaded yet, use default
-            if (!SHOP_CONFIG) {
-                SHOP_CONFIG = {
-                    upiId: 'shopkeeper@upi',
-                    couponsEnabled: false,
-                    multipleShopsAllowed: false,
-                    deliveryCharge: 0,
-                    shopName: 'Raashanmart'
-                };
-            }
-            
-            // Check if shopkeeper has disabled coupons
-            if (!SHOP_CONFIG.couponsEnabled) {
-                console.log('❌ Coupons disabled by shopkeeper');
-                couponSection.innerHTML = `
-                    <div class="text-center text-muted p-3">
-                        <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
-                        <p>Coupons are currently disabled by the shopkeeper</p>
-                    </div>
-                `;
-                
-                // Clear any applied coupon if disabled
-                if (appliedCoupon) {
-                    appliedCoupon = null;
-                    updateOrderSummary();
+            if (!SHOP_DATA) {
+                // Shop data not loaded yet, disable coupon section
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
                 }
                 return;
             }
             
-            console.log('✅ Coupons enabled by shopkeeper');
+            // Check if shop has coupons enabled
+            const couponsEnabled = SHOP_DATA.couponEnabled || false;
             
-            // Shopkeeper has enabled coupons
-            const availableCoupons = SHOP_COUPONS.length > 0 ? SHOP_COUPONS : AVAILABLE_COUPONS;
-            
-            if (availableCoupons.length === 0) {
-                console.log('⚠️ No coupons available');
-                couponSection.innerHTML = `
-                    <div class="text-center text-muted p-3">
-                        <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
-                        <p>No coupons available at the moment</p>
-                    </div>
-                `;
+            if (!couponsEnabled) {
+                if (couponSection) {
+                    couponSection.innerHTML = `
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>Coupons are currently disabled by the shopkeeper</p>
+                        </div>
+                    `;
+                }
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                }
                 return;
             }
             
-            console.log(`🎉 ${availableCoupons.length} coupons available`);
+            // Shop has coupons enabled, show coupon input
+            const hasCoupons = SHOP_DATA.couponCode || SHOP_DATA.couponSettings;
             
-            // Coupons are available and enabled - check if we need to restore structure
-            const existingCouponCode = document.getElementById('couponCode');
-            const existingApplyBtn = document.getElementById('applyCouponBtn');
-            
-            if (!existingCouponCode || !existingApplyBtn) {
-                // Re-create the coupon section
-                couponSection.innerHTML = `
-                    <div class="coupon-input-group">
-                        <input type="text" id="couponCode" class="coupon-input" placeholder="Enter coupon code" ${!currentUser ? 'disabled' : ''}>
-                        <button id="applyCouponBtn" class="btn-apply-coupon" ${!currentUser ? 'disabled' : ''}>Apply</button>
-                    </div>
-                    <div id="couponMessage"></div>
-                    <div id="couponLoginRequired" class="coupon-login-required" style="${currentUser ? 'display: none;' : 'display: block;'}">
-                        Please login to apply coupons
-                    </div>
-                `;
-                
-                // Re-attach event listeners
-                setTimeout(() => {
-                    const newApplyBtn = document.getElementById('applyCouponBtn');
-                    const newCouponInput = document.getElementById('couponCode');
-                    
-                    if (newApplyBtn) {
-                        newApplyBtn.addEventListener('click', applyCoupon);
-                    }
-                    
-                    if (newCouponInput) {
-                        newCouponInput.addEventListener('keypress', (e) => {
-                            if (e.key === 'Enter') applyCoupon();
-                        });
-                    }
-                }, 100);
-            }
-            
-            // Update coupon input and message if they exist
-            const couponCodeInput = document.getElementById('couponCode');
-            const couponMessage = document.getElementById('couponMessage');
-            const couponLoginRequired = document.getElementById('couponLoginRequired');
-            
-            if (couponCodeInput) {
-                couponCodeInput.disabled = !currentUser;
-                couponCodeInput.placeholder = currentUser ? "Enter coupon code" : "Login to apply coupons";
-                
-                if (appliedCoupon) {
-                    couponCodeInput.value = appliedCoupon.code;
+            if (hasCoupons) {
+                // Enable coupon section
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = !currentUser;
                 }
-            }
-            
-            if (couponMessage && appliedCoupon) {
-                couponMessage.textContent = `🎉 ${appliedCoupon.description}`;
-                couponMessage.className = 'coupon-success';
-            }
-            
-            if (couponLoginRequired) {
-                couponLoginRequired.style.display = currentUser ? 'none' : 'block';
+            } else {
+                // No coupons available
+                if (couponSection) {
+                    couponSection.innerHTML = `
+                        <div class="text-center text-muted p-3">
+                            <i class="fas fa-tag" style="font-size: 24px; margin-bottom: 10px;"></i>
+                            <p>No coupons available at the moment</p>
+                        </div>
+                    `;
+                }
+                if (applyCouponBtn) {
+                    applyCouponBtn.disabled = true;
+                }
             }
         }
 
-                function applyCoupon() {
-            console.log('🎫 Applying coupon...');
-            
-            // Check if shop has coupons enabled in real-time
-            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
+        function applyCoupon() {
+            // Check if shop has coupons enabled
+            if (!SHOP_DATA || !SHOP_DATA.couponEnabled) {
                 showToast('Coupons are currently disabled by the shopkeeper', 'warning');
                 return;
             }
@@ -5236,15 +4836,8 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 return;
             }
             
-            const couponCodeInput = document.getElementById('couponCode');
+            const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
             const couponMessage = document.getElementById('couponMessage');
-            
-            if (!couponCodeInput || !couponMessage) {
-                console.log('❌ Coupon input or message not found');
-                return;
-            }
-            
-            const couponCode = couponCodeInput.value.trim().toUpperCase();
             
             if (!couponCode) {
                 appliedCoupon = null;
@@ -5254,48 +4847,66 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 return;
             }
             
-            console.log('🔍 Looking for coupon:', couponCode);
+            // Check shop coupon settings
+            let coupon = null;
+            const shopCouponCode = SHOP_DATA.couponCode;
+            const shopCouponSettings = SHOP_DATA.couponSettings;
             
-            // Check active shop coupons first
-            let coupon = SHOP_COUPONS.find(c => 
-                c.code === couponCode && 
-                c.isActive !== false
-            );
+            // First check shop's own coupon
+            if (shopCouponCode && shopCouponCode.toUpperCase() === couponCode) {
+                if (shopCouponSettings) {
+                    coupon = {
+                        code: shopCouponCode,
+                        type: shopCouponSettings.discountType || 'percentage',
+                        value: shopCouponSettings.value || 0,
+                        minOrder: shopCouponSettings.minOrder || 0,
+                        maxDiscount: shopCouponSettings.maxDiscount || 0,
+                        description: shopCouponSettings.description || 'Shop coupon applied',
+                        active: shopCouponSettings.active !== false
+                    };
+                }
+            }
             
-            // If not found in active shop coupons, check demo coupons
+            // If not found in shop coupons, check default coupons
             if (!coupon) {
-                console.log('🔍 Checking demo coupons...');
                 coupon = AVAILABLE_COUPONS.find(c => c.code === couponCode);
             }
             
             if (!coupon) {
-                couponMessage.textContent = 'Invalid or expired coupon code';
+                couponMessage.textContent = 'Invalid coupon code';
                 couponMessage.className = 'coupon-error';
                 appliedCoupon = null;
                 updateOrderSummary();
-                showToast('Invalid coupon code', 'error');
                 return;
             }
             
-            console.log('✅ Coupon found:', coupon);
+            // Check if coupon is active
+            if (coupon.active === false) {
+                couponMessage.textContent = 'Coupon is no longer active';
+                couponMessage.className = 'coupon-error';
+                appliedCoupon = null;
+                updateOrderSummary();
+                return;
+            }
             
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
+            // Check minimum order amount
             if (subtotal < coupon.minOrder) {
                 couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
                 couponMessage.className = 'coupon-error';
                 appliedCoupon = null;
                 updateOrderSummary();
-                showToast(`Minimum order ₹${coupon.minOrder} required`, 'warning');
                 return;
             }
             
             appliedCoupon = coupon;
-            couponMessage.textContent = `🎉 ${coupon.description}`;
+            couponMessage.textContent = `🎉 ${coupon.description || 'Coupon applied!'}`;
             couponMessage.className = 'coupon-success';
             updateOrderSummary();
-            showToast('Coupon applied successfully!', 'success');
+            showToast('Coupon applied successfully!');
         }
+
         function updateCouponAuth() {
             const couponCodeInput = document.getElementById('couponCode');
             const applyCouponBtn = document.getElementById('applyCouponBtn');
@@ -5311,6 +4922,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
                 if (couponLoginRequired) couponLoginRequired.style.display = 'block';
             }
         }
+
         // QR payment
         function confirmQRPayment() {
             const utr = document.getElementById('utrNumber').value.trim();
@@ -5761,6 +5373,7 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             
             // Load shop configuration
             loadShopConfig();
+            loadShopData();
             
             // Load products
             loadProductsFromFirebase();
