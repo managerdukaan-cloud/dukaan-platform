@@ -2246,49 +2246,78 @@
         let SHOP_CONFIG = null;
         let SHOP_COUPONS = [];
 
-        // Load shop configuration from Firebase
-        async function loadShopConfig() {
-            try {
-                console.log('🔄 Loading shop configuration...');
-                const configDoc = await db.collection('shop_config').doc('settings').get();
-                
-                if (configDoc.exists) {
-                    SHOP_CONFIG = configDoc.data();
-                    console.log('✅ Shop config loaded:', SHOP_CONFIG);
+        // यह फ़ंक्शन getDefaultShopConfig() को loadShopConfig() फ़ंक्शन के ऊपर डालें
+function getDefaultShopConfig() {
+    return {
+        upiId: 'shopkeeper@upi',
+        couponsEnabled: false,
+        multipleShopsAllowed: false,
+        deliveryCharge: 0,
+        shopName: 'Raashanmart'
+    };
+}
+
+async function loadShopConfig() {
+    try {
+        console.log('🔄 Loading shop configuration...');
+        
+        // Realtime listener setup करें - यह पूरा नया कोड है
+        db.collection('shop_config').doc('settings')
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    SHOP_CONFIG = doc.data();
+                    console.log('✅ Shop config updated:', SHOP_CONFIG);
                     
-                    // Update QR code UPI ID if available
+                    // QR कोड और UPI ID अपडेट करें
                     updateQRCode();
-                    
-                    // Load shop coupons
-                    await loadShopCoupons();
-                    
-                    // Update coupon section based on shop settings
                     updateCouponSection();
                     
+                    // UI अपडेट करें
+                    const upiElement = document.getElementById('dynamicUpiId');
+                    if (upiElement && SHOP_CONFIG.upiId) {
+                        upiElement.textContent = SHOP_CONFIG.upiId;
+                    }
+                    
+                    // QR कोड की छवि अपडेट करें
+                    const totalAmount = getCurrentCartTotal();
+                    updateQRCodeWithAmount(totalAmount);
                 } else {
-                    // Default configuration
-                    SHOP_CONFIG = {
-                        upiId: 'shopkeeper@upi',
-                        couponsEnabled: false,
-                        multipleShopsAllowed: false,
-                        deliveryCharge: 0,
-                        shopName: 'Raashanmart'
-                    };
+                    SHOP_CONFIG = getDefaultShopConfig();
                     console.log('⚠️ Using default shop config');
                     updateCouponSection();
                 }
-            } catch (error) {
-                console.error('❌ Error loading shop config:', error);
-                SHOP_CONFIG = {
-                    upiId: 'shopkeeper@upi',
-                    couponsEnabled: false,
-                    multipleShopsAllowed: false,
-                    deliveryCharge: 0,
-                    shopName: 'Raashanmart'
-                };
+            }, (error) => {
+                console.error('❌ Error in shop config listener:', error);
+                SHOP_CONFIG = getDefaultShopConfig();
                 updateCouponSection();
-            }
+            });
+        
+        // Coupons भी रियल-टाइम में लोड करें
+        await loadShopCoupons();
+        
+    } catch (error) {
+        console.error('❌ Error loading shop config:', error);
+        SHOP_CONFIG = getDefaultShopConfig();
+        updateCouponSection();
+    }
+}
+
+// यह नया हेल्पर फ़ंक्शन loadShopConfig() के नीचे डालें
+function getCurrentCartTotal() {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    let discount = 0;
+    
+    if (appliedCoupon) {
+        if (appliedCoupon.type === 'percentage') {
+            discount = (subtotal * appliedCoupon.value) / 100;
+        } else {
+            discount = appliedCoupon.value;
         }
+        discount = Math.min(discount, subtotal);
+    }
+    
+    return Math.max(0, subtotal - discount);
+}
 
         // Load shop coupons
         async function loadShopCoupons() {
