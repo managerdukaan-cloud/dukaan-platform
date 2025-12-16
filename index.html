@@ -4651,60 +4651,122 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 }
 
         function applyCoupon() {
-            // Check if shop has coupons enabled
-            if (!SHOP_CONFIG || !SHOP_CONFIG.couponsEnabled) {
-                showToast('Coupons are currently disabled by the shopkeeper', 'warning');
-                return;
-            }
-            
-            if (!currentUser) {
-                showToast('Please login to apply coupons');
-                return;
-            }
-            
-            const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
-            const couponMessage = document.getElementById('couponMessage');
-            
-            if (!couponCode) {
-                appliedCoupon = null;
-                couponMessage.textContent = '';
-                updateOrderSummary();
-                showToast('Coupon removed');
-                return;
-            }
-            
-            // Check shop coupons first
-            let coupon = SHOP_COUPONS.find(c => c.code === couponCode && c.isActive !== false);
-            
-            // If not found in shop coupons, check demo coupons
-            if (!coupon && SHOP_CONFIG.couponsEnabled) {
-                coupon = DEMO_COUPONS.find(c => c.code === couponCode);
-            }
-            
-            if (!coupon) {
-                couponMessage.textContent = 'Invalid or expired coupon code';
-                couponMessage.className = 'coupon-error';
-                appliedCoupon = null;
-                updateOrderSummary();
-                return;
-            }
-            
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            if (subtotal < coupon.minOrder) {
-                couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
-                couponMessage.className = 'coupon-error';
-                appliedCoupon = null;
-                updateOrderSummary();
-                return;
-            }
-            
-            appliedCoupon = coupon;
-            couponMessage.textContent = `🎉 ${coupon.description}`;
-            couponMessage.className = 'coupon-success';
-            updateOrderSummary();
-            showToast('Coupon applied successfully!', 'success');
+    const couponCodeInput = document.getElementById('couponCode');
+    const couponMessage = document.getElementById('couponMessage');
+    
+    if (!couponCodeInput || !couponMessage) {
+        console.log('❌ Coupon elements not found');
+        return;
+    }
+    
+    const couponCode = couponCodeInput.value.trim().toUpperCase();
+    
+    // ✅ नया कोड: Check if shop has coupons enabled
+    if (!SHOP_CONFIG) {
+        couponMessage.textContent = 'Shop configuration not loaded yet';
+        couponMessage.className = 'coupon-error';
+        showToast('Please wait, loading shop settings...', 'warning');
+        return;
+    }
+    
+    if (!SHOP_CONFIG.couponsEnabled) {
+        couponMessage.textContent = 'Coupons are currently disabled by the shopkeeper';
+        couponMessage.className = 'coupon-error';
+        showToast('Coupons are disabled by shopkeeper', 'warning');
+        return;
+    }
+    
+    if (!currentUser) {
+        couponMessage.textContent = 'Please login to apply coupons';
+        couponMessage.className = 'coupon-error';
+        showToast('Please login to apply coupons');
+        return;
+    }
+    
+    // If coupon code is empty and we have an applied coupon, remove it
+    if (!couponCode && appliedCoupon) {
+        appliedCoupon = null;
+        couponMessage.textContent = 'Coupon removed';
+        couponMessage.className = 'coupon-success';
+        updateOrderSummary();
+        
+        // Update button text
+        const applyBtn = document.getElementById('applyCouponBtn');
+        if (applyBtn) {
+            applyBtn.textContent = 'Apply';
         }
+        
+        showToast('Coupon removed', 'success');
+        return;
+    }
+    
+    if (!couponCode) {
+        couponMessage.textContent = 'Please enter a coupon code';
+        couponMessage.className = 'coupon-error';
+        return;
+    }
+    
+    // Check shop coupons first
+    let coupon = SHOP_COUPONS.find(c => 
+        c.code === couponCode && c.isActive !== false
+    );
+    
+    // If not found in shop coupons, check demo coupons
+    if (!coupon) {
+        coupon = DEMO_COUPONS.find(c => c.code === couponCode);
+    }
+    
+    if (!coupon) {
+        couponMessage.textContent = 'Invalid or expired coupon code';
+        couponMessage.className = 'coupon-error';
+        appliedCoupon = null;
+        updateOrderSummary();
+        return;
+    }
+    
+    // Check if coupon is already applied
+    if (appliedCoupon && appliedCoupon.code === couponCode) {
+        // Remove coupon
+        appliedCoupon = null;
+        couponCodeInput.value = '';
+        couponMessage.textContent = 'Coupon removed';
+        couponMessage.className = 'coupon-success';
+        
+        // Update button text
+        const applyBtn = document.getElementById('applyCouponBtn');
+        if (applyBtn) {
+            applyBtn.textContent = 'Apply';
+        }
+        
+        updateOrderSummary();
+        showToast('Coupon removed', 'success');
+        return;
+    }
+    
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    if (subtotal < coupon.minOrder) {
+        couponMessage.textContent = `Minimum order amount of ₹${coupon.minOrder} required`;
+        couponMessage.className = 'coupon-error';
+        appliedCoupon = null;
+        updateOrderSummary();
+        return;
+    }
+    
+    // Apply the coupon
+    appliedCoupon = coupon;
+    couponMessage.textContent = `🎉 ${coupon.description || 'Coupon applied successfully!'}`;
+    couponMessage.className = 'coupon-success';
+    
+    // Update button text
+    const applyBtn = document.getElementById('applyCouponBtn');
+    if (applyBtn) {
+        applyBtn.textContent = 'Remove';
+    }
+    
+    updateOrderSummary();
+    showToast('Coupon applied successfully!', 'success');
+}
 
         function updateCouponAuth() {
             const couponCodeInput = document.getElementById('couponCode');
