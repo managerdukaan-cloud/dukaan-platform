@@ -3363,8 +3363,16 @@ async function placeOrder() {
         updateCartUI();
         appliedCoupon = null;
         qrUTR = null; // Reset UTR
-        document.getElementById('couponCode').value = '';
-        document.getElementById('couponMessage').textContent = '';
+        
+        // Safely clear coupon fields if they exist
+        const couponCodeInput = document.getElementById('couponCode');
+        const couponMessageEl = document.getElementById('couponMessage');
+        if (couponCodeInput && couponCodeInput.value !== undefined) {
+            couponCodeInput.value = '';
+        }
+        if (couponMessageEl) {
+            couponMessageEl.textContent = '';
+        }
         
         showLoading(false);
         showToast(`✅ Order placed successfully! Order ID: ${unifiedOrderId}`, 'success');
