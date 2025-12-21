@@ -5624,6 +5624,14 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         // QR payment
         function confirmQRPayment() {
+            // ========== ADD DEBUG LINES HERE ==========
+    console.log("=== DEBUG UTR SAVE ===");
+    console.log("1. window.currentOrderId:", window.currentOrderId);
+    console.log("2. localStorage currentOrderId:", localStorage.getItem('currentOrderId'));
+    console.log("3. sessionStorage currentOrderId:", sessionStorage.getItem('currentOrderId'));
+    console.log("4. window.currentOrder:", window.currentOrder);
+    console.log("=== DEBUG END ===");
+    // ========== DEBUG END ==========
             const utr = document.getElementById('utrNumber').value.trim();
             if (!/^\d{12}$/.test(utr)) {
                 showToast('Please enter a valid UTR number');
