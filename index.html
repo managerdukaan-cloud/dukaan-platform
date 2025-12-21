@@ -3354,6 +3354,8 @@
                 
                 const docRef = await db.collection('orders').add(orderData);
                 console.log('✅ Order created:', docRef.id);
+                window.currentOrderId = docRef.id;
+                localStorage.setItem('currentOrderId', docRef.id);
                 
                 // Clear cart
                 cart = [];
