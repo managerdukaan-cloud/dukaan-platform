@@ -5631,30 +5631,49 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
             showConfirmationModal(
                 'Confirm QR Payment',
                 `You are about to confirm your QR payment with UTR: ${utr}. Total amount: ${document.getElementById('qrAmount').textContent}. Please ensure you have completed the payment via QR scan.`,
-                () => {
+                async () => {
                     selectedPaymentMethod = 'qr';
-                    showToast('QR payment confirmed! Please click "Place Order Securely" to complete your order.');
+                    
+                    // ========== FIREBASE SAVE CODE ADDED ==========
+                    try {
+                        // 1. Get current order ID (check all possible sources)
+                        const orderId = window.currentOrderId || 
+                                      localStorage.getItem('currentOrderId') ||
+                                      sessionStorage.getItem('currentOrderId') ||
+                                      (window.currentOrder && window.currentOrder.id);
+                        
+                        if (!orderId) {
+                            showToast('Order not found. Please place order first.', 'error');
+                            return;
+                        }
+                        
+                        // 2. Save UTR to Firestore
+                        await db.collection('orders').doc(orderId).update({
+                            utrNumber: utr,
+                            paymentMethod: 'qr',
+                            paymentStatus: 'paid',
+                            paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        // 3. Success message
+                        showToast('✅ QR payment confirmed! UTR saved successfully.');
+                        
+                        // 4. Optional: Update UI
+                        document.getElementById('utrNumber').disabled = true;
+                        const confirmBtn = document.getElementById('confirmQrPayment');
+                        if (confirmBtn) {
+                            confirmBtn.disabled = true;
+                            confirmBtn.textContent = '✓ Payment Confirmed';
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error saving UTR to Firestore:', error);
+                        showToast('Error saving UTR: ' + error.message, 'error');
+                    }
+                    // ========== CODE END ==========
                 }
             );
-        }
-
-        function validateUTR() {
-            const utr = document.getElementById('utrNumber').value.trim();
-            const isValid = /^\d{12}$/.test(utr);
-            const utrValidation = document.getElementById('utrValidation');
-            
-            if (utr.length === 0) {
-                utrValidation.textContent = '';
-                return;
-            }
-            
-            if (isValid) {
-                utrValidation.textContent = '✓ Valid UTR number';
-                utrValidation.className = 'validation-message validation-success';
-            } else {
-                utrValidation.textContent = 'Please enter a valid 12-digit UTR number';
-                utrValidation.className = 'validation-message validation-error';
-            }
         }
 
         // Confirmation modal
