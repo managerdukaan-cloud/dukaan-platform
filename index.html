@@ -5685,38 +5685,29 @@ function validateUTR() {
         utrValidation.className = 'validation-message validation-error';
     }
 }
-            
-            if (isValid) {
-                utrValidation.textContent = '✓ Valid UTR number';
-                utrValidation.className = 'validation-message validation-success';
-            } else {
-                utrValidation.textContent = 'Please enter a valid 12-digit UTR number';
-                utrValidation.className = 'validation-message validation-error';
-            }
-        }
 
-        // Confirmation modal
-        function showConfirmationModal(title, message, onConfirm) {
-            document.getElementById('confirmationTitle').textContent = title;
-            document.getElementById('confirmationMessage').textContent = message;
-            
-            const confirmButton = document.getElementById('confirmAction');
-            const modalElement = document.getElementById('confirmationModal');
-            const modal = new bootstrap.Modal(modalElement);
-            
-            const handleConfirm = () => {
-                onConfirm();
-                modal.hide();
-                confirmButton.removeEventListener('click', handleConfirm);
-            };
-            
-            confirmButton.addEventListener('click', handleConfirm);
-            modalElement.addEventListener('hidden.bs.modal', () => {
-                confirmButton.removeEventListener('click', handleConfirm);
-            });
-            
-            modal.show();
-        }
+// Confirmation modal
+function showConfirmationModal(title, message, onConfirm) {
+    document.getElementById('confirmationTitle').textContent = title;
+    document.getElementById('confirmationMessage').textContent = message;
+    
+    const confirmButton = document.getElementById('confirmAction');
+    const modalElement = document.getElementById('confirmationModal');
+    const modal = new bootstrap.Modal(modalElement);
+    
+    const handleConfirm = () => {
+        onConfirm();
+        modal.hide();
+        confirmButton.removeEventListener('click', handleConfirm);
+    };
+    
+    confirmButton.addEventListener('click', handleConfirm);
+    modalElement.addEventListener('hidden.bs.modal', () => {
+        confirmButton.removeEventListener('click', handleConfirm);
+    });
+    
+    modal.show();
+}
 
         // Policy functions
         function openPrivacyPolicy() {
