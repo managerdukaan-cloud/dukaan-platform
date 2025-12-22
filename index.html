@@ -5641,7 +5641,7 @@ function confirmQRPayment() {
     
     showConfirmationModal(
         'Confirm QR Payment',
-        `You are about to confirm your QR payment with UTR: ${utr}. Total amount: ${document.getElementById('qrAmount').textContent}. Please ensure you have completed the payment via QR scan.`,
+        `You are about to confirm your QR payment with UTR: ${utr}. Total amount: ${document.getElementById('qrAmount').textContent}. Please ensure you have completed the payment via QR scan. Any payment issues due to wrong UTR are YOUR RESPONSIBILITY`,
         () => {
             selectedPaymentMethod = 'qr';
             qrUTR = utr; // Store UTR globally
