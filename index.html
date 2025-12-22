@@ -5635,30 +5635,56 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 function confirmQRPayment() {
     const utr = document.getElementById('utrNumber').value.trim();
     if (!/^\d{12}$/.test(utr)) {
-        showToast('Please enter a valid UTR number');
+        showToast('Please enter a valid 12-digit UTR number');
         return;
     }
     
     showConfirmationModal(
-        'Confirm QR Payment',
-        `You are about to confirm your QR payment with UTR: ${utr}. Total amount: ${document.getElementById('qrAmount').textContent}. Please ensure you have completed the payment via QR scan.`,
+        'Confirm QR Payment - IMPORTANT',
+        `You are about to confirm your QR payment with UTR: ${utr}. 
+
+**Amount:** ${document.getElementById('qrAmount').textContent}
+**Payment Method:** QR Code via Google Pay
+
+⚠️ **CRITICAL WARNING:**
+• Please verify UTR number matches your payment receipt EXACTLY
+• Incorrect/fake UTR will result in ORDER CANCELLATION
+• Failed payments will be automatically cancelled within 24 hours
+• Any payment issues due to wrong UTR are YOUR RESPONSIBILITY
+
+✅ **I confirm that:**
+1. I have successfully scanned the QR code
+2. Payment is completed from my bank/UPI app
+3. This UTR is correct as per my payment receipt
+4. I understand wrong UTR = Order Cancellation
+
+Are you sure you want to proceed with this UTR?`,
         () => {
             selectedPaymentMethod = 'qr';
             qrUTR = utr; // Store UTR globally
-            showToast('QR payment confirmed! Please click "Place Order Securely" to complete your order.');
+            showToast('✅ QR payment confirmed! Click "Place Order Securely" to complete.');
         }
     );
 }
 
-        function validateUTR() {
-            const utr = document.getElementById('utrNumber').value.trim();
-            const isValid = /^\d{12}$/.test(utr);
-            const utrValidation = document.getElementById('utrValidation');
-            
-            if (utr.length === 0) {
-                utrValidation.textContent = '';
-                return;
-            }
+function validateUTR() {
+    const utr = document.getElementById('utrNumber').value.trim();
+    const isValid = /^\d{12}$/.test(utr);
+    const utrValidation = document.getElementById('utrValidation');
+    
+    if (utr.length === 0) {
+        utrValidation.textContent = '';
+        return;
+    }
+    
+    if (isValid) {
+        utrValidation.textContent = '✓ Valid UTR number';
+        utrValidation.className = 'validation-message validation-success';
+    } else {
+        utrValidation.textContent = 'Please enter a valid 12-digit UTR number';
+        utrValidation.className = 'validation-message validation-error';
+    }
+}
             
             if (isValid) {
                 utrValidation.textContent = '✓ Valid UTR number';
