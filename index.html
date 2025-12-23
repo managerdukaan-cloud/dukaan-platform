@@ -3393,39 +3393,42 @@ async function placeOrder() {
 }
 
         async function sendOrderNotificationToShopkeeper(orderData) {
-    try {
-        const shopDoc = await db.collection('shops').doc(orderData.shopId).get();
-        if (!shopDoc.exists) return;
-
-        const shopData = shopDoc.data();
-
-        // ✅ BLOCK IF SHOP NOT ACTIVE
-        if (shopData.status !== 'active') return;
-
-        const shopkeeperId = shopData.ownerId;
-        if (!shopkeeperId) return;
-
-        const shopkeeperDoc = await db.collection('users').doc(shopkeeperId).get();
-        if (!shopkeeperDoc.exists) return;
-
-        const shopkeeperData = shopkeeperDoc.data();
-        const fcmToken = shopkeeperData.fcmToken;
-        if (!fcmToken) return;
-
-        await db.collection('notifications').add({
-            userId: shopkeeperId,
-            title: 'New Order Received',
-            message: `New order #${orderData.orderId.slice(-6)} from ${orderData.customerName}`,
-            type: 'new_order',
-            orderId: orderData.orderId,
-            read: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-    } catch (error) {
-        console.error('Error sending notification to shopkeeper:', error);
-    }
-}
+            try {
+                // Get shopkeeper's FCM token
+                const shopDoc = await db.collection('shops').doc(orderData.shopId).get();
+                if (shopDoc.exists) {
+                    const shopData = shopDoc.data();
+                    const shopkeeperId = shopData.ownerId;
+                    
+                    if (shopkeeperId) {
+                        const shopkeeperDoc = await db.collection('users').doc(shopkeeperId).get();
+                        if (shopkeeperDoc.exists) {
+                            const shopkeeperData = shopkeeperDoc.data();
+                            const fcmToken = shopkeeperData.fcmToken;
+                            
+                            if (fcmToken) {
+                                // Send notification via Firebase Cloud Messaging
+                                // Note: This requires Cloud Functions or server-side implementation
+                                console.log('Should send notification to shopkeeper with token:', fcmToken);
+                                
+                                // For now, we'll create a notification in Firestore
+                                await db.collection('notifications').add({
+                                    userId: shopkeeperId,
+                                    title: 'New Order Received',
+                                    message: `New order #${orderData.orderId.slice(-6)} from ${orderData.customerName}`,
+                                    type: 'new_order',
+                                    orderId: orderData.orderId,
+                                    read: false,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error sending notification to shopkeeper:', error);
+            }
+        }
 
         // ==================== UPDATED NAVIGATION FUNCTION ====================
         function navigateToPage(page) {
@@ -3519,178 +3522,195 @@ async function placeOrder() {
         let currentShopId = null;
 
         function loadAndListenToShop() {
-    if (currentShopListener) {
-        currentShopListener();
-        currentShopListener = null;
-        console.log("🔄 Unsubscribed previous shop listener");
-    }
+            if (currentShopListener) {
+                currentShopListener();
+                currentShopListener = null;
+                console.log("🔄 Unsubscribed previous shop listener");
+            }
 
-    if (!cart || cart.length === 0) {
-        console.log("🛒 Cart is empty, no shop to listen to");
-        currentShopId = null;
-        return;
-    }
-
-    const shopIdFromCart = cart[0].shopId;
-    if (!shopIdFromCart) {
-        console.error("❌ No shopId found in cart items");
-        return;
-    }
-
-    if (currentShopId === shopIdFromCart) {
-        console.log("✅ Already listening to shop:", shopIdFromCart);
-        return;
-    }
-
-    currentShopId = shopIdFromCart;
-    console.log("🎯 Setting up listener for shop:", shopIdFromCart);
-
-    const shopConfigRef = db.collection('shop_config').doc(shopIdFromCart);
-    
-    currentShopListener = shopConfigRef.onSnapshot(
-        async (doc) => {
-            console.log("📡 Real-time shop config update received for:", shopIdFromCart);
-            
-            // 🔴 CHECK SHOP STATUS FIRST
-const shopDoc = await db.collection('shops').doc(shopIdFromCart).get();
-if (!shopDoc.exists || shopDoc.data().status !== 'active') {
-    SHOP_CONFIG = null;
-    updatePaymentSectionUI(null);
-    return;
-}
-
-if (doc.exists) {
-    const shopData = doc.data();
-    SHOP_CONFIG = shopData;
-    updatePaymentSectionUI(shopData);
-    loadShopData();
-} else {
-    SHOP_CONFIG = null;
-    loadShopDataForPayment(shopIdFromCart);
-}
-
-        },
-        (error) => {
-            console.error("❌ Error listening to shop config:", error);
-            SHOP_CONFIG = null;
-        }
-    );
-
-    loadShopData();
-}
-
-async function loadShopDataForPayment(shopId) {
-    try {
-        const shopDoc = await db.collection('shops').doc(shopId).get();
-        if (shopDoc.exists) {
-            const shopData = shopDoc.data();
-
-            // 🔴 BLOCK INACTIVE SHOP
-            if (shopData.status !== 'active') {
-                console.warn("🚫 Shop inactive. Payment disabled.");
-                SHOP_CONFIG = null;
-                updatePaymentSectionUI(null);
+            if (!cart || cart.length === 0) {
+                console.log("🛒 Cart is empty, no shop to listen to");
+                currentShopId = null;
                 return;
             }
 
-            console.log("✅ Fallback shop data loaded:", shopData);
+            const shopIdFromCart = cart[0].shopId;
+            if (!shopIdFromCart) {
+                console.error("❌ No shopId found in cart items");
+                return;
+            }
+
+            if (currentShopId === shopIdFromCart) {
+                console.log("✅ Already listening to shop:", shopIdFromCart);
+                return;
+            }
+
+            currentShopId = shopIdFromCart;
+            console.log("🎯 Setting up listener for shop:", shopIdFromCart);
+
+            const shopConfigRef = db.collection('shop_config').doc(shopIdFromCart);
             
-            SHOP_CONFIG = {
-                upiId: shopData.upiId,
-                qrCodeImage: shopData.qrCodeImage,
-                upiSettings: shopData.upiSettings,
-                paymentMethods: shopData.paymentMethods
-            };
-            
-            updatePaymentSectionUI(shopData);
+            currentShopListener = shopConfigRef.onSnapshot(
+                (doc) => {
+                    console.log("📡 Real-time shop config update received for:", shopIdFromCart);
+                    
+                    if (doc.exists) {
+                        const shopData = doc.data();
+                        console.log("📡 REAL-TIME SHOP DATA:", shopData);
+                        
+                        SHOP_CONFIG = shopData;
+                        updatePaymentSectionUI(shopData);
+                        loadShopData();
+                    } else {
+                        console.log("⚠️ No config found for shop:", shopIdFromCart);
+                        SHOP_CONFIG = null;
+                        loadShopDataForPayment(shopIdFromCart);
+                    }
+                },
+                (error) => {
+                    console.error("❌ Error listening to shop config:", error);
+                    SHOP_CONFIG = null;
+                }
+            );
+
+            loadShopData();
         }
-    } catch (error) {
-        console.error("❌ Error loading fallback shop data:", error);
-    }
-}
+
+        async function loadShopDataForPayment(shopId) {
+            try {
+                const shopDoc = await db.collection('shops').doc(shopId).get();
+                if (shopDoc.exists) {
+                    const shopData = shopDoc.data();
+                    console.log("✅ Fallback shop data loaded:", shopData);
+                    
+                    SHOP_CONFIG = {
+                        upiId: shopData.upiId,
+                        qrCodeImage: shopData.qrCodeImage,
+                        upiSettings: shopData.upiSettings,
+                        paymentMethods: shopData.paymentMethods
+                    };
+                    
+                    updatePaymentSectionUI(shopData);
+                }
+            } catch (error) {
+                console.error("❌ Error loading fallback shop data:", error);
+            }
+        }
 
         function updatePaymentSectionUI(shopData) {
-    console.log("🔥 updatePaymentSectionUI CALLED:", shopData);
-
-    // 🔴 BLOCK IF SHOP INACTIVE OR NO DATA
-    if (!shopData || shopData.status !== 'active') {
-        SHOP_CONFIG = null;
-
-        const upiOption = document.getElementById('upiPaymentOption');
-        const codOption = document.getElementById('codPaymentOption');
-        const qrSection = document.getElementById('qrCodeSection');
-        const upiElement = document.getElementById('displayUpiId');
-        const qrElement = document.getElementById('qrCodeImage');
-
-        if (upiOption) upiOption.style.display = 'none';
-        if (codOption) codOption.style.display = 'none';
-        if (qrSection) qrSection.style.display = 'none';
-        if (upiElement) upiElement.textContent = 'Shop temporarily closed';
-        if (qrElement) qrElement.style.display = 'none';
-
-        return;
-    }
-
-    SHOP_CONFIG = shopData;
-    console.log("💾 SHOP_CONFIG saved:", SHOP_CONFIG);
-
-    let upiId = "";
-    if (shopData.upiId) {
-        upiId = shopData.upiId;
-    } else if (shopData.upiSettings?.upiId) {
-        upiId = shopData.upiSettings.upiId;
-    } else if (shopData.settings?.upiId) {
-        upiId = shopData.settings.upiId;
-    }
-
-    let qrUrl = "";
-    if (shopData.qrCodeImage?.includes('cloudinary.com')) {
-        qrUrl = shopData.qrCodeImage;
-    } else if (shopData.upiSettings?.qrCodeImage?.includes('cloudinary.com')) {
-        qrUrl = shopData.upiSettings.qrCodeImage;
-    } else if (shopData.settings?.qrCodeImage?.includes('cloudinary.com')) {
-        qrUrl = shopData.settings.qrCodeImage;
-    } else if (upiId) {
-        qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiId)}`;
-    }
-
-    const upiElement = document.getElementById('displayUpiId');
-    const qrElement = document.getElementById('qrCodeImage');
-    const qrSection = document.getElementById('qrCodeSection');
-
-    if (upiElement) upiElement.textContent = upiId || "UPI ID not configured";
-
-    if (qrElement) {
-        if (qrUrl) {
-            qrElement.src = qrUrl + (qrUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-            qrElement.style.display = 'block';
-        } else {
-            qrElement.style.display = 'none';
+            console.log("🔥 updatePaymentSectionUI CALLED:", shopData);
+            
+            if (shopData) {
+                SHOP_CONFIG = shopData;
+                console.log("💾 SHOP_CONFIG saved:", SHOP_CONFIG);
+            }
+            
+            if (!shopData) {
+                console.log("❌ No shop data to update UI");
+                return;
+            }
+            
+            let upiId = "";
+            if (shopData.upiId) {
+                upiId = shopData.upiId;
+            } else if (shopData.upiSettings && shopData.upiSettings.upiId) {
+                upiId = shopData.upiSettings.upiId;
+            } else if (shopData.settings && shopData.settings.upiId) {
+                upiId = shopData.settings.upiId;
+            }
+            
+            let qrUrl = "";
+            if (shopData.qrCodeImage && typeof shopData.qrCodeImage === 'string' && 
+                shopData.qrCodeImage.includes('cloudinary.com')) {
+                qrUrl = shopData.qrCodeImage;
+            } else if (shopData.upiSettings && shopData.upiSettings.qrCodeImage && 
+                     typeof shopData.upiSettings.qrCodeImage === 'string' &&
+                     shopData.upiSettings.qrCodeImage.includes('cloudinary.com')) {
+                qrUrl = shopData.upiSettings.qrCodeImage;
+            } else if (shopData.settings && shopData.settings.qrCodeImage &&
+                     typeof shopData.settings.qrCodeImage === 'string' &&
+                     shopData.settings.qrCodeImage.includes('cloudinary.com')) {
+                qrUrl = shopData.settings.qrCodeImage;
+            } else if (upiId) {
+                qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiId)}`;
+            } else if (shopData.qrImage) {
+                qrUrl = shopData.qrImage;
+            } else if (shopData.qrCode) {
+                qrUrl = shopData.qrCode;
+            }
+            
+            const upiElement = document.getElementById('displayUpiId');
+            const qrElement = document.getElementById('qrCodeImage');
+            const qrSection = document.getElementById('qrCodeSection');
+            
+            if (upiElement) {
+                if (upiId) {
+                    upiElement.textContent = upiId;
+                } else {
+                    upiElement.textContent = "UPI ID not configured";
+                    upiElement.style.color = "#999";
+                }
+            }
+            
+            if (qrElement) {
+                if (qrUrl) {
+                    const timestamp = Date.now();
+                    const separator = qrUrl.includes('?') ? '&' : '?';
+                    qrElement.src = qrUrl + separator + 't=' + timestamp;
+                    qrElement.alt = "Scan to pay via UPI";
+                    qrElement.style.display = 'block';
+                } else {
+                    qrElement.style.display = 'none';
+                }
+            }
+            
+            const upiOption = document.getElementById('upiPaymentOption');
+            const codOption = document.getElementById('codPaymentOption');
+            
+            if (upiOption) {
+                let upiEnabled = true;
+                if (shopData.paymentMethods) {
+                    upiEnabled = shopData.paymentMethods.upi !== false;
+                } 
+                else if (shopData.upiSettings && shopData.upiSettings.acceptedMethods) {
+                    upiEnabled = shopData.upiSettings.acceptedMethods.upi !== false;
+                }
+                else if (shopData.settings && shopData.settings.paymentMethods) {
+                    upiEnabled = shopData.settings.paymentMethods.upi !== false;
+                }
+                
+                if (!upiId && !qrUrl) {
+                    upiEnabled = false;
+                }
+                
+                upiOption.style.display = upiEnabled ? 'flex' : 'none';
+            }
+            
+            if (codOption) {
+                let codEnabled = true;
+                if (shopData.paymentMethods) {
+                    codEnabled = shopData.paymentMethods.cash !== false;
+                } 
+                else if (shopData.upiSettings && shopData.upiSettings.acceptedMethods) {
+                    codEnabled = shopData.upiSettings.acceptedMethods.cash !== false;
+                }
+                else if (shopData.settings && shopData.settings.paymentMethods) {
+                    codEnabled = shopData.settings.paymentMethods.cash !== false;
+                }
+                
+                codOption.style.display = codEnabled ? 'flex' : 'none';
+            }
+            
+            if (qrSection) {
+                const upiRadio = document.getElementById('paymentMethodUpi');
+                if (upiRadio && upiRadio.checked && (upiId || qrUrl)) {
+                    qrSection.style.display = 'block';
+                }
+            }
+            
+            console.log("✅ updatePaymentSectionUI completed");
         }
-    }
 
-    const upiOption = document.getElementById('upiPaymentOption');
-    const codOption = document.getElementById('codPaymentOption');
-
-    if (upiOption) {
-        let upiEnabled = shopData.paymentMethods?.upi !== false;
-        if (!upiId && !qrUrl) upiEnabled = false;
-        upiOption.style.display = upiEnabled ? 'flex' : 'none';
-    }
-
-    if (codOption) {
-        let codEnabled = shopData.paymentMethods?.cash !== false;
-        codOption.style.display = codEnabled ? 'flex' : 'none';
-    }
-
-    if (qrSection) {
-        const upiRadio = document.getElementById('paymentMethodUpi');
-        qrSection.style.display = upiRadio?.checked && (upiId || qrUrl) ? 'block' : 'none';
-    }
-
-    console.log("✅ updatePaymentSectionUI completed");
-}
-        
         function setupPaymentSelection() {
             console.log("🔧 Setting up payment selection listeners");
             
@@ -3750,32 +3770,31 @@ async function loadShopDataForPayment(shopId) {
         }
 
         async function loadShopData() {
-    try {
-        let shopId = 'default_shop';
-        if (cart.length > 0) {
-            shopId = cart[0].shopId;
-        } else if (PRODUCTS.length > 0) {
-            shopId = PRODUCTS[0].shopId;
+            try {
+                let shopId = 'default_shop';
+                if (cart.length > 0) {
+                    shopId = cart[0].shopId;
+                } else if (PRODUCTS.length > 0) {
+                    shopId = PRODUCTS[0].shopId;
+                }
+                
+                const shopDoc = await db.collection('shops').doc(shopId).get();
+                if (shopDoc.exists) {
+                    SHOP_DATA = shopDoc.data();
+                    console.log('✅ Shop data loaded:', SHOP_DATA);
+                    
+                    if (SHOP_DATA) {
+                        SHOP_CONFIG = SHOP_DATA;
+                        console.log('💾 SHOP_CONFIG updated from SHOP_DATA');
+                    }
+                    
+                    updateCouponSection();
+                }
+            } catch (error) {
+                console.error('Error loading shop data:', error);
+                SHOP_DATA = null;
+            }
         }
-
-        const shopDoc = await db.collection('shops').doc(shopId).get();
-        if (!shopDoc.exists || shopDoc.data().status !== 'active') {
-            SHOP_DATA = null;
-            SHOP_CONFIG = null;
-            return;
-        }
-
-        SHOP_DATA = shopDoc.data();
-        
-        updateCouponSection();
-
-    } catch (error) {
-        console.error('Error loading shop data:', error);
-        SHOP_DATA = null;
-        SHOP_CONFIG = null;
-    }
-}
-
 
         async function loadShopCoupons() {
             try {
