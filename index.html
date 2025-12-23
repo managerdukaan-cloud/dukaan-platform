@@ -3522,80 +3522,101 @@ async function placeOrder() {
         let currentShopId = null;
 
         function loadAndListenToShop() {
-            if (currentShopListener) {
-                currentShopListener();
-                currentShopListener = null;
-                console.log("🔄 Unsubscribed previous shop listener");
-            }
+    if (currentShopListener) {
+        currentShopListener();
+        currentShopListener = null;
+        console.log("🔄 Unsubscribed previous shop listener");
+    }
 
-            if (!cart || cart.length === 0) {
-                console.log("🛒 Cart is empty, no shop to listen to");
-                currentShopId = null;
-                return;
-            }
+    if (!cart || cart.length === 0) {
+        console.log("🛒 Cart is empty, no shop to listen to");
+        currentShopId = null;
+        return;
+    }
 
-            const shopIdFromCart = cart[0].shopId;
-            if (!shopIdFromCart) {
-                console.error("❌ No shopId found in cart items");
-                return;
-            }
+    const shopIdFromCart = cart[0].shopId;
+    if (!shopIdFromCart) {
+        console.error("❌ No shopId found in cart items");
+        return;
+    }
 
-            if (currentShopId === shopIdFromCart) {
-                console.log("✅ Already listening to shop:", shopIdFromCart);
-                return;
-            }
+    if (currentShopId === shopIdFromCart) {
+        console.log("✅ Already listening to shop:", shopIdFromCart);
+        return;
+    }
 
-            currentShopId = shopIdFromCart;
-            console.log("🎯 Setting up listener for shop:", shopIdFromCart);
+    currentShopId = shopIdFromCart;
+    console.log("🎯 Setting up listener for shop:", shopIdFromCart);
 
-            const shopConfigRef = db.collection('shop_config').doc(shopIdFromCart);
+    const shopConfigRef = db.collection('shop_config').doc(shopIdFromCart);
+    
+    currentShopListener = shopConfigRef.onSnapshot(
+        async (doc) => {
+            console.log("📡 Real-time shop config update received for:", shopIdFromCart);
             
-            currentShopListener = shopConfigRef.onSnapshot(
-                (doc) => {
-                    console.log("📡 Real-time shop config update received for:", shopIdFromCart);
-                    
-                    if (doc.exists) {
-                        const shopData = doc.data();
-                        console.log("📡 REAL-TIME SHOP DATA:", shopData);
-                        
-                        SHOP_CONFIG = shopData;
-                        updatePaymentSectionUI(shopData);
-                        loadShopData();
-                    } else {
-                        console.log("⚠️ No config found for shop:", shopIdFromCart);
-                        SHOP_CONFIG = null;
-                        loadShopDataForPayment(shopIdFromCart);
-                    }
-                },
-                (error) => {
-                    console.error("❌ Error listening to shop config:", error);
+            // 🔴 CHECK SHOP STATUS FIRST
+            const shopDoc = await db.collection('shops').doc(shopIdFromCart).get();
+            if (shopDoc.exists) {
+                const shopMeta = shopDoc.data();
+                if (shopMeta.status !== 'active') {
+                    console.warn("🚫 Shop is inactive. Blocking payment & order flow.");
                     SHOP_CONFIG = null;
+                    updatePaymentSectionUI(null);
+                    return;
                 }
-            );
-
-            loadShopData();
-        }
-
-        async function loadShopDataForPayment(shopId) {
-            try {
-                const shopDoc = await db.collection('shops').doc(shopId).get();
-                if (shopDoc.exists) {
-                    const shopData = shopDoc.data();
-                    console.log("✅ Fallback shop data loaded:", shopData);
-                    
-                    SHOP_CONFIG = {
-                        upiId: shopData.upiId,
-                        qrCodeImage: shopData.qrCodeImage,
-                        upiSettings: shopData.upiSettings,
-                        paymentMethods: shopData.paymentMethods
-                    };
-                    
-                    updatePaymentSectionUI(shopData);
-                }
-            } catch (error) {
-                console.error("❌ Error loading fallback shop data:", error);
             }
+
+            if (doc.exists) {
+                const shopData = doc.data();
+                console.log("📡 REAL-TIME SHOP DATA:", shopData);
+                
+                SHOP_CONFIG = shopData;
+                updatePaymentSectionUI(shopData);
+                loadShopData();
+            } else {
+                console.log("⚠️ No config found for shop:", shopIdFromCart);
+                SHOP_CONFIG = null;
+                loadShopDataForPayment(shopIdFromCart);
+            }
+        },
+        (error) => {
+            console.error("❌ Error listening to shop config:", error);
+            SHOP_CONFIG = null;
         }
+    );
+
+    loadShopData();
+}
+
+async function loadShopDataForPayment(shopId) {
+    try {
+        const shopDoc = await db.collection('shops').doc(shopId).get();
+        if (shopDoc.exists) {
+            const shopData = shopDoc.data();
+
+            // 🔴 BLOCK INACTIVE SHOP
+            if (shopData.status !== 'active') {
+                console.warn("🚫 Shop inactive. Payment disabled.");
+                SHOP_CONFIG = null;
+                updatePaymentSectionUI(null);
+                return;
+            }
+
+            console.log("✅ Fallback shop data loaded:", shopData);
+            
+            SHOP_CONFIG = {
+                upiId: shopData.upiId,
+                qrCodeImage: shopData.qrCodeImage,
+                upiSettings: shopData.upiSettings,
+                paymentMethods: shopData.paymentMethods
+            };
+            
+            updatePaymentSectionUI(shopData);
+        }
+    } catch (error) {
+        console.error("❌ Error loading fallback shop data:", error);
+    }
+}
 
         function updatePaymentSectionUI(shopData) {
             console.log("🔥 updatePaymentSectionUI CALLED:", shopData);
