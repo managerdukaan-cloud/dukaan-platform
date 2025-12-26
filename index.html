@@ -4107,6 +4107,9 @@
                     // Update coupon UI immediately
                     updateCouponSectionFromShopData(shopData);
                     
+                    // ✅ YAHAN PAR NAYA FUNCTION ADD KAREN:
+                    loadAndDisplayQRCode(shopData);
+                    
                     // Start real-time listener for this shop
                     startShopRealTimeListener(shopId);
                 } else {
@@ -6608,6 +6611,109 @@ Placed on: ${new Date(order.date).toLocaleDateString()}
 
         function changeProfilePicture() {
             document.getElementById('avatarUpload').click();
+        }
+
+        // ==================== NEW: Load and display QR code properly ====================
+        function loadAndDisplayQRCode(shopData) {
+            console.log("🔍 Loading QR code from shop data");
+            
+            const qrElement = document.getElementById('qrCodeImage');
+            if (!qrElement) {
+                console.error("❌ QR code element not found");
+                return;
+            }
+            
+            let qrUrl = "";
+            
+            // Try different possible locations for QR code image
+            if (shopData.qrCodeImage && typeof shopData.qrCodeImage === 'string') {
+                qrUrl = shopData.qrCodeImage;
+                console.log("✅ Found QR code in qrCodeImage");
+            } 
+            else if (shopData.upiSettings && shopData.upiSettings.qrCodeImage && 
+                     typeof shopData.upiSettings.qrCodeImage === 'string') {
+                qrUrl = shopData.upiSettings.qrCodeImage;
+                console.log("✅ Found QR code in upiSettings.qrCodeImage");
+            } 
+            else if (shopData.settings && shopData.settings.qrCodeImage &&
+                     typeof shopData.settings.qrCodeImage === 'string') {
+                qrUrl = shopData.settings.qrCodeImage;
+                console.log("✅ Found QR code in settings.qrCodeImage");
+            } 
+            else if (shopData.qrImage && typeof shopData.qrImage === 'string') {
+                qrUrl = shopData.qrImage;
+                console.log("✅ Found QR code in qrImage");
+            } 
+            else if (shopData.qrCode && typeof shopData.qrCode === 'string') {
+                qrUrl = shopData.qrCode;
+                console.log("✅ Found QR code in qrCode");
+            }
+            
+            // If still no QR URL, generate from UPI ID
+            if (!qrUrl) {
+                const upiId = shopData.upiId || 
+                             (shopData.upiSettings && shopData.upiSettings.upiId) || 
+                             (shopData.settings && shopData.settings.upiId);
+                
+                if (upiId) {
+                    qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiId)}&format=png`;
+                    console.log("🔗 Generated QR code from UPI ID");
+                } else {
+                    console.log("❌ No QR code or UPI ID found");
+                    qrElement.style.display = 'none';
+                    return;
+                }
+            }
+            
+            console.log("🖼️ QR URL:", qrUrl);
+            
+            // Set the image source with error handling
+            qrElement.onload = function() {
+                console.log("✅ QR code loaded successfully");
+                qrElement.style.display = 'block';
+            };
+            
+            qrElement.onerror = function() {
+                console.error("❌ Failed to load QR code image");
+                
+                // Try with timestamp to prevent caching issues
+                const timestamp = Date.now();
+                const separator = qrUrl.includes('?') ? '&' : '?';
+                qrElement.src = qrUrl + separator + 't=' + timestamp;
+                
+                // If still fails, show placeholder
+                setTimeout(() => {
+                    if (!qrElement.complete || qrElement.naturalHeight === 0) {
+                        console.log("🔄 Loading fallback QR code");
+                        qrElement.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=shop@upi&pn=Shop&am=0&cu=INR';
+                        qrElement.alt = "QR Code Placeholder";
+                    }
+                }, 1000);
+            };
+            
+            // Add timestamp to prevent caching
+            const timestamp = Date.now();
+            const separator = qrUrl.includes('?') ? '&' : '?';
+            qrElement.src = qrUrl + separator + 't=' + timestamp;
+            qrElement.alt = "Scan to pay via UPI";
+            qrElement.style.display = 'block';
+        }
+
+        // ==================== NEW: Fix Firebase Storage URLs ====================
+        function fixFirebaseUrl(url) {
+            if (!url || typeof url !== 'string') return url;
+            
+            let fixedUrl = url;
+            
+            // Fix Firebase Storage URLs
+            if (fixedUrl.includes('firebasestorage.googleapis.com')) {
+                if (!fixedUrl.includes('?alt=media')) {
+                    const separator = fixedUrl.includes('?') ? '&' : '?';
+                    fixedUrl += separator + 'alt=media';
+                }
+            }
+            
+            return fixedUrl;
         }
 
         // Start app when DOM is loaded
