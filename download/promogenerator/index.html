@@ -35,21 +35,8 @@
             object-fit: cover;
         }
         h1 { font-size: 1.8rem; margin: 10px 0; font-weight: 800; }
-        p { color: #666; line-height: 1.5; margin-bottom: 10px; }
+        p { color: #666; line-height: 1.5; margin-bottom: 30px; }
         
-        .auto-text {
-            font-size: 0.9rem;
-            color: var(--primary);
-            font-weight: 600;
-            margin-bottom: 25px;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
         .btn-download {
             display: inline-block;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -84,10 +71,8 @@
         <h1>Amazing AI Promo</h1>
         <p>Apne business ke liye viral marketing content banayein sirf 5 seconds mein! ⚡</p>
 
-        <div class="auto-text">Download automatically start ho raha hai...</div>
-
-        <a href="amazing-ai-promo.apk" class="btn-download" id="manualDownload" download>
-            Click Here if not started
+        <a href="amazing-ai-promo.apk" class="btn-download" download>
+            Download APK (Latest)
         </a>
 
         <div class="features">
@@ -102,13 +87,5 @@
         </p>
     </div>
 
-    <script>
-        window.onload = function() {
-            // Page load hone ke theek 1.5 second baad apne aap download start hoga
-            setTimeout(function() {
-                window.location.href = "amazing-ai-promo.apk";
-            }, 1500); 
-        };
-    </script>
 </body>
 </html>
